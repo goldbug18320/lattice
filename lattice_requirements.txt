@@ -1,0 +1,43 @@
+This is a war game simulator project. 
+Create a ai enabled drone swarm command control platform Lattice.
+
+Features and capabilities:
+1) ability to receive life feed from reconnaissance drones on enemy drones, ships, tanks, missile launchers locations.
+2) ability to command a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
+3) Define a set of APIs to receive life feed from reconnaissance drones on enemy drones, ships, tanks, missile launchers locations.
+4) Define a set of APIs to control a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
+5) the platform use LLM to assign tasks to a single drone or a swarm of drones. In case of a swarm of drones, it is expected the drones are AI enabled which can coordinate with each other to locate and attach targets by themselves. The platform does not assign tasks to each drone in the swarm. This helps the success rate in GPS denial battle ground.
+6) 3D UI with with real world terrain information (such as Taiwan) to show the locations of our drones and enemy drones, ships, tanks, missile launchers.
+7) platform accepts natural language commands via text input.
+8) LLM determine the appropriate drones to use, based on the payload, range. LLM also determine the swarm size appropriate for the enemy targets.
+9) LLM follow operator's requests on UI, such as "show Taiwan on map", etc.
+10) All deployed drones should be constantly moving until their max range is reached. 
+11) All deployed drones should have their location, speed, battery status live feed to the Lattice.
+12) LLM should understand "deploy all assets to the west coast".
+13) LLM should determine classify the enemy assets to 1) high value target, such as ship, missile launchers. 2) medium value target, such as tanks. 3) low value targets. And ask human for permission to attack enemy targets according to value classification.
+14) LLM should respond with natural language, such as "what is the current status of MQ9-01", instead of just translating inquiry into commands.
+
+Friendly assets:
+4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each reconnaissance drone scan an area of 400 square km. Each reconnaissance drone has a max time of 5 hours.
+MQ9 are capable of detecting enemy assets within 20km in radius.
+There are always 2 reconnaissance drones in the air at all time. 
+100 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
+reconnaissance drones are capable of detecting enemy assets within 10km in radius.
+
+10000 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
+1000 altius-600m drones, max payload 12kg, max range 440km.
+reconnaissance and combat drones are deployed across major cities in Taiwan, with 60% of assets around Taipei.
+reconnaissance and combat drones should be marked as blue or green.
+
+
+Enermy assets:
+10000 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
+10000 FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
+100 tanks in Taiwan, moving at 10km/hr.
+1000 ships in Taiwan strait, moving at 22 knots from mainline China towards Taiwan.
+400 missle launchers in Fujian.
+100000 PLA solders in Taiwan.
+90% enemy assets are on the west coast. The remaining in east coast.
+Enemy assets should be marked as red.
+
+

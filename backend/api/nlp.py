@@ -1,0 +1,205 @@
+"""Natural language command processing endpoint."""
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime, timedelta
+from services.state_service import state_service, APPROVAL_TTL_MINUTES
+from services.llm_service import llm_service
+from services.swarm_service import swarm_service
+from models.drone import SwarmCommand, DroneCommand, CommandType
+from models.target import PendingApproval
+
+router = APIRouter()
+
+
+class NLPCommandRequest(BaseModel):
+    command: str
+    context_override: Optional[dict] = None
+
+
+@router.post("/command", summary="Process a natural language operator command")
+async def process_nlp_command(req: NLPCommandRequest):
+    """
+    Accepts a natural language command from the operator.
+    Uses LLM to interpret and translate into a structured action,
+    then executes it against the appropriate API.
+    """
+    if not req.command.strip():
+        raise HTTPException(status_code=400, detail="Command cannot be empty")
+
+    # Build battlefield context for the LLM
+    context = req.context_override or {
+        "swarms": [
+            {
+                "id": s.id,
+                "name": s.name,
+                "drone_model": s.drone_model.value if s.drone_model else None,
+                "fleet_size": s.total_drone_count if s.total_drone_count > 0 else len(s.drone_ids),
+                "status": s.status.value,
+                "drone_count": len(s.drone_ids),
+                "objective": s.objective,
+            }
+            for s in state_service.get_all_swarms()
+        ],
+        "drones": [
+            {
+                "id": d.id,
+                "name": d.name,
+                "type": d.type.value,
+                "model": d.model.value if d.model else None,
+                "status": d.status.value,
+                "battery": d.battery,
+                "max_payload_kg": d.max_payload_kg,
+                "max_range_km": d.max_range_km,
+                "swarm_id": d.swarm_id,
+                "position": d.position.model_dump() if d.position else None,
+            }
+            for d in state_service.get_all_drones()
+        ],
+        "targets": [
+            {
+                "id": t.id,
+                "type": t.type.value,
+                "status": t.status.value,
+                "position": t.position.model_dump(),
+                "confidence": t.confidence,
+            }
+            for t in state_service.get_all_targets()
+        ],
+    }
+
+    # Call LLM
+    llm_result = await llm_service.process_command(req.command, context)
+
+    action = llm_result.get("action", {})
+    execution_result = None
+
+    if action.get("type") == "request_approval":
+        approval = PendingApproval(
+            command_text=req.command,
+            approval_prompt=action.get("approval_prompt", req.command),
+            threat_summary=action.get("threat_summary", {}),
+            classified_targets=action.get("classified_targets", []),
+            proposed_action=action.get("proposed_action", {}),
+            expires_at=datetime.utcnow() + timedelta(minutes=APPROVAL_TTL_MINUTES),
+        )
+        state_service.add_approval(approval)
+        execution_result = {"approval_id": approval.id, "status": "pending"}
+
+    elif action.get("type") == "assign_swarm" and action.get("swarm_id"):
+        cmd = SwarmCommand(
+            command_type=CommandType(action.get("command_type", "patrol")),
+            target_ids=action.get("target_ids", []),
+            objective=action.get("objective", req.command),
+            priority=action.get("priority", 5),
+            notes=action.get("notes"),
+        )
+        execution_result = swarm_service.execute_swarm_command(action["swarm_id"], cmd)
+
+    elif action.get("type") == "assign_drone" and action.get("drone_id"):
+        cmd = DroneCommand(
+            command_type=CommandType(action.get("command_type", "patrol")),
+            target_id=action.get("target_ids", [None])[0] if action.get("target_ids") else None,
+            objective=action.get("objective", req.command),
+            notes=action.get("notes"),
+        )
+        execution_result = swarm_service.execute_drone_command(action["drone_id"], cmd)
+
+    elif action.get("type") == "deploy_to_region" and action.get("region"):
+        execution_result = swarm_service.execute_deploy_to_region(
+            region=action["region"],
+            asset_filter=action.get("asset_filter", "all"),
+            objective=action.get("objective"),
+            priority=action.get("priority", 5),
+        )
+
+    elif action.get("type") == "mark_target_destroyed":
+        for tid in action.get("target_ids", []):
+            state_service.mark_target_destroyed(tid)
+        execution_result = {"marked_destroyed": action.get("target_ids", [])}
+
+    # Log the NLP command
+    state_service.log_command({
+        "type": "nlp_command",
+        "raw_command": req.command,
+        "interpretation": llm_result.get("interpretation"),
+        "action_type": action.get("type"),
+        "execution_result": execution_result,
+    })
+
+    return {
+        "command": req.command,
+        "interpretation": llm_result.get("interpretation"),
+        "explanation": llm_result.get("explanation"),
+        "action": action,
+        "execution_result": execution_result,
+    }
+
+
+@router.get("/pending", summary="List pending attack approval requests")
+async def get_pending_approvals():
+    """Returns all pending HITL attack approvals that have not yet expired."""
+    return state_service.get_pending_approvals()
+
+
+@router.post("/approve/{approval_id}", summary="Approve a pending attack request")
+async def approve_attack(approval_id: str):
+    """Approves a pending attack request and immediately executes the proposed action."""
+    approval = state_service.get_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    if approval.status != "pending":
+        raise HTTPException(status_code=409, detail=f"Approval is already {approval.status}")
+
+    state_service.decide_approval(approval_id, "approved")
+
+    # Execute the proposed action
+    proposed = approval.proposed_action
+    execution_result = None
+    if proposed.get("type") == "assign_swarm" and proposed.get("swarm_id"):
+        cmd = SwarmCommand(
+            command_type=CommandType(proposed.get("command_type", "attack")),
+            target_ids=proposed.get("target_ids", []),
+            objective=proposed.get("objective", ""),
+            priority=proposed.get("priority", 9),
+            notes=proposed.get("notes"),
+        )
+        execution_result = swarm_service.execute_swarm_command(proposed["swarm_id"], cmd)
+
+    state_service.log_command({
+        "type": "hitl_approved",
+        "approval_id": approval_id,
+        "command_text": approval.command_text,
+        "execution_result": execution_result,
+    })
+    return {
+        "approval_id": approval_id,
+        "status": "approved",
+        "execution_result": execution_result,
+    }
+
+
+@router.post("/deny/{approval_id}", summary="Deny a pending attack request")
+async def deny_attack(approval_id: str):
+    """Denies a pending attack request. No action is executed."""
+    approval = state_service.get_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    if approval.status != "pending":
+        raise HTTPException(status_code=409, detail=f"Approval is already {approval.status}")
+
+    state_service.decide_approval(approval_id, "denied")
+    state_service.log_command({
+        "type": "hitl_denied",
+        "approval_id": approval_id,
+        "command_text": approval.command_text,
+    })
+    return {"approval_id": approval_id, "status": "denied"}
+
+
+@router.get("/history", summary="Get NLP command history")
+async def get_nlp_history(limit: int = 50):
+    log = state_service.get_command_log(200)
+    nlp_types = {"nlp_command", "hitl_approved", "hitl_denied"}
+    nlp_entries = [entry for entry in log if entry.get("type") in nlp_types]
+    return nlp_entries[-limit:]
