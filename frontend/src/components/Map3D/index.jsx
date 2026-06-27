@@ -38,22 +38,36 @@ const STATUS_COLORS = {
 // Taiwan island-wide view
 const TAIWAN_HOME = { lon: 121.0, lat: 23.8, altM: 450_000 }
 
+// Feature 21: geographic land/sea heuristic for the Taiwan theater.
+// Using terrain height from sampleTerrainMostDetailed is unreliable because the
+// Taiwan Strait is shallow (~60-80 m) and Cesium may report near-zero heights there.
+function likelySea(lon, lat) {
+  if (lon >= 119.4 && lon <= 120.1 && lat >= 22.0 && lat <= 26.5) return true  // Taiwan Strait
+  if (lon > 122.0) return true                                                   // Open Pacific east of Taiwan
+  if (lat < 21.5 && lon > 116.0) return true                                    // South China Sea / Bashi Channel
+  return false
+}
+
 export default function Map3D() {
   const viewerRef    = useRef(null)
   const containerRef = useRef(null)
   const entityMapRef = useRef({ drones: {}, targets: {} })
   // Drag state: tracks in-progress drag-and-drop reposition operations
-  const dragRef = useRef({ active: false, entity: null, type: null, id: null, moved: false })
+  const dragRef = useRef({ active: false, entity: null, type: null, id: null, subtype: null, moved: false, originalPosition: null })
+  // Tracks whether a drag just completed so LEFT_CLICK can ignore the synthetic click
+  const dragJustFinishedRef = useRef(false)
   const [viewerReady, setViewerReady] = useState(false)
 
-  const drones          = useStore(s => s.drones)
-  const targets         = useStore(s => s.targets)
+  const drones           = useStore(s => s.drones)
+  const targets          = useStore(s => s.targets)
   const selectedTargetId = useStore(s => s.selectedTargetId)
-  const selectTarget    = useStore(s => s.selectTarget)
-  const selectDrone     = useStore(s => s.selectDrone)
-  const cameraCommand   = useStore(s => s.cameraCommand)
+  const selectedSwarmId  = useStore(s => s.selectedSwarmId)
+  const selectedDroneId  = useStore(s => s.selectedDroneId)
+  const selectTarget     = useStore(s => s.selectTarget)
+  const selectDrone      = useStore(s => s.selectDrone)
+  const cameraCommand    = useStore(s => s.cameraCommand)
   const setCameraCommand = useStore(s => s.setCameraCommand)
-  const placementMode   = useStore(s => s.placementMode)
+  const placementMode    = useStore(s => s.placementMode)
 
   // ── Initialize Cesium viewer ────────────────────────────────────────────────
   useEffect(() => {
@@ -102,12 +116,20 @@ export default function Map3D() {
       handler.setInputAction((event) => {
         const picked = viewer.scene.pick(event.position)
         if (picked?.id?._lattice_type) {
+          const latticeType = picked.id._lattice_type
+          const latticeId   = picked.id._lattice_id
+          // Capture the target sub-type (ship/tank/etc.) for terrain validation on drop
+          const subtype = latticeType === 'target'
+            ? (useStore.getState().targets.find(t => t.id === latticeId)?.type ?? null)
+            : null
           dragRef.current = {
             active: true,
             entity: picked.id,
-            type: picked.id._lattice_type,
-            id: picked.id._lattice_id,
+            type: latticeType,
+            id: latticeId,
+            subtype,
             moved: false,
+            originalPosition: picked.id.position.getValue(Cesium.JulianDate.now()),
           }
         }
       }, ET.LEFT_DOWN)
@@ -135,7 +157,7 @@ export default function Map3D() {
         }
       }, ET.MOUSE_MOVE)
 
-      // ── Drag: LEFT_UP — finalize position and persist ───────────────────────
+      // ── Drag: LEFT_UP — validate terrain constraint then persist ───────────────
       handler.setInputAction(() => {
         const drag = dragRef.current
         viewer.scene.screenSpaceCameraController.enableRotate = true
@@ -143,6 +165,7 @@ export default function Map3D() {
         viewer.scene.screenSpaceCameraController.enableZoom = true
 
         if (drag.active && drag.moved && drag.entity) {
+          dragJustFinishedRef.current = true
           const cart = drag.entity.position.getValue(Cesium.JulianDate.now())
           if (cart) {
             const carto = Cesium.Cartographic.fromCartesian(cart)
@@ -151,15 +174,42 @@ export default function Map3D() {
               lon: Cesium.Math.toDegrees(carto.longitude),
               alt: carto.height,
             }
-            const updateFn = drag.type === 'drone'
-              ? assetsApi.updateDronePosition(drag.id, position)
-              : assetsApi.updateTargetPosition(drag.id, position)
-            updateFn
-              .then(() => assetsApi.saveConfig())
-              .catch(console.error)
+
+            // Feature 21: land/sea placement constraints
+            // tanks, missile launchers, soldiers → land (h ≥ 0)
+            // ships → sea (h < 0)
+            // drones → unconstrained
+            const LAND_TYPES = new Set(['tank', 'missile_launcher', 'soldier_unit'])
+            const needsLand = LAND_TYPES.has(drag.subtype)
+            const needsSea  = drag.subtype === 'ship'
+
+            const persist = () => {
+              const updateFn = drag.type === 'drone'
+                ? assetsApi.updateDronePosition(drag.id, position)
+                : assetsApi.updateTargetPosition(drag.id, position)
+              updateFn.then(() => assetsApi.saveConfig()).catch(console.error)
+            }
+
+            const revert = () => {
+              if (drag.originalPosition) drag.entity.position.setValue(drag.originalPosition)
+              drag.entity.point.outlineColor.setValue(Cesium.Color.RED)
+              drag.entity.point.outlineWidth.setValue(5)
+              setTimeout(() => {
+                drag.entity.point.outlineColor.setValue(Cesium.Color.fromBytes(255, 200, 0, 200))
+                drag.entity.point.outlineWidth.setValue(1)
+              }, 800)
+            }
+
+            if (needsLand || needsSea) {
+              const sea = likelySea(position.lon, position.lat)
+              if ((needsLand && sea) || (needsSea && !sea)) revert()
+              else persist()
+            } else {
+              persist()
+            }
           }
         }
-        dragRef.current = { active: false, entity: null, type: null, id: null, moved: false }
+        dragRef.current = { active: false, entity: null, type: null, id: null, subtype: null, moved: false, originalPosition: null }
       }, ET.LEFT_UP)
 
       // ── RIGHT_CLICK — remove entity from scenario ───────────────────────────
@@ -180,8 +230,11 @@ export default function Map3D() {
 
       // ── LEFT_CLICK — placement mode OR entity selection ─────────────────────
       handler.setInputAction((click) => {
-        // If a drag just ended, treat this as drag completion, not a click
-        if (dragRef.current.moved) return
+        // If a drag just completed, consume the synthetic click without selecting
+        if (dragJustFinishedRef.current) {
+          dragJustFinishedRef.current = false
+          return
+        }
 
         // Placement mode: drop new asset at clicked globe position
         const { placementMode: pm, setPlacementMode: spm } = useStore.getState()
@@ -195,10 +248,27 @@ export default function Map3D() {
               lon: Cesium.Math.toDegrees(carto.longitude),
               alt: pm.alt ?? 0,
             }
-            if (pm.kind === 'drone') {
-              assetsApi.createDrone(pm.model, position).catch(console.error)
+
+            // Feature 21: validate terrain constraint before spawning
+            const LAND_TYPES = new Set(['tank', 'missile_launcher', 'soldier_unit'])
+            const targetType = pm.kind === 'target' ? pm.type : null
+            const needsLand  = LAND_TYPES.has(targetType)
+            const needsSea   = targetType === 'ship'
+            const spawn = () => {
+              if (pm.kind === 'drone') assetsApi.createDrone(pm.model, position).catch(console.error)
+              else                      assetsApi.createTarget(pm.type, position).catch(console.error)
+            }
+
+            if (needsLand || needsSea) {
+              const sea = likelySea(position.lon, position.lat)
+              if ((needsLand && sea) || (needsSea && !sea)) {
+                const where = needsLand ? 'on land' : 'in water'
+                window.alert(`Cannot place ${pm.type} here — ${pm.type}s must be placed ${where}.`)
+              } else {
+                spawn()
+              }
             } else {
-              assetsApi.createTarget(pm.type, position).catch(console.error)
+              spawn()
             }
           }
           spm(null)
@@ -253,8 +323,25 @@ export default function Map3D() {
       }
 
       if (ui_subtype === 'fly_to' && destination) {
-        const altM = (destination.altitude_km ?? 300) * 1000
-        flyTo(destination.lon ?? TAIWAN_HOME.lon, destination.lat ?? TAIWAN_HOME.lat, altM)
+        if (destination.altitude_km != null) {
+          // NLP command with explicit altitude — fly camera to that position
+          flyTo(destination.lon ?? TAIWAN_HOME.lon, destination.lat ?? TAIWAN_HOME.lat, destination.altitude_km * 1000)
+        } else {
+          // Panel click — center asset in the view without changing zoom or orientation
+          const lon = destination.lon ?? TAIWAN_HOME.lon
+          const lat = destination.lat ?? TAIWAN_HOME.lat
+          viewer.camera.flyToBoundingSphere(
+            new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(lon, lat, 0), 1000),
+            {
+              offset: new Cesium.HeadingPitchRange(
+                viewer.camera.heading,
+                viewer.camera.pitch,
+                viewer.camera.positionCartographic.height,
+              ),
+              duration: 2,
+            }
+          )
+        }
 
       } else if (ui_subtype === 'fly_to_drone') {
         // Prefer explicit destination coords (mock always provides them)
@@ -319,6 +406,14 @@ export default function Map3D() {
         const em = entityMapRef.current
         if (layer === 'friendly' || layer === 'all') Object.values(em.drones).forEach(e => { e.show = show })
         if (layer === 'enemy' || layer === 'all') Object.values(em.targets).forEach(e => { e.show = show })
+        if (layer === 'swarms') {
+          const swarmDroneIds = new Set(
+            useStore.getState().swarms.flatMap(s => s.drone_ids || [])
+          )
+          Object.entries(em.drones).forEach(([id, e]) => {
+            if (swarmDroneIds.has(id)) e.show = show
+          })
+        }
       }
     }
 
@@ -346,20 +441,28 @@ export default function Map3D() {
       const statusColor = STATUS_COLORS[drone.status] || [150, 150, 150]
       const color = Cesium.Color.fromBytes(...statusColor, 220)
       const pos = Cesium.Cartesian3.fromDegrees(drone.position.lon, drone.position.lat, drone.position.alt || 150)
+      const isHighlighted = drone.id === selectedDroneId ||
+        (selectedSwarmId !== null && drone.swarm_id === selectedSwarmId)
+      const dronePixelSize  = isHighlighted ? cfg.size * 1.8 : cfg.size
+      const droneOutline    = isHighlighted ? Cesium.Color.YELLOW : Cesium.Color.WHITE
+      const droneOutlineW   = isHighlighted ? 3 : 1
 
       if (entityMap.drones[drone.id]) {
         const e = entityMap.drones[drone.id]
         e.position.setValue(pos)
         e.point.color.setValue(color)
+        e.point.pixelSize.setValue(dronePixelSize)
+        e.point.outlineColor.setValue(droneOutline)
+        e.point.outlineWidth.setValue(droneOutlineW)
         if (e.label) e.label.text.setValue(`${cfg.label}  ${drone.name}`)
       } else {
         const e = viewer.entities.add({
           position: pos,
           point: {
-            pixelSize: cfg.size,
+            pixelSize: dronePixelSize,
             color,
-            outlineColor: Cesium.Color.WHITE,
-            outlineWidth: 1,
+            outlineColor: droneOutline,
+            outlineWidth: droneOutlineW,
             heightReference: Cesium.HeightReference.NONE,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
@@ -409,11 +512,13 @@ export default function Map3D() {
         e.position.setValue(pos)
         e.point.color.setValue(color)
         e.point.pixelSize.setValue(isSelected ? 20 : 14 * cfg.scale)
+        e.point.outlineColor.setValue(isSelected ? Cesium.Color.YELLOW : Cesium.Color.fromBytes(255, 200, 0, 200))
+        e.point.outlineWidth.setValue(isSelected ? 3 : 1)
       } else {
         const e = viewer.entities.add({
           position: pos,
           point: {
-            pixelSize: 14 * cfg.scale,
+            pixelSize: isSelected ? 20 : 14 * cfg.scale,
             color,
             outlineColor: isSelected ? Cesium.Color.YELLOW : Cesium.Color.fromBytes(255, 200, 0, 200),
             outlineWidth: isSelected ? 3 : 1,
@@ -437,7 +542,7 @@ export default function Map3D() {
         entityMap.targets[target.id] = e
       }
     }
-  }, [drones, targets, selectedTargetId])
+  }, [drones, targets, selectedTargetId, selectedSwarmId, selectedDroneId])
 
   useEffect(() => { updateEntities() }, [updateEntities, viewerReady])
 

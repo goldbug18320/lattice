@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useStore } from '../../store/index.js'
 
 const STATUS_COLORS = {
@@ -48,6 +47,9 @@ function DetectedContacts({ droneNameOrId, targets }) {
           <span className="detected-pos">
             {t.position ? `${t.position.lat.toFixed(2)}°N ${t.position.lon.toFixed(2)}°E` : '—'}
           </span>
+          <span className="detected-time" style={{ color: 'var(--text-dim)', fontSize: '0.65rem' }}>
+            {t.last_seen ? new Date(t.last_seen).toLocaleTimeString() : '—'}
+          </span>
         </div>
       ))}
     </div>
@@ -58,10 +60,11 @@ export default function SwarmStatus() {
   const swarms = useStore(s => s.swarms)
   const drones = useStore(s => s.drones)
   const targets = useStore(s => s.targets)
-  const selectedSwarmId = useStore(s => s.selectedSwarmId)
-  const selectSwarm = useStore(s => s.selectSwarm)
-
-  const [selectedReconId, setSelectedReconId] = useState(null)
+  const selectedSwarmId  = useStore(s => s.selectedSwarmId)
+  const selectedDroneId  = useStore(s => s.selectedDroneId)
+  const selectSwarm      = useStore(s => s.selectSwarm)
+  const selectDrone      = useStore(s => s.selectDrone)
+  const setCameraCommand = useStore(s => s.setCameraCommand)
 
   const droneMap = Object.fromEntries(drones.map(d => [d.id, d]))
 
@@ -100,7 +103,16 @@ export default function SwarmStatus() {
           <div
             key={swarm.id}
             className={`swarm-card ${isSelected ? 'selected' : ''}`}
-            onClick={() => selectSwarm(isSelected ? null : swarm.id)}
+            onClick={() => {
+              if (isSelected) { selectSwarm(null); return }
+              selectSwarm(swarm.id)
+              const positioned = swarmDrones.filter(d => d.position)
+              if (positioned.length > 0) {
+                const avgLat = positioned.reduce((s, d) => s + d.position.lat, 0) / positioned.length
+                const avgLon = positioned.reduce((s, d) => s + d.position.lon, 0) / positioned.length
+                setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: avgLat, lon: avgLon } })
+              }
+            }}
           >
             <div className="swarm-card-header">
               <div className="swarm-name">{swarm.name}</div>
@@ -157,13 +169,19 @@ export default function SwarmStatus() {
             )}
           </div>
           {activeReconDrones.map(d => {
-            const isReconSelected = d.id === selectedReconId
+            const isReconSelected = d.id === selectedDroneId
             return (
               <div key={d.id}>
                 <div
                   className={`drone-item standalone ${isReconSelected ? 'selected' : ''}`}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedReconId(isReconSelected ? null : d.id)}
+                  onClick={() => {
+                    if (isReconSelected) { selectDrone(null); return }
+                    selectDrone(d.id)
+                    if (d.position) {
+                      setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: d.position.lat, lon: d.position.lon } })
+                    }
+                  }}
                 >
                   <span className="drone-icon">👁</span>
                   <span className="drone-name">{d.name}</span>

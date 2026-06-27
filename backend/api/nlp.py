@@ -76,7 +76,7 @@ async def process_nlp_command(req: NLPCommandRequest):
 
     if action.get("type") == "request_approval":
         approval = PendingApproval(
-            command_text=req.command,
+            command=req.command,
             approval_prompt=action.get("approval_prompt", req.command),
             threat_summary=action.get("threat_summary", {}),
             classified_targets=action.get("classified_targets", []),
@@ -170,12 +170,12 @@ async def approve_attack(approval_id: str):
     state_service.log_command({
         "type": "hitl_approved",
         "approval_id": approval_id,
-        "command_text": approval.command_text,
+        "command": approval.command,
         "execution_result": execution_result,
     })
     return {
+        "approved": True,
         "approval_id": approval_id,
-        "status": "approved",
         "execution_result": execution_result,
     }
 
@@ -193,9 +193,9 @@ async def deny_attack(approval_id: str):
     state_service.log_command({
         "type": "hitl_denied",
         "approval_id": approval_id,
-        "command_text": approval.command_text,
+        "command": approval.command,
     })
-    return {"approval_id": approval_id, "status": "denied"}
+    return {"denied": True, "approval_id": approval_id}
 
 
 @router.get("/history", summary="Get NLP command history")

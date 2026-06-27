@@ -1,5 +1,5 @@
 import { useStore } from '../../store/index.js'
-import { swarmApi } from '../../services/api.js'
+import { swarmApi, nlpApi } from '../../services/api.js'
 
 
 const TYPE_ICONS = {
@@ -7,6 +7,7 @@ const TYPE_ICONS = {
   ship: '⚓',
   tank: '⊞',
   missile_launcher: '↑',
+  soldier_unit: '◉',
 }
 
 const TYPE_COLORS = {
@@ -14,6 +15,7 @@ const TYPE_COLORS = {
   ship: '#fb923c',
   tank: '#f87171',
   missile_launcher: '#e879f9',
+  soldier_unit: '#dc2626',
 }
 
 const STATUS_BADGES = {
@@ -29,6 +31,7 @@ export default function TargetList() {
   const swarms = useStore(s => s.swarms)
   const selectedTargetId = useStore(s => s.selectedTargetId)
   const selectTarget = useStore(s => s.selectTarget)
+  const setCameraCommand = useStore(s => s.setCameraCommand)
 
   const selectSwarm = useStore(s => s.selectSwarm)
 
@@ -40,16 +43,36 @@ export default function TargetList() {
     return acc
   }, {})
 
+  // ENGAGE routes through HITL — the LLM classifies the target and creates a
+  // pending approval; the proposed swarm is pre-selected in the status panel
+  // so the operator sees which swarm will be tasked (Feature 13 + Feature 15).
   const engageTarget = async (targetId) => {
-    const idleSwarm = swarms.find(s => s.status === 'idle') || swarms[0]
-    if (!idleSwarm) return alert('No swarms available')
-    await swarmApi.commandSwarm(idleSwarm.id, {
-      command_type: 'attack',
-      target_ids: [targetId],
-      objective: `Engage target ${targetId}`,
-      priority: 9,
-    })
-    selectSwarm(idleSwarm.id)
+    try {
+      const result = await nlpApi.command(`engage and attack target with id ${targetId}`)
+      if (result.action?.type === 'request_approval') {
+        const proposedSwarmId = result.action?.proposed_action?.swarm_id
+        if (proposedSwarmId) selectSwarm(proposedSwarmId)
+      }
+    } catch (e) {
+      console.error('Engage failed:', e)
+    }
+  }
+
+  // TRACK executes immediately — non-attack commands bypass HITL (§6.4)
+  const trackTarget = async (targetId) => {
+    const availableSwarm = swarms.find(s => s.status === 'idle' || s.status === 'patrolling') || swarms[0]
+    if (!availableSwarm) return
+    try {
+      await swarmApi.commandSwarm(availableSwarm.id, {
+        command_type: 'track',
+        target_ids: [targetId],
+        objective: `Track target ${targetId}`,
+        priority: 6,
+      })
+      selectSwarm(availableSwarm.id)
+    } catch (e) {
+      console.error('Track failed:', e)
+    }
   }
 
   return (
@@ -76,7 +99,13 @@ export default function TargetList() {
               <div
                 key={target.id}
                 className={`target-item ${isSelected ? 'selected' : ''}`}
-                onClick={() => selectTarget(isSelected ? null : target.id)}
+                onClick={() => {
+                  const next = isSelected ? null : target.id
+                  selectTarget(next)
+                  if (next && target.position) {
+                    setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: target.position.lat, lon: target.position.lon } })
+                  }
+                }}
               >
                 <div className="target-row1">
                   <span className="target-type-icon" style={{ color: TYPE_COLORS[type] }}>
@@ -105,7 +134,7 @@ export default function TargetList() {
                     <button className="target-btn attack" onClick={e => { e.stopPropagation(); engageTarget(target.id) }}>
                       ⚡ ENGAGE
                     </button>
-                    <button className="target-btn track" onClick={e => { e.stopPropagation() }}>
+                    <button className="target-btn track" onClick={e => { e.stopPropagation(); trackTarget(target.id) }}>
                       👁 TRACK
                     </button>
                     {target.notes && <div className="target-notes">{target.notes}</div>}

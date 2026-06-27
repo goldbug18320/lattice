@@ -52,7 +52,7 @@ class Target(BaseModel):
 class PendingApproval(BaseModel):
     """Pending human-in-the-loop attack approval request."""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    command_text: str = Field(..., description="Original natural language command")
+    command: str = Field(..., description="Original natural language command")
     approval_prompt: str = Field(..., description="LLM-generated summary for the operator")
     threat_summary: dict = Field(default_factory=dict, description="high/medium/low counts")
     classified_targets: list[dict] = Field(default_factory=list, description="List of classified target entries")
@@ -60,6 +60,7 @@ class PendingApproval(BaseModel):
     status: Literal["pending", "approved", "denied", "expired"] = "pending"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: datetime = Field(..., description="Approval expires at this UTC time")
+    decided_at: Optional[datetime] = Field(None, description="When the operator made a decision")
 
 
 class TargetUpdate(BaseModel):

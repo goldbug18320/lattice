@@ -146,11 +146,79 @@ Operator command: {command}"""
         text = response.choices[0].message.content
         return json.loads(text)
 
+    def _mock_status_response(self, command: str, context: dict) -> dict:
+        """Build a natural language status answer from in-memory state context (§6.9 mock)."""
+        cmd_lower = command.lower()
+        drones = context.get("drones", [])
+        targets = context.get("targets", [])
+        swarms = context.get("swarms", [])
+
+        # Named drone lookup — check if the command names a specific drone
+        for drone in drones:
+            name = drone.get("name", "")
+            if name.lower() in cmd_lower:
+                battery = round(drone.get("battery", 0))
+                status = drone.get("status", "unknown")
+                pos = drone.get("position") or {}
+                lat = round(pos.get("lat", 0), 3)
+                lon = round(pos.get("lon", 0), 3)
+                alt = round(pos.get("alt", 0))
+                max_range = drone.get("max_range_km", 0)
+                model = (drone.get("model") or drone.get("type") or "drone").replace("_", " ")
+                status_text = (
+                    f"{name} ({model}) is currently {status}. "
+                    f"Position: {lat}°N {lon}°E, altitude {alt}m. "
+                    f"Battery: {battery}%. Max range: {max_range}km."
+                )
+                return {
+                    "interpretation": f"[MOCK] Status query for {name}",
+                    "action": {"type": "request_status", "status_text": status_text},
+                    "explanation": f"[MOCK] Returning status for {name}.",
+                }
+
+        # Fleet counts and battlefield summary
+        active_targets = [t for t in targets if t.get("status") == "active"]
+        target_by_type: dict[str, int] = {}
+        for t in active_targets:
+            tt = t.get("type", "unknown")
+            target_by_type[tt] = target_by_type.get(tt, 0) + 1
+
+        by_status: dict[str, int] = {}
+        for d in drones:
+            s = d.get("status", "unknown")
+            by_status[s] = by_status.get(s, 0) + 1
+
+        engaging  = by_status.get("engaging", 0)
+        patrolling = by_status.get("patrolling", 0)
+        idle      = by_status.get("idle", 0)
+
+        type_parts = [f"{v} {k.replace('_', ' ')}{'s' if v > 1 else ''}" for k, v in target_by_type.items()]
+        target_summary = ", ".join(type_parts) if type_parts else "none"
+        active_swarms = [s for s in swarms if s.get("status") != "idle"]
+
+        status_text = (
+            f"Battlefield status: {len(drones)} total friendly drones "
+            f"({engaging} engaging, {patrolling} patrolling, {idle} idle). "
+            f"Active enemy contacts: {len(active_targets)} ({target_summary}). "
+            f"{len(active_swarms)}/{len(swarms)} swarms active."
+        )
+        return {
+            "interpretation": "[MOCK] General status report requested",
+            "action": {"type": "request_status", "status_text": status_text},
+            "explanation": "[MOCK] Returning general battlefield status.",
+        }
+
     def _mock_response(self, command: str, context: dict) -> dict:
         """Fallback mock response when OpenAI key is not configured."""
         cmd_lower = command.lower()
         swarms = context.get("swarms", [])
         targets = context.get("targets", [])
+
+        # ── Status queries (Feature 14) ──────────────────────────────────────
+        status_keywords = ["status", "what is", "how many", "battery", "where is",
+                           "report", "count", "tell me", "how are", "how much", "remaining"]
+        if any(w in cmd_lower for w in status_keywords):
+            return self._mock_status_response(command, context)
 
         # ── UI commands ──────────────────────────────────────────────────────
         ui_keywords = ["show", "zoom", "focus", "map", "view", "fly to", "navigate", "go to", "look at"]

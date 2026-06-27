@@ -19,11 +19,15 @@ Features and capabilities:
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 16) idling drones should not show up on on the swarm and drone status panel.
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations to a configuration file.
+18) use appropriate icons on the map for the combat objects. For example, use drone icon for drones. use ship icon for ships. use tank icon for tanks.
+19) when user click on an enemy asset in enemy targets panel, the asset should be highlighted on the map. The map should be moved to show the asset.
+20) when user click on an asset in swarm & drone status panel, the asset should be highlighted on the map. The map should be moved to show the asset.
+21) soldiers, tanks, missile launchers must be on land. ships must be in the sea. drones can be on land, at sea or in the air. 
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
 2) No default deployments of friendly and enemy assets by the system.
-
+  
 Friendly assets:
 4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
 MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.

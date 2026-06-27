@@ -22,6 +22,10 @@
 - **Engage → auto-select combat swarm (Feature 15)**: When the operator clicks the ENGAGE button on a target in the Target List panel, the assigned combat swarm is automatically selected and highlighted in the Swarm & Drone Status panel, and swarms are sorted by activity (engaging first) — giving immediate visual confirmation of which swarm was tasked
 - **Hide idle drones from Swarm & Drone Status panel (Feature 16)**: Idle individual drones are suppressed to reduce clutter — swarm cards always show (so the operator can see all swarms), but the expanded drone list within a selected swarm only shows active (non-idle) drones with a summary count of idle ones; idle recon drones are also hidden from the RECONNAISSANCE section
 - **Drag-and-drop asset deployment (Feature 17)**: Both friendly and enemy assets can be dragged to new positions on the 3D map; new assets can be dragged from an Asset Palette onto the map to deploy them; every position change is immediately persisted to `assets_config.json` so the scenario layout survives restarts
+- **Type-specific map icons (Feature 18)**: Every asset type on the 3D map is rendered with a representative, type-appropriate icon — drone/UAV icon for all drone types (friendly and enemy), ship icon for ships, tank icon for tanks, rocket/launcher icon for missile launchers, person icon for soldier units — so operators can visually distinguish asset type at a glance without reading labels; icons are colored per the IFF scheme (blue/green for friendly, red for enemy)
+- **Click-to-highlight enemy asset from Target List (Feature 19)**: When the operator clicks an enemy asset in the Enemy Targets panel, that entity is visually highlighted on the 3D map (enlarged point, yellow outline) and the camera flies to center on it — giving instant spatial context for any listed threat without requiring the operator to manually locate it on the map
+- **Click-to-highlight asset from Swarm & Drone Status panel (Feature 20)**: When the operator clicks an asset (swarm card or individual drone) in the Swarm & Drone Status panel, the corresponding entity is highlighted on the 3D map and the camera flies to show it — lets the operator instantly locate any friendly asset in the scene
+- **Terrain-constrained asset placement (Feature 21)**: Ground assets (soldiers, tanks, missile launchers) must always be positioned on land; ships must always be in the sea; drones (friendly and enemy) are unconstrained and may be on land, at sea, or airborne — enforced both during initial config load and during drag-and-drop repositioning on the map
 - Swarm-level (not drone-level) task assignment to support autonomous AI swarm coordination
 - **Drone movement simulation**: all deployed (non-idle) drones continuously update their position on the server at 1-second intervals; drones return when max range is consumed
 - **Live friendly drone telemetry**: drones report position, battery, heading, and speed via a dedicated batch telemetry API endpoint; UI always reflects current positions
@@ -848,6 +852,19 @@ Enemy assets are registered in the platform via reconnaissance drone feeds (`POS
 - Long-range attack drones **launch from mainland China** and travel east toward Taiwan.
 - Enemy FPV drones are **deployed by PLA soldiers already landed in Taiwan** — short-range, high-density urban threat.
 
+#### Terrain Placement Constraints (Feature 21)
+Ground assets and ships are constrained to geographically correct terrain:
+
+| Asset Type | Required Terrain |
+|---|---|
+| Soldiers (`soldier_unit`) | Land only |
+| Tanks | Land only |
+| Missile launchers | Land only |
+| Ships | Sea / water only |
+| Drones (all types, friendly and enemy) | Unconstrained — valid on land, at sea, or airborne |
+
+These constraints apply at two points: (1) during initial load from `assets_config.json` — positions that violate the constraint are flagged/rejected; (2) during drag-and-drop repositioning on the map — the drop is snapped to a valid terrain type or rejected with a visual indicator if the operator drops a land unit in water or a ship on land.
+
 ---
 
 ### 8.5 Drone Movement Simulation (Feature 10)
@@ -993,18 +1010,24 @@ After each movement tick, the simulator checks all airborne recon drones against
 ### 9.2 3D Map (CesiumJS)
 
 - **Terrain:** Cesium World Terrain covering **Taiwan and surrounding waters** (default camera: lat 23.8°N, lon 121.0°E, altitude 300 km for island-wide view) — falls back to WGS84 ellipsoid if no Cesium Ion token is provided
+- **Icon scheme (Feature 18):** Each asset type is rendered with a type-appropriate icon so operators can identify asset class at a glance:
+  - Drones (all types) → UAV/drone silhouette icon
+  - Ships → ship icon
+  - Tanks → tank icon
+  - Missile launchers → rocket/launcher icon
+  - Soldier units → person icon
 - **Color scheme overview:**
   - **Friendly assets → blue or green** (recon = blue shades; combat = green shades)
   - **Enemy assets → red** (all enemy targets rendered in red shades by type)
 - **Friendly drones:** Colored by model and status
   - Idle → gray, Patrolling → model color (blue/green), Searching → yellow, Tracking → orange, Engaging → red, Returning → green
 - **Friendly drones distinguished by model:**
-  - MQ-9 Recon → large **cyan/blue** icon (14 px), label shown, patrolling orbit shown
-  - Scout Recon → medium **blue** icon (10 px), label shown
-  - FPV combat → small **green** dot (8 px, clustered by swarm)
-  - Altius-600M → medium **green/cyan** icon (8 px)
+  - MQ-9 Recon → large **cyan/blue** drone icon (14 px), label shown, patrolling orbit shown
+  - Scout Recon → medium **blue** drone icon (10 px), label shown
+  - FPV combat → small **green** drone icon (8 px, clustered by swarm; swarm represented by a cluster marker when zoomed out)
+  - Altius-600M → medium **green/cyan** drone icon (8 px)
 - **Enemy targets → red shades by type:**
-  - Drone (✈, **dark red**), Ship (⚓, **red-orange**), Tank (⊞, **bright red**), Missile Launcher (↑, **magenta-red**), Soldier Unit (◉, **crimson**)
+  - Drone (UAV icon, **dark red**), Ship (ship icon, **red-orange**), Tank (tank icon, **bright red**), Missile Launcher (rocket icon, **magenta-red**), Soldier Unit (person icon, **crimson**)
   - Color alpha (opacity) reflects detection confidence
 - **Labels:** Floating text labels above each entity
 - **Interaction:** Click an entity to select it (populates target/drone ID in selection state)
@@ -1012,6 +1035,7 @@ After each movement tick, the simulator checks all airborne recon drones against
   - **Reposition existing asset**: drag any entity on the map to a new location; on drop the frontend calls the appropriate PATCH endpoint (`PATCH /api/swarm/drones/{id}` for friendly, `PATCH /api/recon/targets/{id}` for enemy); the backend applies the update to in-memory state and immediately writes the new position to `assets_config.json`.
   - **Deploy new asset**: an **Asset Palette** panel (collapsible, docked to the left map edge) lists all available asset types (MQ-9, Scout, FPV, Altius-600M, enemy drone, ship, tank, missile launcher, soldier unit); drag a type from the palette and drop it on the map to spawn a new instance at that location; the backend registers the new asset and persists it to `assets_config.json`.
   - **Remove asset**: right-click any entity → **Remove** to delete it; the backend removes it from state and config.
+  - **Terrain validation (Feature 21)**: when dropping a ground asset (soldier, tank, missile launcher), the system checks that the drop position is on land; when dropping a ship, it checks for water; drone drops are accepted anywhere (land, sea, or air); invalid drops are rejected with a visual indicator and the asset stays at its previous position
 - **Camera:** Default bird's-eye tactical view; free navigation
 
 ### 9.3 Command Panel
@@ -1044,13 +1068,15 @@ Approved actions execute immediately; denied actions are logged and discarded. T
 - Expandable per-swarm to show individual drone status, battery, **remaining range** (`max_range_km − range_used_km`), and current task
 - **Feature 16 — hide idle drones**: The expanded drone list within a swarm only shows non-idle drones; a summary line shows the idle count (e.g., "3 drones idle")
 - **Engage auto-select (Feature 15)**: When the operator clicks the ENGAGE button in the Target List panel, the assigned combat swarm is immediately selected in this panel (expanding its drone list) and floats to the top of the sorted list
-- For **recon drones** (MQ-9 and Scout), clicking an individual drone entry opens a **Detected Contacts** sub-panel listing every enemy target whose `reported_by` matches that drone — showing target type, position, confidence, and last-seen time. This satisfies the requirement that the operator can see what each recon drone is currently detecting.
+- **Click-to-highlight on map (Feature 20)**: clicking a swarm card or individual drone entry selects that asset — the corresponding entity (or all drones in the swarm) is highlighted on the 3D map (yellow outline, enlarged point) and the camera flies to center on it; a second click deselects
+- For **recon drones** (MQ-9 and Scout), clicking an individual drone entry also opens a **Detected Contacts** sub-panel listing every enemy target whose `reported_by` matches that drone — showing target type, position, confidence, and last-seen time. This satisfies the requirement that the operator can see what each recon drone is currently detecting.
 
 ### 9.5 Target List Panel
 
 - Enemy targets grouped by type (drones, ships, tanks, missile launchers)
 - Per-target: coordinates, status badge, confidence bar, speed/heading
-- Click to expand: shows **ENGAGE** and **TRACK** quick-action buttons
+- **Click to select (Feature 19)**: clicking a target entry selects it — the entity on the 3D map is immediately highlighted (enlarged point, yellow outline) and the camera flies to center on it; a second click deselects
+- While selected: shows **ENGAGE** and **TRACK** quick-action buttons
 - Destroyed/lost targets are hidden
 
 ---
@@ -1227,6 +1253,10 @@ npm run dev                   # starts at http://localhost:5173
 | **Enemy asset movement simulation** | Enemy ships, tanks, soldiers, and drones move each tick via the same 1 Hz simulator as friendly drones; recon detection is re-evaluated after each tick, keeping enemy contact positions accurate as they advance |
 | **Engage auto-selects swarm in status panel (Feature 15)** | After clicking ENGAGE on a target, the frontend immediately calls `selectSwarm(assignedSwarm.id)` — the Swarm Status panel expands the tasked swarm so the operator can see its drones responding without having to manually locate it among 15 swarms |
 | **Idle drones hidden inside swarm cards (Feature 16)** | Swarm cards always render so the operator can see all 15 swarms; but the expanded drone list within a selected swarm hides idle members and shows a count instead — prevents clutter from 5 idle representative drones per swarm while preserving the at-a-glance swarm overview |
+| **Type-specific asset icons (Feature 18)** | Each asset type renders with a distinct, recognisable icon (drone icon for UAVs, ship icon for ships, tank icon for tanks, rocket for missile launchers, person for soldier units); combined with the blue/green/red IFF coloring, every entity is immediately classifiable by both type and affiliation without reading labels |
+| **Click-to-highlight + fly-to from Target List (Feature 19)** | Clicking an enemy target in the panel highlights the map entity (yellow outline, enlarged point) and triggers a `camera.flyTo()` to center on it — eliminates the need to manually scan the map for a listed threat; implemented by routing the `selectTarget` store action to both the panel selection state and a camera command |
+| **Click-to-highlight + fly-to from Swarm Status panel (Feature 20)** | Clicking a swarm card or drone entry highlights the corresponding map entity and triggers `camera.flyTo()` — same mechanism as Feature 19 but for friendly assets; swarm card click highlights all member drones; individual drone click highlights that single drone |
+| **Terrain-constrained placement (Feature 21)** | Ground assets (soldiers, tanks, missile launchers) must be on land; ships must be in water; drones are unconstrained (valid on land, at sea, or airborne); enforced at config load and during drag-and-drop using CesiumJS globe terrain sampling to classify the drop position before accepting it |
 | In-memory state (no database) | Simplicity for v1; easily replaced with Redis or PostgreSQL |
 | WebSocket broadcast (not on-change) | 1-second polling avoids complex change-tracking; sufficient for tactical update rate |
 | LLM JSON mode + low temperature | Deterministic structured output; safe for tactical command execution |

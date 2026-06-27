@@ -39,13 +39,17 @@ export default function CommandPanel() {
       if (result.action?.type === 'ui_command') {
         setCameraCommand(result.action)
       }
-      // For HITL approval, surface the approval prompt distinctly
+      // Determine display text and log entry type
       let responseText = result.explanation || result.interpretation
+      let logType = 'ai'
       if (result.action?.type === 'request_approval') {
         responseText = `⚠ APPROVAL REQUIRED — ${result.action.approval_prompt}`
+        logType = 'hitl'
+      } else if (result.action?.type === 'request_status') {
+        responseText = result.action.status_text || result.explanation
       }
       appendLog({
-        type: result.action?.type === 'request_approval' ? 'hitl' : 'ai',
+        type: logType,
         text: responseText,
         detail: result.action,
         ts: new Date().toLocaleTimeString(),
@@ -67,15 +71,35 @@ export default function CommandPanel() {
   })).filter(g => g.swarms.length > 0)
 
   const groupCommand = async (groupSwarms, commandType) => {
-    const activeTargets = targets.filter(t => t.status === 'active').map(t => t.id)
+    // Attack must go through HITL approval — route via NLP (§6.8, Feature 13)
+    if (commandType === 'attack') {
+      const names = groupSwarms.map(s => s.name).join(' and ')
+      try {
+        const result = await nlpApi.command(
+          `Order ${names} to attack all active enemy targets with maximum priority`
+        )
+        let responseText = result.explanation || result.interpretation
+        let logType = 'ai'
+        if (result.action?.type === 'request_approval') {
+          responseText = `⚠ APPROVAL REQUIRED — ${result.action.approval_prompt}`
+          logType = 'hitl'
+        }
+        appendLog({ type: logType, text: responseText, ts: new Date().toLocaleTimeString() })
+      } catch (e) {
+        appendLog({ type: 'error', text: `Failed: ${e.message}`, ts: new Date().toLocaleTimeString() })
+      }
+      return
+    }
+
+    // Non-attack commands (locate, track, patrol, return) execute immediately
     const label = `${commandType} command`
     try {
       await Promise.all(groupSwarms.map(s =>
         swarmApi.commandSwarm(s.id, {
           command_type: commandType,
-          target_ids: commandType === 'attack' ? activeTargets : [],
+          target_ids: [],
           objective: label,
-          priority: commandType === 'attack' ? 9 : 5,
+          priority: 5,
         })
       ))
       appendLog({ type: 'system', text: `✓ ${label} → ${groupSwarms.length} swarms`, ts: new Date().toLocaleTimeString() })

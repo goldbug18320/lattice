@@ -294,7 +294,7 @@ class TestHITLApproval:
     def test_pending_approval_has_required_fields(self, client):
         client.post("/api/nlp/command", json={"command": "engage all targets"})
         approval = client.get("/api/nlp/pending").json()[0]
-        for key in ("id", "command_text", "approval_prompt", "threat_summary",
+        for key in ("id", "command", "approval_prompt", "threat_summary",
                     "classified_targets", "proposed_action", "status", "created_at", "expires_at"):
             assert key in approval, f"Missing field: {key}"
 
@@ -321,7 +321,7 @@ class TestHITLApproval:
         client.post("/api/nlp/command", json={"command": "attack enemy ships"})
         approval_id = client.get("/api/nlp/pending").json()[0]["id"]
         resp = client.post(f"/api/nlp/approve/{approval_id}")
-        assert resp.json()["status"] == "approved"
+        assert resp.json()["approved"] is True
         assert resp.json()["execution_result"] is not None
 
     def test_approve_changes_swarm_status_to_engaging(self, client):
@@ -362,7 +362,7 @@ class TestHITLApproval:
         client.post("/api/nlp/command", json={"command": "attack all targets"})
         approval_id = client.get("/api/nlp/pending").json()[0]["id"]
         resp = client.post(f"/api/nlp/deny/{approval_id}")
-        assert resp.json()["status"] == "denied"
+        assert resp.json()["denied"] is True
 
     def test_deny_does_not_execute_swarm_command(self, client):
         client.post("/api/nlp/command", json={"command": "attack all targets"})

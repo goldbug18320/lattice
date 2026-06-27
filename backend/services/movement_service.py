@@ -67,6 +67,7 @@ class MovementService:
         self._tick_enemy_assets(state_service)
         self._run_mq9_detection(state_service)
         self._run_scout_detection(state_service)
+        self._maybe_launch_standby_mq9(state_service)
 
     def _tick_friendly_drones(self, state_service) -> None:
         """Advance all non-idle friendly drone positions one step."""
@@ -119,7 +120,15 @@ class MovementService:
                 continue
 
             # ── Determine heading ────────────────────────────────────────────
-            if drone.status == DroneStatus.PATROLLING and drone.model in (DroneModel.MQ9_RECON, DroneModel.SCOUT_RECON):
+            if drone.status == DroneStatus.PATROLLING and drone.model == DroneModel.MQ9_RECON:
+                # Stable circular orbit around home_position (§8.5): heading perpendicular
+                # to the inward radial gives constant-radius clockwise orbit.
+                if drone.home_position and _distance_km(drone.position, drone.home_position) > 0.1:
+                    inward_bearing = _bearing(drone.position, drone.home_position)
+                    new_heading = (inward_bearing - 90.0) % 360.0
+                else:
+                    new_heading = (drone.heading + _PATROL_HEADING_DELTA) % 360
+            elif drone.status == DroneStatus.PATROLLING and drone.model == DroneModel.SCOUT_RECON:
                 new_heading = (drone.heading + _PATROL_HEADING_DELTA) % 360
             elif drone.status == DroneStatus.SEARCHING and drone.swarm_id:
                 swarm = state_service.get_swarm(drone.swarm_id)
@@ -201,6 +210,7 @@ class MovementService:
                 if _distance_km(drone.position, target.position) <= MQ9_DETECTION_RADIUS_KM:
                     target.last_seen = now
                     target.reported_by = drone.name
+                    target.confidence = min(1.0, target.confidence + 0.05)
 
     def _run_scout_detection(self, state_service) -> None:
         """Each patrolling scout recon drone detects enemy targets within its configured detection radius."""
@@ -223,5 +233,22 @@ class MovementService:
                 if _distance_km(drone.position, target.position) <= SCOUT_DETECTION_RADIUS_KM:
                     target.last_seen = now
                     target.reported_by = drone.name
+                    target.confidence = min(1.0, target.confidence + 0.03)
+
+    def _maybe_launch_standby_mq9(self, state_service) -> None:
+        """Launch a standby MQ-9 whenever fewer than always_airborne are patrolling/returning (§8.1)."""
+        always_airborne = assets_config.get("mq9", {}).get("always_airborne", 2)
+        all_mq9 = [d for d in state_service.get_all_drones() if d.model == DroneModel.MQ9_RECON]
+        airborne_count = sum(
+            1 for d in all_mq9 if d.status in (DroneStatus.PATROLLING, DroneStatus.RETURNING)
+        )
+        if airborne_count >= always_airborne:
+            return
+        standby = next((d for d in all_mq9 if d.status == DroneStatus.IDLE), None)
+        if standby:
+            state_service.update_drone(standby.id, {
+                "status": DroneStatus.PATROLLING,
+                "speed": _MODEL_SPEED[DroneModel.MQ9_RECON],
+            })
 
 movement_service = MovementService()
