@@ -70,6 +70,7 @@ class Drone(BaseModel):
 
 class DroneUpdate(BaseModel):
     position: Optional[Position] = None
+    home_position: Optional[Position] = None
     heading: Optional[float] = None
     speed: Optional[float] = None
     altitude: Optional[float] = None

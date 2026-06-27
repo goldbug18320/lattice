@@ -27,6 +27,9 @@ export const useStore = create((set, get) => ({
   lastNlpResponse: null,
   cameraCommand: null,
 
+  // Asset Palette placement mode: null | { kind: 'drone'|'target', model?, type?, label, alt? }
+  placementMode: null,
+
   // Actions
   setWsConnected: (connected) => set({ wsConnected: connected, wsStatus: connected ? 'connected' : 'disconnected' }),
   setWsStatus: (status) => set({ wsStatus: status }),
@@ -50,6 +53,7 @@ export const useStore = create((set, get) => ({
   setNlpProcessing: (processing) => set({ nlpProcessing: processing }),
   setLastNlpResponse: (response) => set({ lastNlpResponse: response }),
   setCameraCommand: (cmd) => set({ cameraCommand: cmd }),
+  setPlacementMode: (mode) => set({ placementMode: mode }),
 
   togglePanel: (panel) => set((s) => ({ [panel]: !s[panel] })),
 }))

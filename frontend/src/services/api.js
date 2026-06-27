@@ -43,6 +43,21 @@ export const nlpApi = {
   history: (limit = 50) => request('GET', `/nlp/history?limit=${limit}`),
 }
 
+// ─── Asset Management (Feature 17) ───────────────────────────────────────────
+export const assetsApi = {
+  saveConfig: () => request('POST', '/assets/save-config'),
+  createDrone: (model, position, name) =>
+    request('POST', '/assets/drone', { model, position, name }),
+  deleteDrone: (id) => request('DELETE', `/assets/drone/${id}`),
+  createTarget: (type, position) =>
+    request('POST', '/assets/target', { type, position }),
+  deleteTarget: (id) => request('DELETE', `/assets/target/${id}`),
+  updateDronePosition: (id, position) =>
+    request('PATCH', `/swarm/drones/${id}`, { position }),
+  updateTargetPosition: (id, position) =>
+    request('PATCH', `/recon/targets/${id}`, { position }),
+}
+
 // ─── Full State ───────────────────────────────────────────────────────────────
 export const stateApi = {
   getFullState: () => request('GET', '/state'),

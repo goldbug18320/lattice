@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import Map3D from './components/Map3D/index.jsx'
+import AssetPalette from './components/AssetPalette/index.jsx'
 import CommandPanel from './components/CommandPanel/index.jsx'
 import SwarmStatus from './components/SwarmStatus/index.jsx'
 import TargetList from './components/TargetList/index.jsx'
@@ -76,8 +77,9 @@ export default function App() {
         </aside>
 
         {/* 3D Map (center) */}
-        <section className="map-container">
+        <section className="map-container" style={{ position: 'relative' }}>
           <Map3D />
+          <AssetPalette />
           <div className="map-legend">
             <div className="legend-title">LEGEND</div>
             <div className="legend-item"><span style={{color:'#3b82f6'}}>●</span> Friendly Drone</div>

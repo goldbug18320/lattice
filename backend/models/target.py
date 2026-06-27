@@ -62,6 +62,17 @@ class PendingApproval(BaseModel):
     expires_at: datetime = Field(..., description="Approval expires at this UTC time")
 
 
+class TargetUpdate(BaseModel):
+    """Partial update payload for an existing target (e.g. drag-and-drop reposition)."""
+    position: Optional[Position] = None
+    heading: Optional[float] = None
+    speed: Optional[float] = None
+    confidence: Optional[float] = None
+    status: Optional[TargetStatus] = None
+    threat_value: Optional[ThreatValue] = None
+    notes: Optional[str] = None
+
+
 class TargetReport(BaseModel):
     """Single target report from a reconnaissance drone."""
     type: TargetType

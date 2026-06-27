@@ -15,6 +15,7 @@ load_dotenv()
 from api.recon import router as recon_router
 from api.swarm import router as swarm_router
 from api.nlp import router as nlp_router
+from api.assets import router as assets_router
 from services.state_service import state_service
 from services.movement_service import movement_service
 
@@ -90,6 +91,7 @@ app.add_middleware(
 app.include_router(recon_router, prefix="/api/recon", tags=["Reconnaissance"])
 app.include_router(swarm_router, prefix="/api/swarm", tags=["Swarm Control"])
 app.include_router(nlp_router, prefix="/api/nlp", tags=["NLP Commands"])
+app.include_router(assets_router, prefix="/api/assets", tags=["Asset Management"])
 
 
 @app.websocket("/ws")

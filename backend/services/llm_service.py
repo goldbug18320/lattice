@@ -5,72 +5,6 @@ import os
 from typing import Optional
 from openai import AsyncOpenAI
 
-# ── Geographic regions for the Taiwan theater ────────────────────────────────
-# Each region has a bounding box (for area_of_interest) and a camera center.
-GEOGRAPHIC_REGIONS: dict[str, dict] = {
-    "west_coast": {
-        "display": "West Coast Taiwan",
-        "bbox": {"min_lat": 22.0, "max_lat": 26.5, "min_lon": 119.5, "max_lon": 121.0},
-        "center": {"lat": 24.0, "lon": 120.2, "altitude_km": 150},
-    },
-    "east_coast": {
-        "display": "East Coast Taiwan",
-        "bbox": {"min_lat": 22.0, "max_lat": 26.5, "min_lon": 121.0, "max_lon": 122.5},
-        "center": {"lat": 23.8, "lon": 121.5, "altitude_km": 150},
-    },
-    "north_taiwan": {
-        "display": "Northern Taiwan",
-        "bbox": {"min_lat": 24.5, "max_lat": 26.5, "min_lon": 120.5, "max_lon": 122.0},
-        "center": {"lat": 25.1, "lon": 121.4, "altitude_km": 80},
-    },
-    "south_taiwan": {
-        "display": "Southern Taiwan",
-        "bbox": {"min_lat": 22.0, "max_lat": 24.0, "min_lon": 120.0, "max_lon": 121.5},
-        "center": {"lat": 22.8, "lon": 120.5, "altitude_km": 80},
-    },
-    "taipei": {
-        "display": "Taipei Metro",
-        "bbox": {"min_lat": 24.9, "max_lat": 25.2, "min_lon": 121.3, "max_lon": 121.7},
-        "center": {"lat": 25.04, "lon": 121.56, "altitude_km": 30},
-    },
-    "taiwan_strait": {
-        "display": "Taiwan Strait",
-        "bbox": {"min_lat": 23.0, "max_lat": 26.5, "min_lon": 118.5, "max_lon": 120.5},
-        "center": {"lat": 24.0, "lon": 119.5, "altitude_km": 200},
-    },
-    "fujian": {
-        "display": "Fujian Province",
-        "bbox": {"min_lat": 23.0, "max_lat": 27.0, "min_lon": 115.5, "max_lon": 120.0},
-        "center": {"lat": 25.9, "lon": 119.3, "altitude_km": 100},
-    },
-    "all_taiwan": {
-        "display": "All Taiwan",
-        "bbox": {"min_lat": 21.5, "max_lat": 26.5, "min_lon": 119.5, "max_lon": 122.5},
-        "center": {"lat": 23.8, "lon": 121.0, "altitude_km": 300},
-    },
-}
-
-# Keywords that map to each region (for mock fallback)
-_REGION_KEYWORDS: list[tuple[str, list[str]]] = [
-    ("west_coast",    ["west coast", "western taiwan", "the strait side", "west side"]),
-    ("east_coast",    ["east coast", "eastern taiwan", "pacific side", "east side"]),
-    ("north_taiwan",  ["north taiwan", "northern taiwan", "north of taiwan", "the north"]),
-    ("south_taiwan",  ["south taiwan", "southern taiwan", "south of taiwan", "the south", "kaohsiung"]),
-    ("taipei",        ["taipei", "capital", "taipei metro", "taipei area"]),
-    ("taiwan_strait", ["taiwan strait", "the strait", "strait", "the channel"]),
-    ("fujian",        ["fujian", "mainland china", "the mainland", "main land"]),
-    ("all_taiwan",    ["all of taiwan", "entire island", "everywhere", "all taiwan", "island wide"]),
-]
-
-_DEPLOY_KEYWORDS = ["deploy", "redeploy", "move", "send", "dispatch", "reposition", "position", "relocate", "advance"]
-_ASSET_FILTER_KEYWORDS = {
-    "fpv":    ["fpv", "fpv drones", "fpv swarms"],
-    "altius": ["altius", "altius-600m", "altius 600", "altius swarm"],
-    "recon":  ["recon", "reconnaissance", "scout", "mq9", "mq-9"],
-    "combat": ["combat", "attack drones", "combat drones"],
-}
-
-
 def classify_target(target_type: str, altitude: float) -> str:
     """Return 'high', 'medium', or 'low' threat value per spec §6.8."""
     if target_type in ("ship", "missile_launcher"):
@@ -84,13 +18,14 @@ def classify_target(target_type: str, altitude: float) -> str:
 
 SYSTEM_PROMPT = """You are the AI tactical coordinator and UI controller for the Lattice drone swarm command and control platform — a war game simulator over Taiwan.
 
-Your role is to interpret natural language operator commands and translate them into structured JSON actions covering three categories:
+Your role is to interpret natural language operator commands and translate them into structured JSON actions covering four categories:
 1. **Tactical commands** — assign drone swarms or single drones to missions
 2. **UI commands** — control the 3D map view (pan, zoom, focus on entities)
-3. **Geographic deployment commands** — redeploy all or filtered assets to a named tactical region
+3. **Attack approval requests (HITL)** — classify targets and queue for operator confirmation before any attack executes
+4. **Natural language status responses** — answer status queries in plain English without issuing commands
 
 ## Drone Fleet
-- **MQ-9 Recon** (mq9_recon): Reconnaissance only. Max range 1,900 km, 27h endurance. Do NOT assign to attack missions.
+- **MQ-9 Recon** (mq9_recon): Reconnaissance only. Max range 1,900 km, 30+ hour endurance. Do NOT assign to attack missions.
 - **FPV Combat** (fpv_combat): Light payload 4 kg, max range 15 km. Best for enemy FPV drones, soldiers, light vehicles at close range.
 - **Altius-600M** (altius_600m): Heavy payload 12 kg, max range 440 km. Best for tanks, ships, missile launchers, long-range drones, and targets on mainland China (Fujian).
 
@@ -104,7 +39,6 @@ Your role is to interpret natural language operator commands and translate them 
 - **assign_swarm**: Assign a swarm to a mission (locate/track/attack/patrol/return/abort). Include drone_model and recommended_swarm_size.
 - **assign_drone**: Assign a single drone to a mission.
 - **mark_target_destroyed**: Mark an enemy target as destroyed.
-- **deploy_to_region**: Redeploy all (or filtered) swarms to patrol a named geographic region. Use for commands like "deploy all assets to the west coast", "move FPV drones to northern Taiwan". Fields: region (see below), asset_filter ("all"|"combat"|"recon"|"fpv"|"altius"), objective.
 - **request_approval**: Used INSTEAD of assign_swarm/assign_drone when the command_type is "attack". Classify each active target as high/medium/low, produce an approval_prompt for the operator, and embed the proposed assign_swarm action in proposed_action. The operator must approve before execution.
 - **request_status**: Provide a text status summary (no execution needed).
 - **ui_command**: Control the 3D map (pan/zoom/focus). Sub-types: fly_to, fly_to_target, fly_to_drone, zoom_in, zoom_out, set_view_mode, toggle_layer.
@@ -120,22 +54,12 @@ Your role is to interpret natural language operator commands and translate them 
 | drone                | altitude ≤ 500 m  | low          |
 | soldier_unit         | any               | low          |
 
-## Geographic Regions (for deploy_to_region)
-- west_coast — Taiwan west coast and Taiwan Strait approaches
-- east_coast — Taiwan east coast (Pacific side)
-- north_taiwan — Northern Taiwan including Taipei
-- south_taiwan — Southern Taiwan including Kaohsiung
-- taipei — Taipei metropolitan area
-- taiwan_strait — Taiwan Strait (between island and mainland)
-- fujian — Fujian province, mainland China
-- all_taiwan — All of Taiwan island
-
 ## Response Format
 Always respond with a JSON object:
 {
   "interpretation": "plain English explanation of what you understood",
   "action": {
-    "type": "assign_swarm | assign_drone | mark_target_destroyed | deploy_to_region | request_approval | request_status | ui_command | none",
+    "type": "assign_swarm | assign_drone | mark_target_destroyed | request_approval | request_status | ui_command | none",
 
     // Tactical fields (assign_swarm / assign_drone):
     "swarm_id": "<id>",
@@ -156,10 +80,6 @@ Always respond with a JSON object:
     "approval_prompt": "Requesting approval to attack 6 targets: 2 high-value ships, 3 medium-value tanks, 1 low-value FPV drone.",
     "proposed_action": { /* the assign_swarm action to execute on approval */ },
 
-    // Geographic deployment fields (deploy_to_region):
-    "region": "west_coast | east_coast | north_taiwan | south_taiwan | taipei | taiwan_strait | fujian | all_taiwan",
-    "asset_filter": "all | combat | recon | fpv | altius",
-
     // UI command fields (ui_command):
     "ui_subtype": "fly_to | fly_to_target | fly_to_drone | zoom_in | zoom_out | set_view_mode | toggle_layer",
     "destination": { "name": "Taiwan", "lat": 23.8, "lon": 121.0, "altitude_km": 300 },
@@ -176,10 +96,8 @@ Always respond with a JSON object:
 - Always prefer swarm assignments over single-drone assignments for combat missions.
 - Map target references (e.g. "enemy tank") to matching target IDs from context.
 - Map swarm references (e.g. "ALT-Alpha") to correct swarm IDs from context.
-- Attack commands: priority 8–10. Patrol/search: priority 3–6. Deploy: priority 4–6.
+- Attack commands: priority 8–10. Patrol/search: priority 3–6.
 - For UI commands, resolve place names to lat/lon: Taiwan (23.8, 121.0, alt 300km), Taipei (25.04, 121.56, alt 50km), Fujian (25.9, 119.3, alt 100km), Taiwan Strait (24.0, 119.5, alt 200km).
-- "deploy all assets to the west coast" → deploy_to_region with region=west_coast, asset_filter=all
-- "send FPV drones north" → deploy_to_region with region=north_taiwan, asset_filter=fpv
 - **HITL rule**: When command_type is "attack", ALWAYS return request_approval instead of assign_swarm. Never execute an attack directly.
 """
 
@@ -233,34 +151,6 @@ Operator command: {command}"""
         cmd_lower = command.lower()
         swarms = context.get("swarms", [])
         targets = context.get("targets", [])
-
-        # ── Geographic deployment commands ────────────────────────────────────
-        is_deploy = any(w in cmd_lower for w in _DEPLOY_KEYWORDS)
-        if is_deploy:
-            matched_region = None
-            for region_key, keywords in _REGION_KEYWORDS:
-                if any(kw in cmd_lower for kw in keywords):
-                    matched_region = region_key
-                    break
-            if matched_region:
-                # Determine asset filter
-                asset_filter = "all"
-                for filt, keywords in _ASSET_FILTER_KEYWORDS.items():
-                    if any(kw in cmd_lower for kw in keywords):
-                        asset_filter = filt
-                        break
-                region_info = GEOGRAPHIC_REGIONS[matched_region]
-                return {
-                    "interpretation": f"[MOCK] Deploy {asset_filter} assets to {region_info['display']}",
-                    "action": {
-                        "type": "deploy_to_region",
-                        "region": matched_region,
-                        "asset_filter": asset_filter,
-                        "objective": f"Patrol {region_info['display']}",
-                        "priority": 5,
-                    },
-                    "explanation": f"[MOCK] Redeploying {asset_filter} swarms to {region_info['display']} for patrol.",
-                }
 
         # ── UI commands ──────────────────────────────────────────────────────
         ui_keywords = ["show", "zoom", "focus", "map", "view", "fly to", "navigate", "go to", "look at"]

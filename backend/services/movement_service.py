@@ -67,7 +67,6 @@ class MovementService:
         self._tick_enemy_assets(state_service)
         self._run_mq9_detection(state_service)
         self._run_scout_detection(state_service)
-        self._refill_scout_patrols(state_service)
 
     def _tick_friendly_drones(self, state_service) -> None:
         """Advance all non-idle friendly drone positions one step."""
@@ -224,49 +223,5 @@ class MovementService:
                 if _distance_km(drone.position, target.position) <= SCOUT_DETECTION_RADIUS_KM:
                     target.last_seen = now
                     target.reported_by = drone.name
-
-    def _refill_scout_patrols(self, state_service) -> None:
-        """Launch idle scout drones to keep max_in_flight scouts airborne (§8.2).
-
-        Called each tick after _tick_friendly_drones so that any scout that just
-        arrived home (RETURNING → IDLE) immediately triggers a replacement launch.
-        Coastal-sea patrol grids are always refilled first (they appear first in
-        SCOUT_PATROL_GRIDS because of the priority sort in state_service).
-        """
-        from services.state_service import SCOUT_PATROL_GRIDS
-
-        max_in_flight = assets_config["scout_recon"].get("max_in_flight", 20)
-        scouts = [d for d in state_service.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
-
-        # Collect patrol tasks currently covered (PATROLLING or still returning home)
-        covered: set[str] = set()
-        for d in scouts:
-            if d.status in (DroneStatus.PATROLLING, DroneStatus.RETURNING) and d.current_task:
-                covered.add(d.current_task)
-
-        if len(covered) >= max_in_flight:
-            return
-
-        idle_scouts = [d for d in scouts if d.status == DroneStatus.IDLE]
-        if not idle_scouts:
-            return
-
-        active_grids = SCOUT_PATROL_GRIDS[:max_in_flight]
-        replacements = []
-        for g_lat, g_lon in active_grids:
-            task = f"Grid patrol ({g_lat:.4f}°N, {g_lon:.4f}°E)"
-            if task not in covered:
-                replacements.append((g_lat, g_lon, task))
-
-        for idle, (g_lat, g_lon, task) in zip(idle_scouts, replacements):
-            state_service.update_drone(idle.id, {
-                "status": DroneStatus.PATROLLING,
-                "position": Position(lat=g_lat, lon=g_lon, alt=3000.0),
-                "current_task": task,
-                "range_used_km": 0.0,
-                "heading": 0.0,
-            })
-            covered.add(task)
-
 
 movement_service = MovementService()

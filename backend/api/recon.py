@@ -1,6 +1,7 @@
 """Reconnaissance feed API endpoints."""
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
-from models.target import ReconFeed, Target, TargetReport, TargetStatus
+from models.target import ReconFeed, Target, TargetReport, TargetStatus, TargetUpdate
 from models.drone import DroneStatus
 from services.state_service import state_service
 
@@ -80,6 +81,20 @@ async def get_target(target_id: str):
     target = state_service.get_target(target_id)
     if not target:
         raise HTTPException(status_code=404, detail="Target not found")
+    return target
+
+
+@router.patch("/targets/{target_id}", summary="Update target fields (position, status, etc.)")
+async def update_target(target_id: str, update: TargetUpdate):
+    target = state_service.get_target(target_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Target not found")
+    for field in update.model_fields_set:
+        value = getattr(update, field)
+        if value is not None and hasattr(target, field):
+            setattr(target, field, value)
+    target.last_seen = datetime.utcnow()
+    state_service.upsert_target(target)
     return target
 
 

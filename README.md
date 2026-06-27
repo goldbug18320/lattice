@@ -12,7 +12,7 @@ A war game simulator for coordinating reconnaissance and combat drone swarms ove
 - **Human-in-the-loop (HITL)** — attack commands queue a pending approval; operator must confirm before any swarm fires
 - **Target threat classification** — ships/missile launchers = high, tanks/long-range drones = medium, FPVs/soldiers = low
 - **Live simulation** — 1 Hz movement ticker advances all drones and enemy assets; WebSocket pushes updates to UI
-- **Grid-based recon patrol** — 100 scout drones always in flight across 50×50 km coastal-sea-priority grids
+- **Drag-and-drop asset deployment** — drag any entity on the map to reposition it; drop new assets from the Asset Palette to deploy them; right-click to remove; all changes persist to `assets_config.json`
 - **Detected contacts per drone** — clicking a recon drone shows exactly which enemy assets it is currently tracking
 - **Configurable scenario** — all asset counts and properties live in `assets_config.json`; no code changes required
 
@@ -43,31 +43,7 @@ The Vite dev server proxies `/api/*` and `/ws` to `localhost:8000`.
 
 ### Stopping the servers
 
-**Windows (PowerShell)**
-
-Kill the backend (port 8000):
-```powershell
-Get-NetTCPConnection -LocalPort 8000 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
-```
-
-Kill the frontend (port 5173):
-```powershell
-Get-NetTCPConnection -LocalPort 5173 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
-```
-
-**macOS / Linux**
-
-Kill the backend:
-```bash
-kill $(lsof -ti :8000)
-```
-
-Kill the frontend:
-```bash
-kill $(lsof -ti :5173)
-```
-
-Or press `Ctrl+C` in the terminal where each server is running.
+Press `Ctrl+C` in the terminal where each server is running.
 
 ---
 
@@ -89,8 +65,8 @@ Without an API key the platform uses a keyword-based mock parser. All features i
 
 | Asset | Count | Notes |
 |---|---|---|
-| MQ-9 Recon | 4 | 40 km detection radius; 2 always airborne |
-| Scout Recon | 1,000 | 10 km detection radius; 100 in flight across coastal/city grids |
+| MQ-9 Recon | 4 | 15 km detection radius; 30+ hour endurance; 2 always airborne |
+| Scout Recon | 100 | 10 km detection radius; 150 km range |
 | FPV Combat | 10,000 | 4 kg payload, 15 km range; 10 swarms of 1,000 |
 | Altius-600M | 1,000 | 12 kg payload, 440 km range; 5 swarms of 200 |
 
@@ -117,11 +93,14 @@ Edit `backend/assets_config.json` and restart the backend. No code changes neede
 
 ```json
 {
+  "mq9": { "count": 4, "detection_radius_km": 15.0, "max_flight_time_hours": 30.0 },
   "fpv_combat": { "count": 10000, "swarm_count": 10, "swarm_size": 1000 },
   "enemy": { "ships": { "count": 1000, "speed_knots": 22.0 } },
   "deployment": { "taipei_pct": 0.6 }
 }
 ```
+
+The file is rewritten automatically whenever assets are moved, added, or removed via the map UI. To save a scenario checkpoint manually, call `POST /api/assets/save-config`.
 
 ---
 
@@ -132,13 +111,16 @@ Edit `backend/assets_config.json` and restart the backend. No code changes neede
 | Recon | `/api/recon` | Submit recon feeds; query/filter enemy targets |
 | Swarm Control | `/api/swarm` | Manage drones, swarms, telemetry, commands |
 | NLP | `/api/nlp` | Natural language commands, HITL approvals |
+| Asset Management | `/api/assets` | Create/delete assets, persist scenario to config |
 | State | `/api/state` | Full battlefield snapshot |
 | WebSocket | `/ws` | 1-second state broadcast |
 
-Notable parameters:
+Notable endpoints:
 - `GET /api/recon/targets?reported_by=MQ9-01` — targets detected by a specific recon drone
 - `POST /api/nlp/command` — accepts free-text; returns action + execution result
 - `POST /api/nlp/approve/{id}` / `deny/{id}` — HITL approval flow
+- `POST /api/assets/drone` / `POST /api/assets/target` — spawn a new asset at a given position
+- `POST /api/assets/save-config` — flush current positions to `assets_config.json`
 
 ---
 
@@ -149,7 +131,7 @@ cd backend
 pytest tests/ -q
 ```
 
-345 tests covering state service, movement simulation, all API routes, and LLM mock responses.
+324 tests covering state service, movement simulation, all API routes, and LLM mock responses.
 
 ---
 

@@ -13,19 +13,23 @@ Features and capabilities:
 9) LLM follow operator's requests on UI, such as "show Taiwan on map", etc.
 10) All deployed drones should be constantly moving until their max range is reached. 
 11) All deployed drones should have their location, speed, battery status live feed to the Lattice.
-12) LLM should understand "deploy all assets to the west coast".
+12) 
 13) LLM should determine classify the enemy assets to 1) high value target, such as ship, missile launchers. 2) medium value target, such as tanks. 3) low value targets. And ask human for permission to attack enemy targets according to value classification.
 14) LLM should respond with natural language, such as "what is the current status of MQ9-01", instead of just translating inquiry into commands.
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 16) idling drones should not show up on on the swarm and drone status panel.
+17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations to a configuration file.
+
+Initialization:
+1) system loads friendly and enemy assets locations from a configuration file.
+2) No default deployments of friendly and enemy assets by the system.
 
 Friendly assets:
-4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each reconnaissance drone scan an area of 400 square km. Each reconnaissance drone has a max time of 5 hours.
+4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
 MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.
 
 There are always 2 reconnaissance drones in the air at all time. 
 100 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
-LLM should divide the area from 25 km from the coast to the mountain in grids and assign one reconnaissance drone to patrol each grid. Each grid is 50*50km in size. There should be always 20 reconnaissance drones in feights to cover 100 grids. Only patrol the coastal sea (within 25km from the coast) and cities. Do not patrol the mountain area. Assign high priority to coastal sea (within 25km from the coast).
 reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
 10000 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.

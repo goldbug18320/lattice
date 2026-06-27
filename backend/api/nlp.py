@@ -105,14 +105,6 @@ async def process_nlp_command(req: NLPCommandRequest):
         )
         execution_result = swarm_service.execute_drone_command(action["drone_id"], cmd)
 
-    elif action.get("type") == "deploy_to_region" and action.get("region"):
-        execution_result = swarm_service.execute_deploy_to_region(
-            region=action["region"],
-            asset_filter=action.get("asset_filter", "all"),
-            objective=action.get("objective"),
-            priority=action.get("priority", 5),
-        )
-
     elif action.get("type") == "mark_target_destroyed":
         for tid in action.get("target_ids", []):
             state_service.mark_target_destroyed(tid)
@@ -174,14 +166,6 @@ async def approve_attack(approval_id: str):
             notes=proposed.get("notes"),
         )
         execution_result = swarm_service.execute_drone_command(proposed["drone_id"], cmd)
-
-    elif proposed.get("type") == "deploy_to_region" and proposed.get("region"):
-        execution_result = swarm_service.execute_deploy_to_region(
-            region=proposed["region"],
-            asset_filter=proposed.get("asset_filter", "all"),
-            objective=proposed.get("objective"),
-            priority=proposed.get("priority", 9),
-        )
 
     state_service.log_command({
         "type": "hitl_approved",

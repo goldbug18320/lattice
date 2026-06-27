@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useStore } from '../../store/index.js'
+import { assetsApi } from '../../services/api.js'
 
 // Target type icons/colors — all enemy assets rendered in red shades (spec v1.7)
 const TARGET_CONFIG = {
@@ -41,6 +42,8 @@ export default function Map3D() {
   const viewerRef    = useRef(null)
   const containerRef = useRef(null)
   const entityMapRef = useRef({ drones: {}, targets: {} })
+  // Drag state: tracks in-progress drag-and-drop reposition operations
+  const dragRef = useRef({ active: false, entity: null, type: null, id: null, moved: false })
   const [viewerReady, setViewerReady] = useState(false)
 
   const drones          = useStore(s => s.drones)
@@ -50,6 +53,7 @@ export default function Map3D() {
   const selectDrone     = useStore(s => s.selectDrone)
   const cameraCommand   = useStore(s => s.cameraCommand)
   const setCameraCommand = useStore(s => s.setCameraCommand)
+  const placementMode   = useStore(s => s.placementMode)
 
   // ── Initialize Cesium viewer ────────────────────────────────────────────────
   useEffect(() => {
@@ -91,21 +95,140 @@ export default function Map3D() {
       viewerRef.current = viewer
       setViewerReady(true)
 
-      // Click handler
-      viewer.screenSpaceEventHandler.setInputAction((click) => {
+      const ET = Cesium.ScreenSpaceEventType
+      const handler = viewer.screenSpaceEventHandler
+
+      // ── Drag: LEFT_DOWN — detect entity under cursor ────────────────────────
+      handler.setInputAction((event) => {
+        const picked = viewer.scene.pick(event.position)
+        if (picked?.id?._lattice_type) {
+          dragRef.current = {
+            active: true,
+            entity: picked.id,
+            type: picked.id._lattice_type,
+            id: picked.id._lattice_id,
+            moved: false,
+          }
+        }
+      }, ET.LEFT_DOWN)
+
+      // ── Drag: MOUSE_MOVE — slide entity across globe surface ────────────────
+      handler.setInputAction((event) => {
+        const drag = dragRef.current
+        if (!drag.active || !drag.entity) return
+        drag.moved = true
+        // Disable camera pan/rotate while dragging
+        viewer.scene.screenSpaceCameraController.enableRotate = false
+        viewer.scene.screenSpaceCameraController.enableTranslate = false
+        viewer.scene.screenSpaceCameraController.enableZoom = false
+
+        const ray = viewer.camera.getPickRay(event.endPosition)
+        const globePos = viewer.scene.globe.pick(ray, viewer.scene)
+        if (globePos) {
+          const globeCarto = Cesium.Cartographic.fromCartesian(globePos)
+          const curPos = drag.entity.position.getValue(Cesium.JulianDate.now())
+          const curCarto = Cesium.Cartographic.fromCartesian(curPos)
+          // Maintain the entity's current altitude while updating lat/lon
+          drag.entity.position.setValue(
+            Cesium.Cartesian3.fromRadians(globeCarto.longitude, globeCarto.latitude, curCarto.height)
+          )
+        }
+      }, ET.MOUSE_MOVE)
+
+      // ── Drag: LEFT_UP — finalize position and persist ───────────────────────
+      handler.setInputAction(() => {
+        const drag = dragRef.current
+        viewer.scene.screenSpaceCameraController.enableRotate = true
+        viewer.scene.screenSpaceCameraController.enableTranslate = true
+        viewer.scene.screenSpaceCameraController.enableZoom = true
+
+        if (drag.active && drag.moved && drag.entity) {
+          const cart = drag.entity.position.getValue(Cesium.JulianDate.now())
+          if (cart) {
+            const carto = Cesium.Cartographic.fromCartesian(cart)
+            const position = {
+              lat: Cesium.Math.toDegrees(carto.latitude),
+              lon: Cesium.Math.toDegrees(carto.longitude),
+              alt: carto.height,
+            }
+            const updateFn = drag.type === 'drone'
+              ? assetsApi.updateDronePosition(drag.id, position)
+              : assetsApi.updateTargetPosition(drag.id, position)
+            updateFn
+              .then(() => assetsApi.saveConfig())
+              .catch(console.error)
+          }
+        }
+        dragRef.current = { active: false, entity: null, type: null, id: null, moved: false }
+      }, ET.LEFT_UP)
+
+      // ── RIGHT_CLICK — remove entity from scenario ───────────────────────────
+      handler.setInputAction((event) => {
+        const picked = viewer.scene.pick(event.position)
+        if (picked?.id?._lattice_type) {
+          const type = picked.id._lattice_type
+          const id   = picked.id._lattice_id
+          const label = type === 'drone' ? 'drone' : 'target'
+          if (window.confirm(`Remove this ${label} from the scenario?`)) {
+            const del = type === 'drone'
+              ? assetsApi.deleteDrone(id)
+              : assetsApi.deleteTarget(id)
+            del.catch(console.error)
+          }
+        }
+      }, ET.RIGHT_CLICK)
+
+      // ── LEFT_CLICK — placement mode OR entity selection ─────────────────────
+      handler.setInputAction((click) => {
+        // If a drag just ended, treat this as drag completion, not a click
+        if (dragRef.current.moved) return
+
+        // Placement mode: drop new asset at clicked globe position
+        const { placementMode: pm, setPlacementMode: spm } = useStore.getState()
+        if (pm) {
+          const ray = viewer.camera.getPickRay(click.position)
+          const globePos = viewer.scene.globe.pick(ray, viewer.scene)
+          if (globePos) {
+            const carto = Cesium.Cartographic.fromCartesian(globePos)
+            const position = {
+              lat: Cesium.Math.toDegrees(carto.latitude),
+              lon: Cesium.Math.toDegrees(carto.longitude),
+              alt: pm.alt ?? 0,
+            }
+            if (pm.kind === 'drone') {
+              assetsApi.createDrone(pm.model, position).catch(console.error)
+            } else {
+              assetsApi.createTarget(pm.type, position).catch(console.error)
+            }
+          }
+          spm(null)
+          return
+        }
+
+        // Normal click: select entity
         const picked = viewer.scene.pick(click.position)
         if (picked?.id) {
           const entity = picked.id
           if (entity._lattice_type === 'target') selectTarget(entity._lattice_id)
           if (entity._lattice_type === 'drone')  selectDrone(entity._lattice_id)
         }
-      }, window.Cesium?.ScreenSpaceEventType?.LEFT_CLICK || 1)
+      }, ET.LEFT_CLICK)
+
+      // ── ESC key — cancel placement mode ─────────────────────────────────────
+      const onKeyDown = (e) => {
+        if (e.key === 'Escape') useStore.getState().setPlacementMode(null)
+      }
+      window.addEventListener('keydown', onKeyDown)
+      viewer._lattice_cleanup_keydown = () => window.removeEventListener('keydown', onKeyDown)
     }
 
     init().catch(console.error)
     return () => {
       cancelled = true
-      if (viewer && !viewer.isDestroyed()) viewer.destroy()
+      if (viewer) {
+        if (viewer._lattice_cleanup_keydown) viewer._lattice_cleanup_keydown()
+        if (!viewer.isDestroyed()) viewer.destroy()
+      }
       viewerRef.current = null
       setViewerReady(false)
     }
@@ -319,6 +442,12 @@ export default function Map3D() {
   useEffect(() => { updateEntities() }, [updateEntities, viewerReady])
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', background: '#0a0e1a' }} />
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%', height: '100%', background: '#0a0e1a',
+        cursor: placementMode ? 'crosshair' : 'default',
+      }}
+    />
   )
 }

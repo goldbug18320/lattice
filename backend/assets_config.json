@@ -1,9 +1,8 @@
 {
   "mq9": {
     "count": 4,
-    "scan_area_km2": 400,
     "detection_radius_km": 15.0,
-    "max_flight_time_hours": 5.0,
+    "max_flight_time_hours": 30.0,
     "max_range_km": 1900.0,
     "always_airborne": 2
   },
@@ -11,10 +10,7 @@
     "count": 100,
     "max_range_km": 150.0,
     "max_speed_kmh": 150.0,
-    "detection_radius_km": 10.0,
-    "grid_size_km": 50.0,
-    "max_in_flight": 20,
-    "patrol_priority": "coastal_sea_first"
+    "detection_radius_km": 10.0
   },
   "fpv_combat": {
     "count": 10000,
@@ -68,5 +64,5454 @@
   },
   "deployment": {
     "taipei_pct": 0.6
+  },
+  "initial_state": {
+    "drones": [
+      {
+        "id": "b755af93-ff44-4316-91dc-aa0d0c829ab6",
+        "name": "MQ9-01",
+        "model": "mq9_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 162.0,
+        "speed": 60.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 4.859999999999998,
+        "max_range_km": 1900.0,
+        "max_payload_kg": 1.7,
+        "max_flight_time_hours": 30.0,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.044245198140864,
+          "lon": 121.59334294329238,
+          "alt": 6000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e2b0c4e7-3c61-4e6a-9aa7-30b088a87db1",
+        "name": "MQ9-02",
+        "model": "mq9_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 162.0,
+        "speed": 60.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 4.859999999999998,
+        "max_range_km": 1900.0,
+        "max_payload_kg": 1.7,
+        "max_flight_time_hours": 30.0,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.554245198140865,
+          "lon": 119.66295357034548,
+          "alt": 6000.0
+        },
+        "home_position": {
+          "lat": 23.55,
+          "lon": 119.63,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b7a6c69d-86d9-4b07-ac31-00bca059d104",
+        "name": "MQ9-03",
+        "model": "mq9_recon",
+        "type": "recon",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 1900.0,
+        "max_payload_kg": 1.7,
+        "max_flight_time_hours": 30.0,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.62,
+          "lon": 120.3,
+          "alt": 0.0
+        },
+        "home_position": {
+          "lat": 22.62,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6b7f2a2c-309d-4f21-b312-e5397d0add6e",
+        "name": "MQ9-04",
+        "model": "mq9_recon",
+        "type": "recon",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 1900.0,
+        "max_payload_kg": 1.7,
+        "max_flight_time_hours": 30.0,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "185f4cf1-5384-418e-bbff-37979f634712",
+        "name": "FPV-Alpha-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "current_task": null,
+        "position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9c27493f-44bf-48a9-bd2f-6080fb527127",
+        "name": "FPV-Alpha-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "current_task": null,
+        "position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9ca1c30c-074f-4894-811a-25e51ef0423c",
+        "name": "FPV-Alpha-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "current_task": null,
+        "position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5a703c6c-9ea2-43b9-8330-0ff88dcf84e8",
+        "name": "FPV-Alpha-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "current_task": null,
+        "position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7760c745-b108-4819-adf3-a18489ba260d",
+        "name": "FPV-Alpha-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "current_task": null,
+        "position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6ff90bf5-254f-4b3a-9c8c-aa53fd4c24ad",
+        "name": "FPV-Bravo-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "current_task": null,
+        "position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0e801e21-ed75-4edb-b328-5982b0662276",
+        "name": "FPV-Bravo-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "current_task": null,
+        "position": {
+          "lat": 25.002,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.002,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "59126cb2-cdd2-4841-aba9-de0c6f0e4f10",
+        "name": "FPV-Bravo-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "current_task": null,
+        "position": {
+          "lat": 25.004,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.004,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "734fc403-0840-42ad-b985-f9ce52b447c6",
+        "name": "FPV-Bravo-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "current_task": null,
+        "position": {
+          "lat": 25.006,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.006,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9d57a484-7856-4d08-b796-215e554e2030",
+        "name": "FPV-Bravo-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "current_task": null,
+        "position": {
+          "lat": 25.008,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.008,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1d7ccd6b-2449-4258-ab86-b5d16c12b53e",
+        "name": "FPV-Charlie-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "current_task": null,
+        "position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9e319f49-8011-46b9-a181-4f9adeafd85f",
+        "name": "FPV-Charlie-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "current_task": null,
+        "position": {
+          "lat": 25.131999999999998,
+          "lon": 121.74,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.131999999999998,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e611566a-4cfb-442f-a51a-1ecac9959a06",
+        "name": "FPV-Charlie-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "current_task": null,
+        "position": {
+          "lat": 25.134,
+          "lon": 121.74,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.134,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0fbffc38-6e44-430a-bf98-5e7fca6d59cf",
+        "name": "FPV-Charlie-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "current_task": null,
+        "position": {
+          "lat": 25.136,
+          "lon": 121.74,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.136,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "be90f3ca-4ac6-4efa-a4c4-27c219010acc",
+        "name": "FPV-Charlie-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "current_task": null,
+        "position": {
+          "lat": 25.137999999999998,
+          "lon": 121.74,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.137999999999998,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "fcf508c7-937c-40a6-81dd-e588a81b48b7",
+        "name": "FPV-Delta-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "current_task": null,
+        "position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "01c0955e-45de-4dcb-854d-65eb3cf41caf",
+        "name": "FPV-Delta-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "current_task": null,
+        "position": {
+          "lat": 24.991999999999997,
+          "lon": 121.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.991999999999997,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e10b8b0a-dc7c-4809-bfbe-3a30f107c87c",
+        "name": "FPV-Delta-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "current_task": null,
+        "position": {
+          "lat": 24.994,
+          "lon": 121.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.994,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3e8747f2-65f0-4b2f-8c0b-c475a18694d0",
+        "name": "FPV-Delta-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "current_task": null,
+        "position": {
+          "lat": 24.996,
+          "lon": 121.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.996,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e3ede577-a32c-411c-b856-751f290ce790",
+        "name": "FPV-Delta-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "current_task": null,
+        "position": {
+          "lat": 24.997999999999998,
+          "lon": 121.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.997999999999998,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "628596b0-078d-4a7c-a446-094c25114e34",
+        "name": "FPV-Echo-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "current_task": null,
+        "position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "11005382-6d7b-442a-8dca-d2cb535d88c2",
+        "name": "FPV-Echo-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "current_task": null,
+        "position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5e0a33f5-4a0a-489b-8b57-3175486336ab",
+        "name": "FPV-Echo-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "current_task": null,
+        "position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "74e03f78-2ddb-489e-9586-5edb23bfc7de",
+        "name": "FPV-Echo-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "current_task": null,
+        "position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1b97d778-02af-4326-94fc-3227305407a2",
+        "name": "FPV-Echo-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "current_task": null,
+        "position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "51f469bf-7759-4b27-9542-e3c88467ab68",
+        "name": "FPV-Foxtrot-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "current_task": null,
+        "position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "46a63640-20ba-4252-8c35-96b54a0c42e0",
+        "name": "FPV-Foxtrot-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "current_task": null,
+        "position": {
+          "lat": 25.002,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.002,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "a4fa324a-7b41-441a-8b92-ca9b89e5bbfc",
+        "name": "FPV-Foxtrot-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "current_task": null,
+        "position": {
+          "lat": 25.004,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.004,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9303ddda-ffeb-43c3-8f6c-2e4ea7bf3df6",
+        "name": "FPV-Foxtrot-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "current_task": null,
+        "position": {
+          "lat": 25.006,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.006,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5f8984ca-2feb-48a5-bd12-6aebb8a4276a",
+        "name": "FPV-Foxtrot-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "current_task": null,
+        "position": {
+          "lat": 25.008,
+          "lon": 121.47,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 25.008,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f1028f7a-b737-4354-9689-c71c26d6b563",
+        "name": "FPV-Golf-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "current_task": null,
+        "position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b9d03e7e-13f9-4d39-8c5c-4c0a64bc4970",
+        "name": "FPV-Golf-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "current_task": null,
+        "position": {
+          "lat": 24.151999999999997,
+          "lon": 120.68,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.151999999999997,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "8f15af0c-d6a4-4d2a-affc-c2358920b19e",
+        "name": "FPV-Golf-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "current_task": null,
+        "position": {
+          "lat": 24.154,
+          "lon": 120.68,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.154,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "79ad17fd-1341-442c-9e54-6d45bea79636",
+        "name": "FPV-Golf-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "current_task": null,
+        "position": {
+          "lat": 24.156,
+          "lon": 120.68,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.156,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7852b61b-9766-4dc8-9d44-80dd79400fdc",
+        "name": "FPV-Golf-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "current_task": null,
+        "position": {
+          "lat": 24.157999999999998,
+          "lon": 120.68,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 24.157999999999998,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f729c36e-5a3e-4e4c-8d3d-6192bdb5f728",
+        "name": "FPV-Hotel-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "current_task": null,
+        "position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9c9bea60-bbf0-4efd-8156-c77f9b99d379",
+        "name": "FPV-Hotel-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "current_task": null,
+        "position": {
+          "lat": 23.002,
+          "lon": 120.21,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.002,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c32e5e95-f62a-4d72-a49e-88ca8f89efa1",
+        "name": "FPV-Hotel-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "current_task": null,
+        "position": {
+          "lat": 23.004,
+          "lon": 120.21,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.004,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "141fa4a7-c86b-4dba-91b5-0cc7e53d13d1",
+        "name": "FPV-Hotel-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "current_task": null,
+        "position": {
+          "lat": 23.006,
+          "lon": 120.21,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.006,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "a92c7c51-2657-49ba-974b-8445289076b4",
+        "name": "FPV-Hotel-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "current_task": null,
+        "position": {
+          "lat": 23.008,
+          "lon": 120.21,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.008,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ea1883f1-e3da-44f5-8fdc-c1bff7e9f33c",
+        "name": "FPV-India-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "current_task": null,
+        "position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "95f29c3f-6b90-413a-a44a-869ec0b1af03",
+        "name": "FPV-India-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "current_task": null,
+        "position": {
+          "lat": 22.631999999999998,
+          "lon": 120.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 22.631999999999998,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "80c38fa1-cf40-4628-94e7-c7038f6304ca",
+        "name": "FPV-India-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "current_task": null,
+        "position": {
+          "lat": 22.634,
+          "lon": 120.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 22.634,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "96f3771d-39b1-4396-8451-e13fb0a8bb62",
+        "name": "FPV-India-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "current_task": null,
+        "position": {
+          "lat": 22.636,
+          "lon": 120.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 22.636,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0f2e80af-33f0-4f44-bbb6-2cc6faa666e9",
+        "name": "FPV-India-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "current_task": null,
+        "position": {
+          "lat": 22.637999999999998,
+          "lon": 120.3,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 22.637999999999998,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2878befe-e0d3-4767-bf97-d2e5109fa3d1",
+        "name": "FPV-Juliet-001",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "current_task": null,
+        "position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "77400af2-741c-410c-a6e3-6628f8a86b62",
+        "name": "FPV-Juliet-002",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "current_task": null,
+        "position": {
+          "lat": 23.971999999999998,
+          "lon": 121.6,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.971999999999998,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "06b58fc7-e15b-4e40-89af-36ddf0334708",
+        "name": "FPV-Juliet-003",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "current_task": null,
+        "position": {
+          "lat": 23.974,
+          "lon": 121.6,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.974,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "24817d9a-c656-4294-8de4-d1fd4056aabd",
+        "name": "FPV-Juliet-004",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "current_task": null,
+        "position": {
+          "lat": 23.976,
+          "lon": 121.6,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.976,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0c322e5c-6729-4ce3-ad31-05b195f3560d",
+        "name": "FPV-Juliet-005",
+        "model": "fpv_combat",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 15.0,
+        "max_payload_kg": 4.0,
+        "max_flight_time_hours": null,
+        "swarm_id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "current_task": null,
+        "position": {
+          "lat": 23.977999999999998,
+          "lon": 121.6,
+          "alt": 150.0
+        },
+        "home_position": {
+          "lat": 23.977999999999998,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "4b738b2e-3d56-4051-a5d6-708995b45ec6",
+        "name": "ALT-Alpha-001",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "current_task": null,
+        "position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5b95b249-8258-4ae9-b805-38f4e5261bd0",
+        "name": "ALT-Alpha-002",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "current_task": null,
+        "position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 25.041999999999998,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9b9183fe-3b42-4c0d-864b-040ede4ea8d0",
+        "name": "ALT-Alpha-003",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "current_task": null,
+        "position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 25.044,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "751c0762-e7ac-43ab-b559-246e7981a30c",
+        "name": "ALT-Alpha-004",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "current_task": null,
+        "position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 25.046,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2a70fe9a-6725-4068-85fb-4bf3f18cf863",
+        "name": "ALT-Alpha-005",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "current_task": null,
+        "position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 25.048,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ba42927e-c687-4ee7-a03f-aa8f209538c5",
+        "name": "ALT-Bravo-001",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "current_task": null,
+        "position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "914444c4-631b-4e9e-beee-eba7a4f21b09",
+        "name": "ALT-Bravo-002",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "current_task": null,
+        "position": {
+          "lat": 24.151999999999997,
+          "lon": 120.68,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.151999999999997,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ecd28290-2d20-4dc6-a7e9-b3ed740a3a24",
+        "name": "ALT-Bravo-003",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "current_task": null,
+        "position": {
+          "lat": 24.154,
+          "lon": 120.68,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.154,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5909a18c-44bf-4ec6-b517-b65f4ef78c7d",
+        "name": "ALT-Bravo-004",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "current_task": null,
+        "position": {
+          "lat": 24.156,
+          "lon": 120.68,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.156,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2e6a1726-efeb-4467-a89f-62413d7fc764",
+        "name": "ALT-Bravo-005",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "current_task": null,
+        "position": {
+          "lat": 24.157999999999998,
+          "lon": 120.68,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.157999999999998,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "a86c296b-a7aa-40a5-a059-dbf2bb082f12",
+        "name": "ALT-Charlie-001",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "current_task": null,
+        "position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1f95a7a5-2997-458e-a7d9-c448e73046fe",
+        "name": "ALT-Charlie-002",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "current_task": null,
+        "position": {
+          "lat": 23.002,
+          "lon": 120.21,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 23.002,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2cfe9d80-7c76-404d-ae1d-9edcfba28449",
+        "name": "ALT-Charlie-003",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "current_task": null,
+        "position": {
+          "lat": 23.004,
+          "lon": 120.21,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 23.004,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "14f26297-f10e-4ef2-853d-ad27225f2c00",
+        "name": "ALT-Charlie-004",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "current_task": null,
+        "position": {
+          "lat": 23.006,
+          "lon": 120.21,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 23.006,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "20fa6ecd-b7e8-45ff-aa3a-fa6b8445fbf9",
+        "name": "ALT-Charlie-005",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "current_task": null,
+        "position": {
+          "lat": 23.008,
+          "lon": 120.21,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 23.008,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "319594bf-4426-4f81-8400-d21f2a5f20e0",
+        "name": "ALT-Delta-001",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "current_task": null,
+        "position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c4d1cd18-6bc6-4c2f-9e8a-6406f3e6f4ad",
+        "name": "ALT-Delta-002",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "current_task": null,
+        "position": {
+          "lat": 22.631999999999998,
+          "lon": 120.3,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 22.631999999999998,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b9e4defd-2408-4661-8cef-ce2a7f2ef4c5",
+        "name": "ALT-Delta-003",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "current_task": null,
+        "position": {
+          "lat": 22.634,
+          "lon": 120.3,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 22.634,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f9d90d7d-9d56-450e-a367-378158ffe2e7",
+        "name": "ALT-Delta-004",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "current_task": null,
+        "position": {
+          "lat": 22.636,
+          "lon": 120.3,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 22.636,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "cb71ede8-c3d4-4ca8-9230-20b1f1afbf41",
+        "name": "ALT-Delta-005",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "current_task": null,
+        "position": {
+          "lat": 22.637999999999998,
+          "lon": 120.3,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 22.637999999999998,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "bd3fa0d5-624c-43ae-88f2-8c8f161a84c0",
+        "name": "ALT-Echo-001",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "current_task": null,
+        "position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "8b718991-823a-4679-8a70-3558104f5241",
+        "name": "ALT-Echo-002",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "current_task": null,
+        "position": {
+          "lat": 24.802,
+          "lon": 120.97,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.802,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "deb911de-e7b9-42be-b791-f784aaa70b1c",
+        "name": "ALT-Echo-003",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "current_task": null,
+        "position": {
+          "lat": 24.804000000000002,
+          "lon": 120.97,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.804000000000002,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "81463636-47be-41e1-a026-9fa6d2918520",
+        "name": "ALT-Echo-004",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "current_task": null,
+        "position": {
+          "lat": 24.806,
+          "lon": 120.97,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.806,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "80668fcc-251c-4230-bee9-9bd5db06b252",
+        "name": "ALT-Echo-005",
+        "model": "altius_600m",
+        "type": "swarm_member",
+        "status": "idle",
+        "heading": 0.0,
+        "speed": 0.0,
+        "altitude": 100.0,
+        "battery": 100.0,
+        "range_used_km": 0.0,
+        "max_range_km": 440.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "current_task": null,
+        "position": {
+          "lat": 24.808,
+          "lon": 120.97,
+          "alt": 200.0
+        },
+        "home_position": {
+          "lat": 24.808,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "fa8f83bf-7757-4a42-b1ed-72bbdb97a735",
+        "name": "SCOUT-001",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 199.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.029648293965984,
+          "lon": 121.58061272327419,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5275acbf-87e9-4b77-b6b8-d31dff1332bb",
+        "name": "SCOUT-002",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 236.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.980493881244744,
+          "lon": 121.47958305014826,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e516c544-a1ac-485a-938a-651ed55d88fe",
+        "name": "SCOUT-003",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 273.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.109195147831695,
+          "lon": 121.73469643170309,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9e0ad615-ab5f-4d2e-9456-12d34da99f35",
+        "name": "SCOUT-004",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 310.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.9762751313095,
+          "lon": 121.28195621306924,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "47418c75-80dd-4d80-a52c-4c5b86732430",
+        "name": "SCOUT-005",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 347.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.03888251715434,
+          "lon": 121.53646660888893,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0d1bff2f-cbe9-4fb3-a7c3-af563f960af7",
+        "name": "SCOUT-006",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 24.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.011939945725675,
+          "lon": 121.45046871233318,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "d183a25e-f4f3-4767-b52a-8eba1bf1cad8",
+        "name": "SCOUT-007",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 61.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.150188812134807,
+          "lon": 121.73232235023345,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "8ac8d6c3-3f75-40a6-8bea-74423ff60800",
+        "name": "SCOUT-008",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 98.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.010307058827355,
+          "lon": 121.3072815962149,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1a8fd124-11a1-4768-9df8-0bb25526cd73",
+        "name": "SCOUT-009",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 135.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.052247064433512,
+          "lon": 121.57930733972994,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "acc9861d-0b56-46da-8e54-0d373ca39aaf",
+        "name": "SCOUT-010",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 172.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.999254822273503,
+          "lon": 121.49354633957084,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "da3291b0-5095-4a39-90d0-66f7910f3fa8",
+        "name": "SCOUT-011",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 209.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.116562684779133,
+          "lon": 121.75832888859702,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f1471ca7-d6c2-4a47-9e70-d35f922394ad",
+        "name": "SCOUT-012",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 246.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.969282143536347,
+          "lon": 121.30569992172633,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "03339b53-35a8-41c6-a6ad-dafa297ea043",
+        "name": "SCOUT-013",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 283.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.020345283492976,
+          "lon": 121.55079365130487,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6ba36e0b-6342-4024-953e-2ff7a7abfb14",
+        "name": "SCOUT-014",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 320.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.989323947378836,
+          "lon": 121.44959912922073,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "08f31cc3-304d-4e43-8c8e-8f77aae377f7",
+        "name": "SCOUT-015",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 357.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.132602167046205,
+          "lon": 121.71659242127906,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3a1ec4e3-ac3a-4a39-ac7d-de0d91368753",
+        "name": "SCOUT-016",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 34.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.004832418633512,
+          "lon": 121.28305443567376,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7a239fe7-fd1d-4a08-91ed-969805b5cbd2",
+        "name": "SCOUT-017",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 71.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.06108922539504,
+          "lon": 121.55631429848007,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f0407a0c-2cc0-49f3-b6e7-b9f937780882",
+        "name": "SCOUT-018",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 108.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.0188527899262,
+          "lon": 121.48106265591318,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3de34b9e-c5fc-4bd0-9f48-1ffade1c8713",
+        "name": "SCOUT-019",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 145.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.139023789602035,
+          "lon": 121.761376893305,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6edc9aa7-13c3-45b0-a3b3-17269875c0df",
+        "name": "SCOUT-020",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 182.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.98556064769655,
+          "lon": 121.32304364147599,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2d592bae-c647-4456-8adb-118465631e0f",
+        "name": "SCOUT-021",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 219.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.02388536161566,
+          "lon": 121.57546173208664,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "682e7030-d3a0-49f8-950d-016be2714838",
+        "name": "SCOUT-022",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 256.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.978699907412864,
+          "lon": 121.47164460168317,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e655ef1e-2ed1-4d42-bc8d-1a87a01b2807",
+        "name": "SCOUT-023",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 293.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.112092617769555,
+          "lon": 121.72715725321375,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "11c3ecbf-f1d6-480a-89a3-bfb809e5e9df",
+        "name": "SCOUT-024",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 330.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.982697149904713,
+          "lon": 121.27786514329158,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b7159d08-4750-48b0-b515-807520768a5e",
+        "name": "SCOUT-025",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 7.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.04624275140913,
+          "lon": 121.53746340330305,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1313c856-f7c0-4cf5-b95f-a334320ea4fe",
+        "name": "SCOUT-026",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 44.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.017274216006737,
+          "lon": 121.45615245803445,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e95b5d37-03e8-4cf4-b1e3-90d68a5805e3",
+        "name": "SCOUT-027",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 81.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.151348853213317,
+          "lon": 121.74041297223197,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b73a0098-8eec-4655-a532-8f12935482e7",
+        "name": "SCOUT-028",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 118.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.006825688543106,
+          "lon": 121.31450577136066,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f847f45c-8a29-495a-a4f8-f373fd233c57",
+        "name": "SCOUT-029",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 155.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.04552633148976,
+          "lon": 121.58276592485292,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9769462f-ef29-43e3-b751-36b571b98a14",
+        "name": "SCOUT-030",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 192.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.992001360592912,
+          "lon": 121.49184454562496,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "889e2ef7-b8ce-455f-92fd-39dbca16da4b",
+        "name": "SCOUT-031",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 229.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.111697673585095,
+          "lon": 121.75214731462461,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f4f63cbe-ba58-4667-b4ab-e25fe616871a",
+        "name": "SCOUT-032",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 266.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.96876486382427,
+          "lon": 121.2975390995475,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7ee241b3-6485-4e0d-8a7c-2e0a15b026aa",
+        "name": "SCOUT-033",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 303.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.02438405879363,
+          "lon": 121.54392960632825,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "53d25b24-26e7-4226-98b1-127e50cdf54d",
+        "name": "SCOUT-034",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 340.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.996292245835317,
+          "lon": 121.4468001489324,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "4aad2568-6f5e-420f-b630-747341c5bd5f",
+        "name": "SCOUT-035",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 17.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.139693652929477,
+          "lon": 121.71898659531495,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "80cc12f7-6c15-4ee3-b319-ed81c737b3b5",
+        "name": "SCOUT-036",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 54.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.009191145067774,
+          "lon": 121.28967357748841,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1ca26644-eb32-46c5-aafc-9a11831eca23",
+        "name": "SCOUT-037",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 91.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.060959806929738,
+          "lon": 121.56449852616701,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "10835869-0b62-4fcb-b7c3-2d3ff641d52a",
+        "name": "SCOUT-038",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 128.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.014287347127844,
+          "lon": 121.4875104139183,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "cd474037-d4d8-494e-b3d6-37028af2aee3",
+        "name": "SCOUT-039",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 165.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.131860958591624,
+          "lon": 121.76349621787237,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c97de32e-565b-4c8c-a9c6-6069dac69068",
+        "name": "SCOUT-040",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 202.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.97868510810015,
+          "lon": 121.31997831710939,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c1c42f80-7e5d-4dd9-9772-ee87e0db7b17",
+        "name": "SCOUT-041",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 239.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.02006609248122,
+          "lon": 121.56844633911876,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7b989da9-4b45-4e38-813d-fc2ae4f03541",
+        "name": "SCOUT-042",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 276.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.979475039102883,
+          "lon": 121.46350799859492,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "70f8e2c8-9c01-49dd-abe5-1f156a5614a3",
+        "name": "SCOUT-043",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 313.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.117149982289217,
+          "lon": 121.7211669340238,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3a09bd95-215f-4cca-8978-a1346c08cc9d",
+        "name": "SCOUT-044",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 350.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.99,
+          "lon": 121.2764437953191,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "81a2c9fe-f77a-4685-bfd5-0f1d28ad36b3",
+        "name": "SCOUT-045",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 27.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.05285001771078,
+          "lon": 121.54117880208094,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ab1fc347-e546-455e-a90c-2c070fd1c14c",
+        "name": "SCOUT-046",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 64.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.020524960897117,
+          "lon": 121.46350691827344,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b4205a85-8898-4724-af11-69417677a4e5",
+        "name": "SCOUT-047",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 101.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.14993390751878,
+          "lon": 121.74845393164834,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "405375a2-0e08-42fa-8b0c-4da8d6e26d63",
+        "name": "SCOUT-048",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 138.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.001314891899845,
+          "lon": 121.31998015170237,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "04e7ec35-3371-447b-ba61-83fe196c079d",
+        "name": "SCOUT-049",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 175.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.038139041408375,
+          "lon": 121.5834785856048,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9fa770c8-7102-4e80-926f-1392a068cea0",
+        "name": "SCOUT-050",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 212.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.98608787672776,
+          "lon": 121.48746486489361,
+          "alt": 2999.9999999995134
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ed5db0d7-dfc3-4a4b-8eea-044a210024f8",
+        "name": "SCOUT-051",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 249.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.10904019307026,
+          "lon": 121.74450107066937,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c0c98767-258e-4ff2-a49a-2dd42481a3b9",
+        "name": "SCOUT-052",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 286.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.970808854932223,
+          "lon": 121.28967518390118,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b84fafc7-1430-47ad-a0e7-ea6290ec306d",
+        "name": "SCOUT-053",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 323.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.030123432912678,
+          "lon": 121.53936787844866,
+          "alt": 2999.999999998385
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ceb4e28b-b200-4d43-b031-8288031c79b3",
+        "name": "SCOUT-054",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 0.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.446595104489994,
+          "lon": 120.72851064128311,
+          "alt": 2999.999999999748
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e886fc7c-8812-472a-8c23-24fe525938a4",
+        "name": "SCOUT-055",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 37.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.14561594120637,
+          "lon": 121.72391574526989,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6e8abe73-e2eb-4f71-bd08-efc42a427a6a",
+        "name": "SCOUT-056",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 74.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.011235136175728,
+          "lon": 121.29753867684155,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "06f1a477-89bd-48ac-a89b-3ad9dbf2c58d",
+        "name": "SCOUT-057",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 111.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.273887611867583,
+          "lon": 120.38493921279989,
+          "alt": 2999.999999999443
+        },
+        "home_position": {
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3da0f9b9-045e-4ab2-a0e0-d62208654e42",
+        "name": "SCOUT-058",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 148.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.52060030133224,
+          "lon": 120.49959451733628,
+          "alt": 3000.000000000095
+        },
+        "home_position": {
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "276bb7f4-05f8-4689-b858-53104bcb685b",
+        "name": "SCOUT-059",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 185.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 25.124473668510237,
+          "lon": 121.76278165040618,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 25.13,
+          "lon": 121.74,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0c2cb2a7-d6a5-4362-8469-f4ff8cf4f29d",
+        "name": "SCOUT-060",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 222.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.97317431145689,
+          "lon": 121.31450379049785,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.99,
+          "lon": 121.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f1182af3-e493-4306-ad22-9636bea899e2",
+        "name": "SCOUT-061",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 259.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.12865114678668,
+          "lon": 120.68040961555634,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "b43bc497-1e17-445b-8472-2a65fe60dc2e",
+        "name": "SCOUT-062",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 296.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.982725783993263,
+          "lon": 120.19636773844823,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "99acb4c7-bc3f-4b55-8810-dba998a604a8",
+        "name": "SCOUT-063",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 333.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.623757248590866,
+          "lon": 120.27787931601877,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "481f8e10-ee08-4405-b64f-c706f449633d",
+        "name": "SCOUT-064",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 10.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.977302850095285,
+          "lon": 121.57804250709852,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f1fc0c3c-5798-44f2-88a7-59f474db8e3d",
+        "name": "SCOUT-065",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 47.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.817907382230445,
+          "lon": 120.95718976699713,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "d657773c-245e-4835-9ed5-ecee8a0221bd",
+        "name": "SCOUT-066",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 84.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.171300092587135,
+          "lon": 120.68163370948261,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6a93250e-0aa5-4461-9175-5e20cd2272e7",
+        "name": "SCOUT-067",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 121.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.01611463838434,
+          "lon": 120.22522008912058,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2c8a53de-eed8-42ee-a13a-3560740f5789",
+        "name": "SCOUT-068",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 158.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.63443935230345,
+          "lon": 120.32262916213665,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6757df55-31c9-4f39-8e28-2201f5dc792a",
+        "name": "SCOUT-069",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 195.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.960976210397963,
+          "lon": 121.62117851628726,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2b4c5ee6-d09f-466a-9320-08c80e2a196e",
+        "name": "SCOUT-070",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 232.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.7811472100738,
+          "lon": 120.98104305020124,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "529338a6-b48d-481a-9d97-93c5663509ff",
+        "name": "SCOUT-071",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 269.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.128910774604957,
+          "lon": 120.67634097271215,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "ff44d536-32e0-4289-9093-776c15f6f99e",
+        "name": "SCOUT-072",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 306.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.985167581366486,
+          "lon": 120.19331623277085,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "37f7360a-cf50-4956-9468-2b4550d2012c",
+        "name": "SCOUT-073",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 343.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.627397832953793,
+          "lon": 120.27704065416901,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0d73dfb8-2d07-44a1-99f8-d7649774f4c3",
+        "name": "SCOUT-074",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 20.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.980676052621163,
+          "lon": 121.5797636989343,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "3ab28f81-f6c6-4dd8-83f2-f054a2c282d3",
+        "name": "SCOUT-075",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 57.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.819654716507024,
+          "lon": 120.96081007708553,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "9c933204-8c11-407c-be9d-9182a9176244",
+        "name": "SCOUT-076",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 94.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.17071785646365,
+          "lon": 120.6856627273535,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "03d79b51-d561-40ec-96a1-154ec83b2ddc",
+        "name": "SCOUT-077",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 131.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.013437315220866,
+          "lon": 120.22802882023491,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "1492a632-a394-48ba-b3fd-55e3289ae480",
+        "name": "SCOUT-078",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 168.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.630745177726496,
+          "lon": 120.32312028286385,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "09f7ed65-50d4-44ea-80aa-d1f839f43e65",
+        "name": "SCOUT-079",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 205.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.957752935566486,
+          "lon": 121.6191417503313,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "837dc8ab-1992-4c04-83a3-369d9a1083f6",
+        "name": "SCOUT-080",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 242.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.779692941172645,
+          "lon": 120.97726919381473,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "d0f37376-9048-4f7e-a7b7-dc22a43066d3",
+        "name": "SCOUT-081",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 279.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.12981118786519,
+          "lon": 120.67238351872946,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "4d31f447-eeb7-42d9-9bab-c4017a1769b4",
+        "name": "SCOUT-082",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 316.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.988060054274325,
+          "lon": 120.1907716084255,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c21040ac-ee1f-4b17-8acb-f463a6438b9e",
+        "name": "SCOUT-083",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 353.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.631117482845656,
+          "lon": 120.27689961605645,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "67a2927b-905d-4b02-82de-209adf87cbcf",
+        "name": "SCOUT-084",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 30.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.983724868690498,
+          "lon": 121.5820998739164,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "748bec2a-12bb-4bb8-bf26-bfb0c4fcb3ff",
+        "name": "SCOUT-085",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 67.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.820804852168305,
+          "lon": 120.96470972361831,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "43e734e4-e4df-4e82-a88e-0b8c42cc4cb4",
+        "name": "SCOUT-086",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 104.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.169506118755255,
+          "lon": 120.68951968312548,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "92d2d6c5-7c8e-4cf5-a5ac-8263262a44f9",
+        "name": "SCOUT-087",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 141.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.010644915972755,
+          "lon": 120.23003174778067,
+          "alt": 2999.9999999994047
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "e3a97799-3235-4085-a7c2-bc5d4ff3c9cb",
+        "name": "SCOUT-088",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 178.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.6270283613014,
+          "lon": 120.32290893512838,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "4c5f3862-3b8c-4a61-876b-d9ca4d4c9ac1",
+        "name": "SCOUT-089",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 215.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.954901781590507,
+          "lon": 121.61652349176136,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "00eca3bd-c10f-4167-90ae-e29967c29880",
+        "name": "SCOUT-090",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 252.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.778855691978087,
+          "lon": 120.97327455987296,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "968a3324-7731-43a9-a71b-449eedb49b0a",
+        "name": "SCOUT-091",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 289.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.131325027966113,
+          "lon": 120.66865747189134,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "628af282-1c80-4217-a73b-b657c1632aa3",
+        "name": "SCOUT-092",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 326.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.991315316391137,
+          "lon": 120.18881118847551,
+          "alt": 2999.9999999997012
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "fcdd481c-cec2-4c52-b378-b2af4eda18de",
+        "name": "SCOUT-093",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 3.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.634803178586733,
+          "lon": 120.27746051505862,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7c449ad4-e2dd-43f4-82d9-5f9a730ad01b",
+        "name": "SCOUT-094",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 40.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.986356661569786,
+          "lon": 121.58498005891772,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "c167e714-29bf-47ba-ba87-a800b2f7ccf4",
+        "name": "SCOUT-095",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 77.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.821322842924218,
+          "lon": 120.96877019219556,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "45cbc568-5fad-4a37-bcbf-acd8ab0cc0f0",
+        "name": "SCOUT-096",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 114.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.16770169749905,
+          "lon": 120.69308736106528,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.15,
+          "lon": 120.68,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "15a77b12-38cf-4e68-be8d-f398b0b8c630",
+        "name": "SCOUT-097",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 151.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.20545111247479,
+          "lon": 120.18197412295544,
+          "alt": 2999.999999996887
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "85f8f150-7366-474b-aabc-10bae65d1602",
+        "name": "SCOUT-098",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 188.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 22.53340537799114,
+          "lon": 120.46429676770501,
+          "alt": 3000.0000000005525
+        },
+        "home_position": {
+          "lat": 22.63,
+          "lon": 120.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "18de6148-3acc-4deb-bf69-9d1e1756d27c",
+        "name": "SCOUT-099",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 225.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 23.952509379340846,
+          "lon": 121.61340330027153,
+          "alt": 3000.000000000365
+        },
+        "home_position": {
+          "lat": 23.97,
+          "lon": 121.6,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7ff17966-c092-4c70-8143-df6cdbaeba58",
+        "name": "SCOUT-100",
+        "model": "scout_recon",
+        "type": "recon",
+        "status": "patrolling",
+        "heading": 262.0,
+        "speed": 42.0,
+        "altitude": 100.0,
+        "battery": 99.83800000000038,
+        "range_used_km": 3.401999999999995,
+        "max_range_km": 150.0,
+        "max_payload_kg": null,
+        "max_flight_time_hours": null,
+        "swarm_id": null,
+        "current_task": null,
+        "position": {
+          "lat": 24.778660901883246,
+          "lon": 120.96918049488497,
+          "alt": 3000.0
+        },
+        "home_position": {
+          "lat": 24.8,
+          "lon": 120.97,
+          "alt": 0.0
+        }
+      }
+    ],
+    "targets": [
+      {
+        "id": "48b4d8f6-cc62-4f2f-aac7-a4655149012b",
+        "type": "ship",
+        "status": "active",
+        "heading": 90.0,
+        "speed": 11.316799999999999,
+        "confidence": 0.92,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 24.5,
+          "lon": 119.50904924931046,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "10f731c3-d2ef-47e9-afc3-814ba9e8c093",
+        "type": "ship",
+        "status": "active",
+        "heading": 85.0,
+        "speed": 11.316799999999999,
+        "confidence": 0.88,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 24.000717681035496,
+          "lon": 119.80897947036536,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
+        "type": "ship",
+        "status": "active",
+        "heading": 95.0,
+        "speed": 11.316799999999999,
+        "confidence": 0.85,
+        "reported_by": "MQ9-02",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 23.499282318964504,
+          "lon": 119.60894500800852,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "7b9e18a8-3ca3-4a26-b193-3d05890866ff",
+        "type": "ship",
+        "status": "active",
+        "heading": 80.0,
+        "speed": 11.316799999999999,
+        "confidence": 0.9,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 23.00142990008493,
+          "lon": 119.40880974038207,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "37d31b85-7d24-4091-9167-0ff8bf98a15c",
+        "type": "ship",
+        "status": "active",
+        "heading": 88.0,
+        "speed": 11.316799999999999,
+        "confidence": 0.87,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 25.00028737873313,
+          "lon": 119.90908020411105,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "2fbb5241-67a8-4e25-bc8c-f71fdbff8337",
+        "type": "tank",
+        "status": "active",
+        "heading": 90.0,
+        "speed": 2.7777777777777777,
+        "confidence": 0.91,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 25.0,
+          "lon": 120.50223014760783,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5decc896-13e5-4631-bedc-eac294877f5c",
+        "type": "tank",
+        "status": "active",
+        "heading": 75.0,
+        "speed": 2.7777777777777777,
+        "confidence": 0.89,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 24.500523125091053,
+          "lon": 120.60214551266412,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "8a3dc6d7-b066-43d4-8bf4-ad157e266969",
+        "type": "tank",
+        "status": "active",
+        "heading": 110.0,
+        "speed": 2.7777777777777777,
+        "confidence": 0.86,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 23.49930870883719,
+          "lon": 120.30207107690411,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "878e168e-7fb5-4407-bde6-e0e6e08d1a51",
+        "type": "tank",
+        "status": "active",
+        "heading": 95.0,
+        "speed": 2.7777777777777777,
+        "confidence": 0.83,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 23.9998238408001,
+          "lon": 120.50220405836295,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "92756f30-9854-476c-bb36-2abac9060d75",
+        "type": "missile_launcher",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 0.94,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 25.9,
+          "lon": 119.3,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "0c51f2ec-7b92-47e7-8970-522ccaea2fe0",
+        "type": "missile_launcher",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 0.9,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 25.0,
+          "lon": 119.0,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "a3d354e8-5f3f-48a9-a017-e7fd5c312432",
+        "type": "missile_launcher",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 0.88,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "high",
+        "position": {
+          "lat": 24.5,
+          "lon": 118.5,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "d2488006-2d08-44d1-917b-fc7193c0fb6a",
+        "type": "drone",
+        "status": "active",
+        "heading": 90.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.78,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 24.5,
+          "lon": 120.03331790387789,
+          "alt": 3000.0
+        }
+      },
+      {
+        "id": "f50f724c-bc47-4152-afff-0082b16534c7",
+        "type": "drone",
+        "status": "active",
+        "heading": 88.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.72,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 24.00105808301618,
+          "lon": 120.53316710298482,
+          "alt": 2500.0
+        }
+      },
+      {
+        "id": "c7359195-0db7-4822-b4a2-9a035d5e45fd",
+        "type": "drone",
+        "status": "active",
+        "heading": 85.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.8,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 25.002642387996474,
+          "lon": 120.23332527227645,
+          "alt": 3500.0
+        }
+      },
+      {
+        "id": "0b0cda46-48fe-4974-8c43-b0c690859f31",
+        "type": "drone",
+        "status": "active",
+        "heading": 92.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.75,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 23.49894191698382,
+          "lon": 119.8330397254778,
+          "alt": 2000.0
+        }
+      },
+      {
+        "id": "858d1879-f4f9-4032-8264-2736a250e12c",
+        "type": "drone",
+        "status": "active",
+        "heading": 233.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.65,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 24.995830211603263,
+          "lon": 120.71264169781347,
+          "alt": 50.0
+        }
+      },
+      {
+        "id": "b17b0bc8-3701-4929-b1db-056813f63286",
+        "type": "drone",
+        "status": "active",
+        "heading": 203.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.6,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 24.502117057051986,
+          "lon": 120.41319569683517,
+          "alt": 30.0
+        }
+      },
+      {
+        "id": "3528eb34-fcf1-4ed4-9ee5-d29c208d1fea",
+        "type": "drone",
+        "status": "active",
+        "heading": 223.0,
+        "speed": 41.666666666666664,
+        "confidence": 0.62,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 23.797882942948014,
+          "lon": 120.313123351411,
+          "alt": 40.0
+        }
+      },
+      {
+        "id": "6b7ec796-3000-4ca0-8832-9868cb79e726",
+        "type": "soldier_unit",
+        "status": "active",
+        "heading": 90.0,
+        "speed": 1.3888888888888888,
+        "confidence": 0.82,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 25.0,
+          "lon": 120.80111507380391,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "5b4cb202-e362-4c50-972e-613accde43ee",
+        "type": "soldier_unit",
+        "status": "active",
+        "heading": 85.0,
+        "speed": 1.3888888888888888,
+        "confidence": 0.79,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 24.600088079599807,
+          "lon": 120.60110725341126,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "6b450d42-af28-48ba-9e8e-f3b48ca423a9",
+        "type": "soldier_unit",
+        "status": "active",
+        "heading": 95.0,
+        "speed": 1.3888888888888888,
+        "confidence": 0.76,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 24.199911920400194,
+          "lon": 120.50110375165742,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "560fe71a-41bb-4b7b-9e09-37fe248356d7",
+        "type": "soldier_unit",
+        "status": "active",
+        "heading": 88.0,
+        "speed": 1.3888888888888888,
+        "confidence": 0.73,
+        "reported_by": "seed",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 23.700035269433997,
+          "lon": 120.30110300954055,
+          "alt": 0.0
+        }
+      }
+    ],
+    "swarms": [
+      {
+        "id": "10eadd12-f410-4af9-ab0c-03bae92670db",
+        "name": "FPV-Alpha",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "185f4cf1-5384-418e-bbff-37979f634712",
+          "9c27493f-44bf-48a9-bd2f-6080fb527127",
+          "9ca1c30c-074f-4894-811a-25e51ef0423c",
+          "5a703c6c-9ea2-43b9-8330-0ff88dcf84e8",
+          "7760c745-b108-4819-adf3-a18489ba260d"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "0790a2f8-3a44-4c86-a3a0-f007e2ec17c1",
+        "name": "FPV-Bravo",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "6ff90bf5-254f-4b3a-9c8c-aa53fd4c24ad",
+          "0e801e21-ed75-4edb-b328-5982b0662276",
+          "59126cb2-cdd2-4841-aba9-de0c6f0e4f10",
+          "734fc403-0840-42ad-b985-f9ce52b447c6",
+          "9d57a484-7856-4d08-b796-215e554e2030"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "f133d07e-29e2-43c5-babb-23704e089834",
+        "name": "FPV-Charlie",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "1d7ccd6b-2449-4258-ab86-b5d16c12b53e",
+          "9e319f49-8011-46b9-a181-4f9adeafd85f",
+          "e611566a-4cfb-442f-a51a-1ecac9959a06",
+          "0fbffc38-6e44-430a-bf98-5e7fca6d59cf",
+          "be90f3ca-4ac6-4efa-a4c4-27c219010acc"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "cbd388a8-6d76-4373-a472-6c056f23e553",
+        "name": "FPV-Delta",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "fcf508c7-937c-40a6-81dd-e588a81b48b7",
+          "01c0955e-45de-4dcb-854d-65eb3cf41caf",
+          "e10b8b0a-dc7c-4809-bfbe-3a30f107c87c",
+          "3e8747f2-65f0-4b2f-8c0b-c475a18694d0",
+          "e3ede577-a32c-411c-b856-751f290ce790"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "73e25ba0-7280-4cba-8861-4376a7dd4bdb",
+        "name": "FPV-Echo",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "628596b0-078d-4a7c-a446-094c25114e34",
+          "11005382-6d7b-442a-8dca-d2cb535d88c2",
+          "5e0a33f5-4a0a-489b-8b57-3175486336ab",
+          "74e03f78-2ddb-489e-9586-5edb23bfc7de",
+          "1b97d778-02af-4326-94fc-3227305407a2"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "3126b27e-1184-4d28-ab24-91b0ebb2b729",
+        "name": "FPV-Foxtrot",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "51f469bf-7759-4b27-9542-e3c88467ab68",
+          "46a63640-20ba-4252-8c35-96b54a0c42e0",
+          "a4fa324a-7b41-441a-8b92-ca9b89e5bbfc",
+          "9303ddda-ffeb-43c3-8f6c-2e4ea7bf3df6",
+          "5f8984ca-2feb-48a5-bd12-6aebb8a4276a"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "8b6346d2-909a-4349-bfc4-834a82225408",
+        "name": "FPV-Golf",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "f1028f7a-b737-4354-9689-c71c26d6b563",
+          "b9d03e7e-13f9-4d39-8c5c-4c0a64bc4970",
+          "8f15af0c-d6a4-4d2a-affc-c2358920b19e",
+          "79ad17fd-1341-442c-9e54-6d45bea79636",
+          "7852b61b-9766-4dc8-9d44-80dd79400fdc"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
+        "name": "FPV-Hotel",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "f729c36e-5a3e-4e4c-8d3d-6192bdb5f728",
+          "9c9bea60-bbf0-4efd-8156-c77f9b99d379",
+          "c32e5e95-f62a-4d72-a49e-88ca8f89efa1",
+          "141fa4a7-c86b-4dba-91b5-0cc7e53d13d1",
+          "a92c7c51-2657-49ba-974b-8445289076b4"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "8359ac22-8303-45c9-98ba-d1902946ec39",
+        "name": "FPV-India",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "ea1883f1-e3da-44f5-8fdc-c1bff7e9f33c",
+          "95f29c3f-6b90-413a-a44a-869ec0b1af03",
+          "80c38fa1-cf40-4628-94e7-c7038f6304ca",
+          "96f3771d-39b1-4396-8451-e13fb0a8bb62",
+          "0f2e80af-33f0-4f44-bbb6-2cc6faa666e9"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "1abf0926-8c5b-4299-a8c3-69030f7643cc",
+        "name": "FPV-Juliet",
+        "drone_model": "fpv_combat",
+        "total_drone_count": 1000,
+        "drone_ids": [
+          "2878befe-e0d3-4767-bf97-d2e5109fa3d1",
+          "77400af2-741c-410c-a6e3-6628f8a86b62",
+          "06b58fc7-e15b-4e40-89af-36ddf0334708",
+          "24817d9a-c656-4294-8de4-d1fd4056aabd",
+          "0c322e5c-6729-4ce3-ad31-05b195f3560d"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
+        "name": "ALT-Alpha",
+        "drone_model": "altius_600m",
+        "total_drone_count": 200,
+        "drone_ids": [
+          "4b738b2e-3d56-4051-a5d6-708995b45ec6",
+          "5b95b249-8258-4ae9-b805-38f4e5261bd0",
+          "9b9183fe-3b42-4c0d-864b-040ede4ea8d0",
+          "751c0762-e7ac-43ab-b559-246e7981a30c",
+          "2a70fe9a-6725-4068-85fb-4bf3f18cf863"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
+        "name": "ALT-Bravo",
+        "drone_model": "altius_600m",
+        "total_drone_count": 200,
+        "drone_ids": [
+          "ba42927e-c687-4ee7-a03f-aa8f209538c5",
+          "914444c4-631b-4e9e-beee-eba7a4f21b09",
+          "ecd28290-2d20-4dc6-a7e9-b3ed740a3a24",
+          "5909a18c-44bf-4ec6-b517-b65f4ef78c7d",
+          "2e6a1726-efeb-4467-a89f-62413d7fc764"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "61b50270-f489-48ba-a305-84b24921c1fd",
+        "name": "ALT-Charlie",
+        "drone_model": "altius_600m",
+        "total_drone_count": 200,
+        "drone_ids": [
+          "a86c296b-a7aa-40a5-a059-dbf2bb082f12",
+          "1f95a7a5-2997-458e-a7d9-c448e73046fe",
+          "2cfe9d80-7c76-404d-ae1d-9edcfba28449",
+          "14f26297-f10e-4ef2-853d-ad27225f2c00",
+          "20fa6ecd-b7e8-45ff-aa3a-fa6b8445fbf9"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
+        "name": "ALT-Delta",
+        "drone_model": "altius_600m",
+        "total_drone_count": 200,
+        "drone_ids": [
+          "319594bf-4426-4f81-8400-d21f2a5f20e0",
+          "c4d1cd18-6bc6-4c2f-9e8a-6406f3e6f4ad",
+          "b9e4defd-2408-4661-8cef-ce2a7f2ef4c5",
+          "f9d90d7d-9d56-450e-a367-378158ffe2e7",
+          "cb71ede8-c3d4-4ca8-9230-20b1f1afbf41"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      },
+      {
+        "id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
+        "name": "ALT-Echo",
+        "drone_model": "altius_600m",
+        "total_drone_count": 200,
+        "drone_ids": [
+          "bd3fa0d5-624c-43ae-88f2-8c8f161a84c0",
+          "8b718991-823a-4679-8a70-3558104f5241",
+          "deb911de-e7b9-42be-b791-f784aaa70b1c",
+          "81463636-47be-41e1-a026-9fa6d2918520",
+          "80668fcc-251c-4230-bee9-9bd5db06b252"
+        ],
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
+      }
+    ]
   }
 }

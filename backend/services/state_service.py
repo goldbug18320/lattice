@@ -2,7 +2,6 @@
 from __future__ import annotations
 from typing import Optional
 from datetime import datetime, timedelta
-import math
 import threading
 from models.target import Target, TargetStatus, PendingApproval
 from models.drone import Drone, Swarm, DroneStatus, DroneType, DroneModel, SwarmStatus
@@ -36,62 +35,6 @@ def _city_base(index: int, total: int, taipei_pct: float) -> tuple[float, float]
         return _OTHER_BASES[j % len(_OTHER_BASES)]
 
 
-# ── Scout Patrol Grid (§8.2) ──────────────────────────────────────────────────
-# 50×50 km grid covering coastal sea (within 25 km of Taiwan coast) and city areas.
-# Mountain areas are excluded. Coastal sea cells have highest priority.
-_SCOUT_LAT_STEP = 50.0 / 111.32                                       # ~0.449° per 50 km
-_SCOUT_LON_STEP = 50.0 / (111.32 * math.cos(math.radians(24.0)))      # ~0.492° at 24°N
-_SCOUT_LAT0, _SCOUT_LAT1 = 21.5, 26.5
-_SCOUT_LON0, _SCOUT_LON1 = 119.0, 122.5
-
-
-def _scout_zone(lat: float, lon: float) -> int:
-    """
-    Classify a grid cell for scout recon patrol:
-      0 — excluded (Central Mountain Range, mainland interior, deep ocean)
-      1 — coastal sea (highest priority — within ~25 km of Taiwan coastline)
-      2 — city / plains (lower priority — on-island non-mountain areas)
-    """
-    # Central Mountain Range interior — excluded per spec
-    if 120.7 <= lon <= 121.4 and 23.0 <= lat <= 25.0:
-        return 0
-    # West coastal sea (Taiwan Strait, within ~25 km of west coast)
-    if lon <= 120.2 and lat >= 21.5:
-        return 1
-    # East coastal sea (Pacific Ocean, within ~25 km of east coast)
-    if lon >= 121.7:
-        return 1
-    # North coast sea
-    if lat >= 25.4 and 120.0 <= lon <= 122.2:
-        return 1
-    # South coast sea
-    if lat <= 22.2 and 119.5 <= lon <= 121.5:
-        return 1
-    # City / plains on the island (non-mountain)
-    if 22.0 <= lat <= 25.5 and 120.0 <= lon <= 121.8:
-        return 2
-    return 0  # outside patrol theater
-
-
-def _build_scout_patrol_grids() -> list[tuple[float, float]]:
-    """Return 50×50 km patrol grid centres sorted coastal-sea-first, then cities."""
-    grids: list[tuple[float, float, int]] = []
-    glat = _SCOUT_LAT0 + _SCOUT_LAT_STEP / 2
-    while glat < _SCOUT_LAT1:
-        glon = _SCOUT_LON0 + _SCOUT_LON_STEP / 2
-        while glon < _SCOUT_LON1:
-            z = _scout_zone(glat, glon)
-            if z > 0:
-                grids.append((glat, glon, z))
-            glon += _SCOUT_LON_STEP
-        glat += _SCOUT_LAT_STEP
-    grids.sort(key=lambda x: x[2])  # priority 1 (coastal_sea) before 2 (city)
-    return [(lat, lon) for lat, lon, _ in grids]
-
-
-SCOUT_PATROL_GRIDS: list[tuple[float, float]] = _build_scout_patrol_grids()
-
-
 class StateService:
     def __init__(self):
         self._lock = threading.Lock()
@@ -102,10 +45,150 @@ class StateService:
         self._command_log: list[dict] = []
         self._seed_demo_data()
 
+    def _load_from_initial_state(self, initial_state: dict):
+        """Restore drones, targets, and swarms from a saved initial_state snapshot."""
+        from models.target import Position, TargetType, TargetStatus, ThreatValue
+
+        for s_data in initial_state.get("swarms", []):
+            swarm = Swarm(
+                id=s_data["id"],
+                name=s_data["name"],
+                drone_model=DroneModel(s_data["drone_model"]) if s_data.get("drone_model") else None,
+                total_drone_count=s_data.get("total_drone_count", 0),
+                drone_ids=list(s_data.get("drone_ids", [])),
+                status=SwarmStatus(s_data.get("status", "idle")),
+                objective=s_data.get("objective"),
+                target_ids=list(s_data.get("target_ids", [])),
+            )
+            self._swarms[swarm.id] = swarm
+
+        for d_data in initial_state.get("drones", []):
+            pos  = d_data.get("position")
+            home = d_data.get("home_position")
+            drone = Drone(
+                id=d_data["id"],
+                name=d_data["name"],
+                model=DroneModel(d_data["model"]) if d_data.get("model") else None,
+                type=DroneType(d_data["type"]),
+                status=DroneStatus(d_data.get("status", "idle")),
+                heading=d_data.get("heading", 0.0),
+                speed=d_data.get("speed", 0.0),
+                altitude=d_data.get("altitude", 100.0),
+                battery=d_data.get("battery", 100.0),
+                range_used_km=d_data.get("range_used_km", 0.0),
+                max_range_km=d_data.get("max_range_km", 100.0),
+                max_payload_kg=d_data.get("max_payload_kg"),
+                max_flight_time_hours=d_data.get("max_flight_time_hours"),
+                swarm_id=d_data.get("swarm_id"),
+                current_task=d_data.get("current_task"),
+                position=Position(**pos) if pos else None,
+                home_position=Position(**home) if home else None,
+            )
+            self._drones[drone.id] = drone
+
+        for t_data in initial_state.get("targets", []):
+            pos = t_data.get("position")
+            target = Target(
+                id=t_data["id"],
+                type=TargetType(t_data["type"]),
+                status=TargetStatus(t_data.get("status", "active")),
+                threat_value=ThreatValue(t_data["threat_value"]) if t_data.get("threat_value") else None,
+                heading=t_data.get("heading", 0.0),
+                speed=t_data.get("speed", 0.0),
+                confidence=t_data.get("confidence", 1.0),
+                reported_by=t_data.get("reported_by", ""),
+                notes=t_data.get("notes"),
+                position=Position(**pos) if pos else Position(lat=0.0, lon=0.0),
+            )
+            self._targets[target.id] = target
+
+    def _build_initial_state(self) -> dict:
+        """Serialize current in-memory state for persistence to assets_config.json."""
+        drones_data = []
+        for d in self._drones.values():
+            entry: dict = {
+                "id": d.id,
+                "name": d.name,
+                "model": d.model.value if d.model else None,
+                "type": d.type.value,
+                "status": d.status.value,
+                "heading": d.heading,
+                "speed": d.speed,
+                "altitude": d.altitude,
+                "battery": d.battery,
+                "range_used_km": d.range_used_km,
+                "max_range_km": d.max_range_km,
+                "max_payload_kg": d.max_payload_kg,
+                "max_flight_time_hours": d.max_flight_time_hours,
+                "swarm_id": d.swarm_id,
+                "current_task": d.current_task,
+            }
+            if d.position:
+                entry["position"] = {"lat": d.position.lat, "lon": d.position.lon, "alt": d.position.alt}
+            if d.home_position:
+                entry["home_position"] = {"lat": d.home_position.lat, "lon": d.home_position.lon, "alt": d.home_position.alt}
+            drones_data.append(entry)
+
+        targets_data = []
+        for t in self._targets.values():
+            entry = {
+                "id": t.id,
+                "type": t.type.value,
+                "status": t.status.value,
+                "heading": t.heading,
+                "speed": t.speed,
+                "confidence": t.confidence,
+                "reported_by": t.reported_by,
+                "notes": t.notes,
+                "threat_value": t.threat_value.value if t.threat_value else None,
+            }
+            if t.position:
+                entry["position"] = {"lat": t.position.lat, "lon": t.position.lon, "alt": t.position.alt}
+            targets_data.append(entry)
+
+        swarms_data = []
+        for s in self._swarms.values():
+            swarms_data.append({
+                "id": s.id,
+                "name": s.name,
+                "drone_model": s.drone_model.value if s.drone_model else None,
+                "total_drone_count": s.total_drone_count,
+                "drone_ids": list(s.drone_ids),
+                "status": s.status.value,
+                "objective": s.objective,
+                "target_ids": list(s.target_ids),
+            })
+
+        return {"drones": drones_data, "targets": targets_data, "swarms": swarms_data}
+
+    def save_config_to_file(self) -> bool:
+        """Flush current asset positions to assets_config.json under 'initial_state'."""
+        import json
+        from services.config_service import CONFIG_PATH
+        try:
+            try:
+                with open(CONFIG_PATH) as f:
+                    raw_config = json.load(f)
+            except FileNotFoundError:
+                raw_config = {}
+            with self._lock:
+                raw_config["initial_state"] = self._build_initial_state()
+            with open(CONFIG_PATH, "w") as f:
+                json.dump(raw_config, f, indent=2)
+            return True
+        except Exception as exc:
+            print(f"[state_service] save_config_to_file error: {exc}")
+            return False
+
     def _seed_demo_data(self):
         """Seed platform with Taiwan war game assets per spec (values from assets_config.json)."""
         from models.target import Position
         from services.config_service import assets_config
+
+        # Restore from saved initial_state if present (e.g. after drag-and-drop edits)
+        if "initial_state" in assets_config:
+            self._load_from_initial_state(assets_config["initial_state"])
+            return
 
         cfg_mq9  = assets_config["mq9"]
         cfg_scou = assets_config["scout_recon"]
@@ -113,6 +196,12 @@ class StateService:
         cfg_alt  = assets_config["altius_600m"]
         cfg_en   = assets_config["enemy"]
         taipei_pct = assets_config["deployment"]["taipei_pct"]
+
+        # No default deployments — if all counts are 0, start with empty battlefield
+        total = (cfg_mq9.get("count", 0) + cfg_scou.get("count", 0) +
+                 cfg_fpv.get("count", 0) + cfg_alt.get("count", 0))
+        if total == 0:
+            return
 
         # ── 4 MQ-9 Recon Drones ────────────────────────────────────────────────
         # always_airborne of them start patrolling; the rest are idle standby
@@ -204,43 +293,20 @@ class StateService:
                 swarm.drone_ids.append(d.id)
             self._swarms[swarm.id] = swarm
 
-        # ── Scout Recon Drones (grid patrol, city home bases) ─────────────────
-        # Exactly max_in_flight scouts start PATROLLING (one per active patrol grid,
-        # coastal-sea grids first). The remaining scouts start IDLE at their home
-        # bases and are launched automatically by the movement service as replacements
-        # when a patrolling scout exhausts its range and returns home (§8.2).
-        max_in_flight = cfg_scou.get("max_in_flight", 20)
-        active_grids = SCOUT_PATROL_GRIDS[:max_in_flight]
-
+        # ── Scout Recon Drones (city home bases) ──────────────────────────────
         scout_count = cfg_scou["count"]
         for i in range(scout_count):
             home_lat, home_lon = _city_base(i, scout_count, taipei_pct)
-            if i < len(active_grids):
-                g_lat, g_lon = active_grids[i]
-                d = Drone(
-                    name=f"SCOUT-{i+1:03d}",
-                    type=DroneType.RECON,
-                    model=DroneModel.SCOUT_RECON,
-                    position=Position(lat=g_lat, lon=g_lon, alt=3000.0),
-                    home_position=Position(lat=home_lat, lon=home_lon, alt=0.0),
-                    status=DroneStatus.PATROLLING,
-                    heading=float(((i + 1) * 37) % 360),
-                    max_range_km=cfg_scou["max_range_km"],
-                    max_flight_time_hours=5.0,
-                    current_task=f"Grid patrol ({g_lat:.4f}°N, {g_lon:.4f}°E)",
-                )
-            else:
-                d = Drone(
-                    name=f"SCOUT-{i+1:03d}",
-                    type=DroneType.RECON,
-                    model=DroneModel.SCOUT_RECON,
-                    position=Position(lat=home_lat, lon=home_lon, alt=0.0),
-                    home_position=Position(lat=home_lat, lon=home_lon, alt=0.0),
-                    status=DroneStatus.IDLE,
-                    heading=0.0,
-                    max_range_km=cfg_scou["max_range_km"],
-                    max_flight_time_hours=5.0,
-                )
+            d = Drone(
+                name=f"SCOUT-{i+1:03d}",
+                type=DroneType.RECON,
+                model=DroneModel.SCOUT_RECON,
+                position=Position(lat=home_lat, lon=home_lon, alt=3000.0),
+                home_position=Position(lat=home_lat, lon=home_lon, alt=0.0),
+                status=DroneStatus.PATROLLING,
+                heading=float(((i + 1) * 37) % 360),
+                max_range_km=cfg_scou["max_range_km"],
+            )
             self._drones[d.id] = d
 
         # ── Seeded Enemy Assets ────────────────────────────────────────────────
@@ -347,12 +413,15 @@ class StateService:
         return drone
 
     def update_drone(self, drone_id: str, updates: dict) -> Optional[Drone]:
+        from models.target import Position
         with self._lock:
             if drone_id not in self._drones:
                 return None
             drone = self._drones[drone_id]
             for key, value in updates.items():
                 if value is not None and hasattr(drone, key):
+                    if key in ("position", "home_position") and isinstance(value, dict):
+                        value = Position(**value)
                     setattr(drone, key, value)
             drone.last_update = datetime.utcnow()
         return drone
@@ -362,6 +431,16 @@ class StateService:
 
     def get_all_drones(self) -> list[Drone]:
         return list(self._drones.values())
+
+    def remove_drone(self, drone_id: str) -> bool:
+        with self._lock:
+            if drone_id not in self._drones:
+                return False
+            del self._drones[drone_id]
+            for swarm in self._swarms.values():
+                if drone_id in swarm.drone_ids:
+                    swarm.drone_ids.remove(drone_id)
+            return True
 
     # ─── Swarms ─────────────────────────────────────────────────────────────────
 
