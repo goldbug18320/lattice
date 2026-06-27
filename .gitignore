@@ -1,6 +1,7 @@
 node_modules/*
-backend/api/__pyche__/*
-backend/tests/__pyche__/*
-backend/services/__pyche__/*
-backend/models/__pyche__/*
-frontend/api/__pyche__/*
+backend/__pycache__/*
+backend/api/__pycache__/*
+backend/tests/__pycache__/*
+backend/services/__pycache__/*
+backend/models/__pycache__/*
+frontend/api/__pycache__/*
