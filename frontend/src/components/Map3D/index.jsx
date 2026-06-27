@@ -42,7 +42,11 @@ const TAIWAN_HOME = { lon: 121.0, lat: 23.8, altM: 450_000 }
 // Using terrain height from sampleTerrainMostDetailed is unreliable because the
 // Taiwan Strait is shallow (~60-80 m) and Cesium may report near-zero heights there.
 function likelySea(lon, lat) {
-  if (lon >= 119.4 && lon <= 120.1 && lat >= 22.0 && lat <= 26.5) return true  // Taiwan Strait
+  // Taiwan Strait: extends from China coast (~119.0) to Taiwan's west coast (~121.0).
+  // The upper bound was previously 120.1, which incorrectly classified valid strait
+  // water (lon 120.1–121.0) as land — ships seeded at those coordinates appeared on
+  // terrain and could not be dragged back into water.
+  if (lon >= 119.0 && lon <= 121.0 && lat >= 21.5 && lat <= 26.5) return true  // Taiwan Strait
   if (lon > 122.0) return true                                                   // Open Pacific east of Taiwan
   if (lat < 21.5 && lon > 116.0) return true                                    // South China Sea / Bashi Channel
   return false

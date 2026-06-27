@@ -73,20 +73,20 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "patrolling",
-        "heading": 33.45031316110659,
+        "heading": 188.90258065106417,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 85.74600000003322,
-        "range_used_km": 427.62000000001467,
+        "battery": 82.69000000004034,
+        "range_used_km": 519.3000000000112,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 25.057774747251948,
-          "lon": 121.53137873416229,
-          "alt": 6000.0
+          "lat": 24.98258276571951,
+          "lon": 121.96054611612573,
+          "alt": 5999.999999999326
         },
         "home_position": {
           "lat": 25.04,
@@ -100,19 +100,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "patrolling",
-        "heading": 33.70342238301495,
+        "heading": 316.40155021147245,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 85.74600000003322,
-        "range_used_km": 427.62000000001467,
+        "battery": 82.69000000004034,
+        "range_used_km": 519.3000000000112,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 23.567882255970005,
-          "lon": 119.6018101811838,
+          "lat": 23.524297206809024,
+          "lon": 119.59970897501036,
           "alt": 6000.0
         },
         "home_position": {
@@ -3622,8 +3622,8 @@
         "current_task": null,
         "position": {
           "lat": 25.04,
-          "lon": 121.56,
-          "alt": 0.0
+          "lon": 121.56000000000002,
+          "alt": 149.9999999996389
         },
         "home_position": {
           "lat": 25.04,
@@ -3718,20 +3718,20 @@
         "model": "scout_recon",
         "type": "recon",
         "status": "returning",
-        "heading": 30.94455846431274,
+        "heading": 52.44712691589946,
         "speed": 42.0,
         "altitude": 100.0,
         "battery": 92.85600000001665,
-        "range_used_km": 299.2919999999814,
+        "range_used_km": 363.4679999999404,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.402147534515752,
-          "lon": 121.14006670053604,
-          "alt": 2999.999999999443
+          "lat": 24.905056076609497,
+          "lon": 121.3664773210044,
+          "alt": 3000.0000000032887
         },
         "home_position": {
           "lat": 25.04,
@@ -3745,20 +3745,20 @@
         "model": "scout_recon",
         "type": "recon",
         "status": "returning",
-        "heading": 30.90405306337769,
+        "heading": 81.38930324889165,
         "speed": 42.0,
         "altitude": 100.0,
         "battery": 92.85600000001665,
-        "range_used_km": 299.2919999999814,
+        "range_used_km": 363.4679999999404,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.65408740900021,
-          "lon": 121.24217498024322,
-          "alt": 3000.000000000095
+          "lat": 24.967025600700598,
+          "lon": 121.22979506904824,
+          "alt": 2999.9999999908537
         },
         "home_position": {
           "lat": 25.0,
@@ -4566,9 +4566,9 @@
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 22.63,
-          "lon": 120.3,
-          "alt": 0.0
+          "lat": 22.553681598941395,
+          "lon": 120.43039883167985,
+          "alt": 149.99999999830763
         },
         "home_position": {
           "lat": 22.63,
@@ -4701,9 +4701,9 @@
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 22.63,
-          "lon": 120.3,
-          "alt": 0.0
+          "lat": 22.858397571375214,
+          "lon": 120.29426939906219,
+          "alt": 149.99999999793945
         },
         "home_position": {
           "lat": 22.63,
@@ -4914,7 +4914,7 @@
         "threat_value": "high",
         "position": {
           "lat": 24.332431094984415,
-          "lon": 120.12657095634862,
+          "lon": 120.29705129092386,
           "alt": 10.000000001096158
         }
       },
@@ -4929,8 +4929,8 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 24.109364928265133,
-          "lon": 120.11342504254773,
+          "lat": 24.12290340508289,
+          "lon": 120.28296842509154,
           "alt": 9.999999997814284
         }
       },
@@ -4945,9 +4945,9 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.480822406142288,
-          "lon": 119.94871175865848,
-          "alt": 9.999999998356818
+          "lat": 23.50968752682295,
+          "lon": 120.0022683735032,
+          "alt": 9.999999998415987
         }
       },
       {
@@ -4961,8 +4961,8 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.179293491178175,
-          "lon": 119.89798154310549,
+          "lat": 23.206267408829678,
+          "lon": 120.06440798121787,
           "alt": 9.999999992773574
         }
       },
@@ -4977,8 +4977,8 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 25.025285780629876,
-          "lon": 120.69902717120601,
+          "lat": 25.030706949817816,
+          "lon": 120.87035679308605,
           "alt": 0.0
         }
       },
@@ -4994,7 +4994,7 @@
         "threat_value": "medium",
         "position": {
           "lat": 24.792712087913756,
-          "lon": 121.01888612273072,
+          "lon": 121.06088548839367,
           "alt": 9.999999996285833
         }
       },
@@ -5009,8 +5009,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 24.546028549678237,
-          "lon": 120.7888128192027,
+          "lat": 24.55589688472922,
+          "lon": 120.82930253843573,
           "alt": 0.0
         }
       },
@@ -5025,8 +5025,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.49120437980914,
-          "lon": 120.2578399881307,
+          "lat": 23.478163726762567,
+          "lon": 120.29690475539404,
           "alt": 9.999999999004524
         }
       },
@@ -5041,8 +5041,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.984500165213806,
-          "lon": 120.69391838245772,
+          "lat": 23.981177063270028,
+          "lon": 120.73549066119966,
           "alt": 0.0
         }
       },
@@ -5106,7 +5106,7 @@
         "threat_value": "medium",
         "position": {
           "lat": 24.291151732628418,
-          "lon": 121.67637842850844,
+          "lon": 122.30385577716528,
           "alt": 2999.999999997094
         }
       },
@@ -5121,8 +5121,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.994788576929288,
-          "lon": 120.06537742235884,
+          "lat": 24.014748463950546,
+          "lon": 120.69106882383453,
           "alt": 2500.000000000213
         }
       },
@@ -5137,9 +5137,9 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.009716795648078,
-          "lon": 121.73111977622756,
-          "alt": 3499.999999998829
+          "lat": 22.898272776981404,
+          "lon": 121.62786553775928,
+          "alt": 3499.999999999453
         }
       },
       {
@@ -5153,24 +5153,24 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.52257371378066,
-          "lon": 122.01293445152209,
-          "alt": 2000.0000000003731
+          "lat": 23.557822609918432,
+          "lon": 121.88555633699531,
+          "alt": 1999.9999999980023
         }
       },
       {
         "id": "858d1879-f4f9-4032-8264-2736a250e12c",
         "type": "drone",
         "status": "active",
-        "heading": 131.0,
+        "heading": 35.0,
         "speed": 41.666666666666664,
         "confidence": 0.65,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 25.23803050414827,
-          "lon": 120.82422935568786,
+          "lat": 25.23645988065194,
+          "lon": 120.81262992336853,
           "alt": 50.000000000788084
         }
       },
@@ -5178,15 +5178,15 @@
         "id": "b17b0bc8-3701-4929-b1db-056813f63286",
         "type": "drone",
         "status": "active",
-        "heading": 101.0,
+        "heading": 5.0,
         "speed": 41.666666666666664,
         "confidence": 0.6,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.511788603359605,
-          "lon": 120.40726464546862,
+          "lat": 24.50517375990923,
+          "lon": 120.39814327730681,
           "alt": 30.0
         }
       },
@@ -5194,15 +5194,15 @@
         "id": "3528eb34-fcf1-4ed4-9ee5-d29c208d1fea",
         "type": "drone",
         "status": "active",
-        "heading": 121.0,
+        "heading": 25.0,
         "speed": 41.666666666666664,
         "confidence": 0.62,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 23.808842722854433,
-          "lon": 120.31119830659364,
+          "lat": 23.80547104208636,
+          "lon": 120.30020163223982,
           "alt": 40.0
         }
       },
@@ -5218,7 +5218,7 @@
         "threat_value": "low",
         "position": {
           "lat": 24.914357634668214,
-          "lon": 121.04609981272881,
+          "lon": 121.0671201573357,
           "alt": 9.999999999722586
         }
       },
@@ -5233,8 +5233,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.64136314521185,
-          "lon": 120.83053027663668,
+          "lat": 24.643024696181026,
+          "lon": 120.85142476682012,
           "alt": 10.000000000255088
         }
       },
@@ -5249,8 +5249,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.192250082619562,
-          "lon": 120.59711360144684,
+          "lat": 24.190588531650388,
+          "lon": 120.61793359686624,
           "alt": 0.0
         }
       },
@@ -5265,8 +5265,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 23.703103274766654,
-          "lon": 120.39705236284621,
+          "lat": 23.703768604336382,
+          "lon": 120.41786029767847,
           "alt": 0.0
         }
       }
