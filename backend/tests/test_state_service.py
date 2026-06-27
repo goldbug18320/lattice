@@ -25,6 +25,7 @@ def _empty_svc() -> StateService:
     svc._targets = {}
     svc._drones = {}
     svc._swarms = {}
+    svc._approvals = {}
     svc._command_log = []
     return svc
 
@@ -117,10 +118,33 @@ class TestSeedData:
         scouts = [d for d in svc.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
         assert len(scouts) == 100
 
-    def test_scouts_are_patrolling(self):
+    def test_scouts_max_in_flight_patrolling(self):
+        """Exactly min(max_in_flight, len(SCOUT_PATROL_GRIDS)) scouts start PATROLLING."""
+        from services.state_service import SCOUT_PATROL_GRIDS
+        from services.config_service import assets_config
         svc = _svc()
         scouts = [d for d in svc.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
-        assert all(d.status == DroneStatus.PATROLLING for d in scouts)
+        patrolling = [d for d in scouts if d.status == DroneStatus.PATROLLING]
+        max_in_flight = assets_config["scout_recon"].get("max_in_flight", 20)
+        expected = min(max_in_flight, len(SCOUT_PATROL_GRIDS))
+        assert len(patrolling) == expected
+
+    def test_scouts_remainder_are_idle(self):
+        """Scouts beyond the max_in_flight cap start IDLE, ready as replacements."""
+        from services.state_service import SCOUT_PATROL_GRIDS
+        from services.config_service import assets_config
+        svc = _svc()
+        scouts = [d for d in svc.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
+        idle = [d for d in scouts if d.status == DroneStatus.IDLE]
+        max_in_flight = assets_config["scout_recon"].get("max_in_flight", 20)
+        expected_patrolling = min(max_in_flight, len(SCOUT_PATROL_GRIDS))
+        assert len(idle) == len(scouts) - expected_patrolling
+
+    def test_scouts_only_patrolling_or_idle_at_startup(self):
+        svc = _svc()
+        scouts = [d for d in svc.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
+        valid = {DroneStatus.PATROLLING, DroneStatus.IDLE}
+        assert all(d.status in valid for d in scouts)
 
     def test_scouts_have_home_position(self):
         svc = _svc()

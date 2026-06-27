@@ -7,6 +7,7 @@ from models.drone import Drone, DroneType, DroneModel, DroneStatus
 from models.target import Position, Target, TargetType, TargetStatus
 from services.movement_service import (
     MovementService, _advance, _distance_km, _bearing, DT,
+    MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM,
 )
 
 
@@ -66,6 +67,7 @@ def _make_state(drones, targets=None, swarms=None):
     swarm_map = {s.id: s for s in (swarms or [])}
 
     svc.get_all_drones.return_value = list(drones)
+    svc.get_all_targets.return_value = list(targets or [])
     svc.get_drone.side_effect = lambda did: drone_map.get(did)
     svc.get_target.side_effect = lambda tid: target_map.get(tid)
     svc.get_swarm.side_effect = lambda sid: swarm_map.get(sid)
@@ -276,3 +278,201 @@ class TestTrackingTowardTarget:
         self.svc.tick(state)
         # Heading should be ~90° (east toward target at higher lon)
         assert 80 < drone.heading < 100
+
+
+# ─── Enemy Asset Movement (§8.8) ─────────────────────────────────────────────
+
+def _make_target(**kwargs) -> Target:
+    defaults = dict(
+        type=TargetType.SHIP,
+        position=Position(lat=24.0, lon=119.5, alt=0.0),
+        heading=90.0,
+        speed=11.3,   # 22 knots in m/s
+        confidence=0.9,
+        status=TargetStatus.ACTIVE,
+    )
+    defaults.update(kwargs)
+    return Target(**defaults)
+
+
+class TestEnemyMovement:
+    def setup_method(self):
+        self.svc = MovementService()
+
+    def test_ship_advances_eastward(self):
+        ship = _make_target(type=TargetType.SHIP, heading=90.0, speed=11.3)
+        orig_lon = ship.position.lon
+        state = _make_state([], targets=[ship])
+        self.svc.tick(state)
+        assert ship.position.lon > orig_lon
+
+    def test_tank_advances_along_heading(self):
+        tank = _make_target(type=TargetType.TANK, heading=90.0, speed=2.78)
+        orig_lon = tank.position.lon
+        state = _make_state([], targets=[tank])
+        self.svc.tick(state)
+        assert tank.position.lon > orig_lon
+
+    def test_soldier_advances_along_heading(self):
+        soldier = _make_target(type=TargetType.SOLDIER_UNIT, heading=90.0, speed=1.39)
+        orig_lon = soldier.position.lon
+        state = _make_state([], targets=[soldier])
+        self.svc.tick(state)
+        assert soldier.position.lon > orig_lon
+
+    def test_missile_launcher_stationary(self):
+        ml = _make_target(type=TargetType.MISSILE_LAUNCHER, heading=0.0, speed=0.0)
+        orig_lat = ml.position.lat
+        orig_lon = ml.position.lon
+        state = _make_state([], targets=[ml])
+        self.svc.tick(state)
+        assert ml.position.lat == orig_lat
+        assert ml.position.lon == orig_lon
+
+    def test_destroyed_target_does_not_move(self):
+        ship = _make_target(type=TargetType.SHIP, speed=11.3, status=TargetStatus.DESTROYED)
+        orig_lon = ship.position.lon
+        state = _make_state([], targets=[ship])
+        self.svc.tick(state)
+        assert ship.position.lon == orig_lon
+
+    def test_lost_target_does_not_move(self):
+        ship = _make_target(type=TargetType.SHIP, speed=11.3, status=TargetStatus.LOST)
+        orig_lon = ship.position.lon
+        state = _make_state([], targets=[ship])
+        self.svc.tick(state)
+        assert ship.position.lon == orig_lon
+
+    def test_long_range_drone_high_altitude_advances(self):
+        lr_drone = _make_target(
+            type=TargetType.DRONE,
+            position=Position(lat=24.0, lon=120.0, alt=3000.0),
+            heading=90.0,
+            speed=41.7,
+        )
+        orig_lon = lr_drone.position.lon
+        state = _make_state([], targets=[lr_drone])
+        self.svc.tick(state)
+        assert lr_drone.position.lon > orig_lon
+
+    def test_enemy_fpv_drone_low_altitude_rotates_heading(self):
+        fpv = _make_target(
+            type=TargetType.DRONE,
+            position=Position(lat=25.0, lon=120.7, alt=50.0),
+            heading=0.0,
+            speed=41.7,
+        )
+        state = _make_state([], targets=[fpv])
+        self.svc.tick(state)
+        # Heading should have rotated by _FPV_PATROL_HEADING_DELTA (3°)
+        assert abs(fpv.heading - 3.0) < 1e-6
+
+    def test_high_altitude_drone_heading_unchanged(self):
+        lr_drone = _make_target(
+            type=TargetType.DRONE,
+            position=Position(lat=24.0, lon=120.0, alt=3000.0),
+            heading=90.0,
+            speed=41.7,
+        )
+        state = _make_state([], targets=[lr_drone])
+        self.svc.tick(state)
+        # High-altitude drones keep their heading
+        assert abs(lr_drone.heading - 90.0) < 1e-6
+
+    def test_multiple_enemy_targets_all_advance(self):
+        ship = _make_target(type=TargetType.SHIP, heading=90.0, speed=11.3)
+        tank = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=25.0, lon=120.5, alt=0.0),
+            heading=90.0,
+            speed=2.78,
+        )
+        orig_ship_lon = ship.position.lon
+        orig_tank_lon = tank.position.lon
+        state = _make_state([], targets=[ship, tank])
+        self.svc.tick(state)
+        assert ship.position.lon > orig_ship_lon
+        assert tank.position.lon > orig_tank_lon
+
+    def test_detection_radii_match_config(self):
+        assert MQ9_DETECTION_RADIUS_KM == 15.0
+        assert SCOUT_DETECTION_RADIUS_KM == 10.0
+
+
+class TestScoutPatrolRefill:
+    def setup_method(self):
+        self.svc = MovementService()
+
+    def test_idle_scout_launched_when_below_max_in_flight(self):
+        """When no scouts are patrolling, an idle scout is dispatched to the first patrol grid."""
+        idle_scout = _make_drone(
+            model=DroneModel.SCOUT_RECON,
+            type=DroneType.RECON,
+            status=DroneStatus.IDLE,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            home_position=Position(lat=25.0, lon=121.5, alt=0.0),
+            max_range_km=150.0,
+            current_task=None,
+        )
+        state = _make_state([idle_scout])
+        self.svc.tick(state)
+        assert idle_scout.status == DroneStatus.PATROLLING
+        assert idle_scout.current_task is not None
+        assert idle_scout.current_task.startswith("Grid patrol")
+
+    def test_already_covered_grid_not_doubled(self):
+        """A grid already being patrolled does not get a second scout assigned to it."""
+        from services.state_service import SCOUT_PATROL_GRIDS
+        g_lat, g_lon = SCOUT_PATROL_GRIDS[0]
+        task = f"Grid patrol ({g_lat:.4f}°N, {g_lon:.4f}°E)"
+        patrolling = _make_drone(
+            model=DroneModel.SCOUT_RECON,
+            type=DroneType.RECON,
+            status=DroneStatus.PATROLLING,
+            position=Position(lat=g_lat, lon=g_lon, alt=3000.0),
+            home_position=Position(lat=25.0, lon=121.5, alt=0.0),
+            max_range_km=150.0,
+            current_task=task,
+        )
+        idle_scout = _make_drone(
+            model=DroneModel.SCOUT_RECON,
+            type=DroneType.RECON,
+            status=DroneStatus.IDLE,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            home_position=Position(lat=25.0, lon=121.5, alt=0.0),
+            max_range_km=150.0,
+            current_task=None,
+        )
+        from services.config_service import assets_config
+        max_in_flight = assets_config["scout_recon"].get("max_in_flight", 20)
+        if len(SCOUT_PATROL_GRIDS) >= max_in_flight:
+            # Only one grid open; already covered → idle scout stays idle
+            state = _make_state([patrolling, idle_scout])
+            # Patch max_in_flight to 1 for this assertion
+            orig = assets_config["scout_recon"]["max_in_flight"]
+            assets_config["scout_recon"]["max_in_flight"] = 1
+            try:
+                self.svc._refill_scout_patrols(state)
+            finally:
+                assets_config["scout_recon"]["max_in_flight"] = orig
+            assert idle_scout.status == DroneStatus.IDLE
+
+    def test_returned_scout_triggers_replacement(self):
+        """When a scout arrives home (goes IDLE), refill sends a new scout to its grid."""
+        from services.state_service import SCOUT_PATROL_GRIDS
+        g_lat, g_lon = SCOUT_PATROL_GRIDS[0]
+        task = f"Grid patrol ({g_lat:.4f}°N, {g_lon:.4f}°E)"
+        # Scout just returned home — now IDLE, grid is uncovered
+        returned = _make_drone(
+            model=DroneModel.SCOUT_RECON,
+            type=DroneType.RECON,
+            status=DroneStatus.IDLE,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            home_position=Position(lat=25.0, lon=121.5, alt=0.0),
+            max_range_km=150.0,
+            current_task=task,
+        )
+        state = _make_state([returned])
+        self.svc._refill_scout_patrols(state)
+        assert returned.status == DroneStatus.PATROLLING
+        assert returned.range_used_km == 0.0

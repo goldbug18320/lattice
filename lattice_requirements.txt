@@ -16,13 +16,17 @@ Features and capabilities:
 12) LLM should understand "deploy all assets to the west coast".
 13) LLM should determine classify the enemy assets to 1) high value target, such as ship, missile launchers. 2) medium value target, such as tanks. 3) low value targets. And ask human for permission to attack enemy targets according to value classification.
 14) LLM should respond with natural language, such as "what is the current status of MQ9-01", instead of just translating inquiry into commands.
+15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
+16) idling drones should not show up on on the swarm and drone status panel.
 
 Friendly assets:
 4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each reconnaissance drone scan an area of 400 square km. Each reconnaissance drone has a max time of 5 hours.
-MQ9 are capable of detecting enemy assets within 20km in radius.
+MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.
+
 There are always 2 reconnaissance drones in the air at all time. 
 100 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
-reconnaissance drones are capable of detecting enemy assets within 10km in radius.
+LLM should divide the area from 25 km from the coast to the mountain in grids and assign one reconnaissance drone to patrol each grid. Each grid is 50*50km in size. There should be always 20 reconnaissance drones in feights to cover 100 grids. Only patrol the coastal sea (within 25km from the coast) and cities. Do not patrol the mountain area. Assign high priority to coastal sea (within 25km from the coast).
+reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
 10000 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
 1000 altius-600m drones, max payload 12kg, max range 440km.
@@ -39,5 +43,8 @@ Enermy assets:
 100000 PLA solders in Taiwan.
 90% enemy assets are on the west coast. The remaining in east coast.
 Enemy assets should be marked as red.
+
+Friendly assets and enermy assets should be configurable (i.e. not hard coded).
+
 
 

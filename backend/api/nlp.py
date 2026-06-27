@@ -166,6 +166,23 @@ async def approve_attack(approval_id: str):
         )
         execution_result = swarm_service.execute_swarm_command(proposed["swarm_id"], cmd)
 
+    elif proposed.get("type") == "assign_drone" and proposed.get("drone_id"):
+        cmd = DroneCommand(
+            command_type=CommandType(proposed.get("command_type", "attack")),
+            target_id=proposed.get("target_ids", [None])[0] if proposed.get("target_ids") else None,
+            objective=proposed.get("objective", ""),
+            notes=proposed.get("notes"),
+        )
+        execution_result = swarm_service.execute_drone_command(proposed["drone_id"], cmd)
+
+    elif proposed.get("type") == "deploy_to_region" and proposed.get("region"):
+        execution_result = swarm_service.execute_deploy_to_region(
+            region=proposed["region"],
+            asset_filter=proposed.get("asset_filter", "all"),
+            objective=proposed.get("objective"),
+            priority=proposed.get("priority", 9),
+        )
+
     state_service.log_command({
         "type": "hitl_approved",
         "approval_id": approval_id,

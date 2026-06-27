@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '../../store/index.js'
 
 const STATUS_COLORS = {
@@ -10,22 +11,69 @@ const STATUS_COLORS = {
   offline: '#374151',
 }
 
+const TARGET_ICONS = {
+  drone: '✈',
+  ship: '⚓',
+  tank: '⊞',
+  missile_launcher: '↑',
+  soldier_unit: '◉',
+}
+
 const DRONE_ICONS = {
   recon: '👁',
   combat: '⚡',
   swarm_member: '◈',
 }
 
+function remainingRange(drone) {
+  const max = drone.max_range_km ?? 0
+  const used = drone.range_used_km ?? 0
+  return Math.max(0, max - used).toFixed(1)
+}
+
+function DetectedContacts({ droneNameOrId, targets }) {
+  const contacts = targets.filter(
+    t => t.reported_by === droneNameOrId && t.status !== 'destroyed' && t.status !== 'lost'
+  )
+  if (contacts.length === 0) {
+    return <div className="detected-empty">No contacts detected</div>
+  }
+  return (
+    <div className="detected-contacts">
+      {contacts.map(t => (
+        <div key={t.id} className="detected-item">
+          <span className="detected-icon">{TARGET_ICONS[t.type] || '?'}</span>
+          <span className="detected-type">{t.type.replace('_', ' ')}</span>
+          <span className="detected-conf">{Math.round((t.confidence ?? 0) * 100)}%</span>
+          <span className="detected-pos">
+            {t.position ? `${t.position.lat.toFixed(2)}°N ${t.position.lon.toFixed(2)}°E` : '—'}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function SwarmStatus() {
   const swarms = useStore(s => s.swarms)
   const drones = useStore(s => s.drones)
+  const targets = useStore(s => s.targets)
   const selectedSwarmId = useStore(s => s.selectedSwarmId)
   const selectSwarm = useStore(s => s.selectSwarm)
+
+  const [selectedReconId, setSelectedReconId] = useState(null)
 
   const droneMap = Object.fromEntries(drones.map(d => [d.id, d]))
 
   const reconDrones = drones.filter(d => d.type === 'recon')
-  const standaloneDrones = drones.filter(d => d.type === 'combat' && !d.swarm_id)
+
+  const STATUS_SORT_ORDER = ['engaging', 'tracking', 'searching', 'returning', 'patrolling', 'idle', 'offline']
+  const sortedSwarms = [...swarms].sort((a, b) =>
+    STATUS_SORT_ORDER.indexOf(a.status) - STATUS_SORT_ORDER.indexOf(b.status)
+  )
+
+  const activeReconDrones = reconDrones.filter(d => d.status !== 'idle')
+  const idleReconCount = reconDrones.length - activeReconDrones.length
 
   return (
     <div className="panel swarm-panel">
@@ -34,8 +82,13 @@ export default function SwarmStatus() {
         <span className="panel-count">{drones.length} TOTAL</span>
       </div>
 
-      {/* Swarms */}
-      {swarms.map(swarm => {
+      <div className="swarm-scroll">
+
+      {/* Combat Swarms */}
+      {swarms.length > 0 && (
+        <div className="section-label">COMBAT SWARMS</div>
+      )}
+      {sortedSwarms.map(swarm => {
         const swarmDrones = (swarm.drone_ids || []).map(id => droneMap[id]).filter(Boolean)
         const avgBattery = swarmDrones.length
           ? Math.round(swarmDrones.reduce((s, d) => s + (d.battery || 0), 0) / swarmDrones.length)
@@ -72,7 +125,7 @@ export default function SwarmStatus() {
             )}
             {isSelected && (
               <div className="drone-list">
-                {swarmDrones.map(d => (
+                {swarmDrones.filter(d => d.status !== 'idle').map(d => (
                   <div key={d.id} className="drone-item">
                     <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
                     <span className="drone-name">{d.name}</span>
@@ -80,8 +133,14 @@ export default function SwarmStatus() {
                       {d.status}
                     </span>
                     <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
+                    <span className="drone-range">↗{remainingRange(d)} km</span>
                   </div>
                 ))}
+                {swarmDrones.filter(d => d.status === 'idle').length > 0 && (
+                  <div className="drone-item" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
+                    {swarmDrones.filter(d => d.status === 'idle').length} drones idle
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -91,19 +150,44 @@ export default function SwarmStatus() {
       {/* Recon Drones */}
       {reconDrones.length > 0 && (
         <div className="section-group">
-          <div className="section-label">RECONNAISSANCE</div>
-          {reconDrones.map(d => (
-            <div key={d.id} className="drone-item standalone">
-              <span className="drone-icon">👁</span>
-              <span className="drone-name">{d.name}</span>
-              <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
-                {d.status}
-              </span>
-              <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
-            </div>
-          ))}
+          <div className="section-label">
+            RECONNAISSANCE
+            {idleReconCount > 0 && (
+              <span className="idle-count"> ({idleReconCount} idle)</span>
+            )}
+          </div>
+          {activeReconDrones.map(d => {
+            const isReconSelected = d.id === selectedReconId
+            return (
+              <div key={d.id}>
+                <div
+                  className={`drone-item standalone ${isReconSelected ? 'selected' : ''}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedReconId(isReconSelected ? null : d.id)}
+                >
+                  <span className="drone-icon">👁</span>
+                  <span className="drone-name">{d.name}</span>
+                  <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
+                    {d.status}
+                  </span>
+                  <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
+                  <span className="drone-range">↗{remainingRange(d)} km</span>
+                </div>
+                {isReconSelected && (
+                  <div className="recon-detail">
+                    <div className="recon-detail-header">
+                      DETECTED CONTACTS ({targets.filter(t => t.reported_by === d.name || t.reported_by === d.id).length})
+                    </div>
+                    <DetectedContacts droneNameOrId={d.name} targets={targets} />
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
+
+      </div>
     </div>
   )
 }

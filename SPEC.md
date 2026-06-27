@@ -18,8 +18,11 @@
 - **LLM-driven drone selection**: LLM automatically selects drone type (FPV vs. Altius-600M) and swarm size based on target type, required payload, and range
 - **LLM-driven UI control**: operator can navigate and control the 3D map view via natural language (e.g., "show Taiwan on map", "zoom to Fujian", "focus on target alpha")
 - **LLM geographic deployment**: LLM understands region-based deployment commands (e.g., "deploy all assets to the west coast", "move recon drones to northern Taiwan") — resolves named regions to bounding boxes and fans out patrol commands to all matching swarms simultaneously
+- **LLM-driven grid patrol assignment**: The patrol area covers the **coastal sea within 25 km of the Taiwan coastline** and **city areas** — mountain areas are explicitly excluded; this area is divided into **50×50 km grids** (100 grids total); exactly **20 scout recon drones are in flight at all times**, prioritising the highest-value grids (coastal sea first, then cities); **coastal sea grids take highest priority** and are covered first; if a drone returns, a replacement launches immediately from the nearest base (unless inventory is exhausted)
 - **LLM target classification + human approval (HITL)**: LLM classifies every attack target by threat value (high / medium / low) and generates a pending approval request; the operator must explicitly approve before any attack is executed — no autonomous strikes without human confirmation
 - **LLM natural language status responses (Feature 14)**: For status queries (e.g., "what is the status of MQ9-01?", "how many drones are engaging?"), the LLM produces a conversational natural language answer instead of a structured action — the platform returns the human-readable response directly in the command log
+- **Engage → auto-select combat swarm (Feature 15)**: When the operator clicks the ENGAGE button on a target in the Target List panel, the assigned combat swarm is automatically selected and highlighted in the Swarm & Drone Status panel, and swarms are sorted by activity (engaging first) — giving immediate visual confirmation of which swarm was tasked
+- **Hide idle drones from Swarm & Drone Status panel (Feature 16)**: Idle individual drones are suppressed to reduce clutter — swarm cards always show (so the operator can see all swarms), but the expanded drone list within a selected swarm only shows active (non-idle) drones with a summary count of idle ones; idle recon drones are also hidden from the RECONNAISSANCE section
 - Swarm-level (not drone-level) task assignment to support autonomous AI swarm coordination
 - **Drone movement simulation**: all deployed (non-idle) drones continuously update their position on the server at 1-second intervals; drones return when max range is consumed
 - **Live friendly drone telemetry**: drones report position, battery, heading, and speed via a dedicated batch telemetry API endpoint; UI always reflects current positions
@@ -752,24 +755,28 @@ This design means:
 
 The platform pre-loads the following friendly and enemy assets on startup for an immediately operational war game scenario over Taiwan.
 
+> **All asset counts and properties (payload, range, speed, detection radius, swarm sizes, initial positions) are configurable — not hard-coded.** The platform reads initial asset definitions from a startup configuration source (JSON file or environment-mapped settings) before seeding the State Service. Default values match the war game scenario defined in this section. See §12 for configuration details.
+
 ### 8.1 Friendly — MQ-9 Reconnaissance Drones (4 units)
 
 | Name | Model | Scan Area | Detection Radius | Max Flight Time | Max Range | Status |
 |---|---|---|---|---|---|---|
-| MQ9-01 | MQ-9 Reaper | 400 km² | **20 km** | 5 hours | 1,900 km | airborne |
-| MQ9-02 | MQ-9 Reaper | 400 km² | **20 km** | 5 hours | 1,900 km | airborne |
-| MQ9-03 | MQ-9 Reaper | 400 km² | **20 km** | 5 hours | 1,900 km | idle (standby) |
-| MQ9-04 | MQ-9 Reaper | 400 km² | **20 km** | 5 hours | 1,900 km | idle (standby) |
+| MQ9-01 | MQ-9 Reaper | 400 km² | **15 km** | 5 hours | 1,900 km | airborne |
+| MQ9-02 | MQ-9 Reaper | 400 km² | **15 km** | 5 hours | 1,900 km | airborne |
+| MQ9-03 | MQ-9 Reaper | 400 km² | **15 km** | 5 hours | 1,900 km | idle (standby) |
+| MQ9-04 | MQ-9 Reaper | 400 km² | **15 km** | 5 hours | 1,900 km | idle (standby) |
 
-**Detection radius:** Each airborne MQ-9 continuously detects all enemy assets within **20 km** of its current position. Detected assets are submitted to `POST /api/recon/feed` automatically by the simulator.
+**Detection radius:** Each airborne MQ-9 continuously detects all enemy assets within **15 km** of its current position. Detected assets are submitted to `POST /api/recon/feed` automatically by the simulator.
 
 **Rotation policy:** Exactly 2 MQ-9s are always airborne. MQ9-01 and MQ9-02 start airborne (`patrolling`); MQ9-03 and MQ9-04 start on standby (`idle`). When a drone's flight time expires it returns and triggers a standby drone to launch.
+
+**UI requirements:** The operator must be able to view the current status of each MQ-9 — including location, speed, battery, and remaining range — directly on the UI. Clicking or selecting a specific MQ-9 must show the list of enemy assets currently detected by that drone (i.e., targets whose `reported_by` field matches the selected MQ-9 ID), so the operator knows exactly what each MQ-9 is seeing.
 
 ---
 
 ### 8.2 Friendly — Scout Reconnaissance Drones (100 units)
 
-A fleet of 100 lighter, shorter-range scout reconnaissance drones supplements the 4 MQ-9s, providing wider area coverage across Taiwan.
+A fleet of 100 lighter, shorter-range scout reconnaissance drones supplements the 4 MQ-9s, providing grid-based area coverage across the coastal-to-mountain zone.
 
 | Property | Value |
 |---|---|
@@ -777,11 +784,16 @@ A fleet of 100 lighter, shorter-range scout reconnaissance drones supplements th
 | Naming | SCOUT-001 … SCOUT-100 |
 | Max range | 150 km |
 | Max speed | 150 km/h (41.7 m/s) |
+| Detection radius | **10 km** |
 | Function | Real-time recon feeds: enemy positions, types, confidence |
-| Deployment | Distributed across major cities in Taiwan (60% Taipei area) |
-| Status at startup | `patrolling` |
+| Deployment | Grid-based patrol (see below) |
+| Status at startup | `patrolling` (up to max_in_flight) or `idle` |
 
-Scout drones continuously fly patrol routes and automatically submit reconnaissance feeds to `POST /api/recon/feed` for any enemy assets they detect.
+**Grid patrol system:** The patrol area covers two zones: (1) **coastal sea within 25 km of the Taiwan coastline** and (2) **city areas** across Taiwan — mountain areas are explicitly excluded. This area is divided into **50×50 km grids** (100 grids total). Exactly **20 scout drones are in flight at all times**, each assigned to one of the highest-priority grids. **Coastal sea grids receive highest priority** and are always covered first; city grids fill the remaining capacity. When a drone returns due to range exhaustion, a replacement launches immediately from the nearest base. With only 20 of 100 grids covered simultaneously, lower-priority grids are left uncovered until drones rotate in.
+
+Scout drones continuously fly patrol routes within their assigned grid and automatically submit reconnaissance feeds to `POST /api/recon/feed` for any enemy assets they detect within **10 km** of their current position.
+
+**UI requirements:** The operator must be able to view the current status of each Scout drone — including location, speed, battery, and remaining range — directly on the UI. Clicking or selecting a specific Scout drone must show the list of enemy assets currently detected by that drone (i.e., targets whose `reported_by` field matches the selected Scout drone ID), so the operator can see what each scout is covering in real time.
 
 ---
 
@@ -813,14 +825,17 @@ Scout drones continuously fly patrol routes and automatically submit reconnaissa
 **Total friendly assets: 11,104 (4 MQ-9 + 100 Scout Recon + 11,000 combat)**
 
 #### Friendly Asset Deployment
-All reconnaissance and combat drones are distributed across **major cities in Taiwan** at startup:
+
+**Scout recon drones** are **home-based in cities** using the same distribution as combat drones (60% Taipei area, 40% rest of Taiwan). Each scout launches from its home city to its assigned 50×50 km patrol grid (§8.2). When a scout exhausts its range and returns to home base, the next available scout at that base launches to re-cover the grid.
+
+**Combat drones** are distributed across **major cities in Taiwan** at startup:
 
 | Region | Allocation | Cities |
 |---|---|---|
 | Taipei area | **60%** | Taipei, New Taipei, Keelung, Taoyuan |
 | Rest of Taiwan | **40%** | Taichung, Tainan, Kaohsiung, Hualien, and others |
 
-MQ-9 recon drones patrol from high altitude and are not city-bound. Scout recon and combat drones follow the 60/40 Taipei distribution. The 60% Taipei concentration reflects the political/military priority of the capital region.
+MQ-9 recon drones patrol from high altitude and are not city-bound. The 60% Taipei concentration for combat drones reflects the political/military priority of the capital region.
 
 ---
 
@@ -933,13 +948,43 @@ The LLM evaluates target count, confidence level, and available drone inventory 
 
 ---
 
+### 8.8 Enemy Asset Movement Simulation
+
+Mobile enemy assets also move during the simulation. The Movement Simulator updates enemy positions each tick alongside friendly drone movement. Updated positions are reflected in the State Service immediately; the next WebSocket broadcast delivers new coordinates to the UI and triggers recon detection checks.
+
+#### Enemy Movement Rules
+
+| Asset Type | Movement Behaviour | Speed |
+|---|---|---|
+| Ships | Advance eastward from mainland China across the Taiwan Strait toward Taiwan | 22 knots (~41 km/h / 11.3 m/s) |
+| Tanks | Advance at constant heading from landing zones inland | 10 km/h (2.78 m/s) |
+| Soldiers | Move slowly across terrain toward objectives | ~5 km/h (1.39 m/s) |
+| Long-range attack drones | Fly eastward toward Taiwan from mainland launch points | 150 km/h (41.7 m/s) |
+| FPV drones (enemy) | Roam in random patrol patterns within their deployment zone in Taiwan | 150 km/h (41.7 m/s) |
+| Missile launchers | Stationary | 0 |
+
+#### Position Update (per tick)
+
+The same formula as friendly drones (§8.5) applies:
+
+```
+Δlat = speed * Δt * cos(heading_rad) / 111_320
+Δlon = speed * Δt * sin(heading_rad) / (111_320 * cos(lat_rad))
+```
+
+#### Recon Detection Trigger
+
+After each movement tick, the simulator checks all airborne recon drones against all active enemy targets. If an enemy target falls within the recon drone's detection radius (40 km for MQ-9, 10 km for Scout), the simulator automatically submits a `POST /api/recon/feed` report — updating that target's last-known position and confidence in the State Service.
+
+---
+
 ## 9. Frontend UI
 
 ### 9.1 Layout
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  ⬡ LATTICE   [DRONES: 11,104] [SWARMS: 15] [TARGETS: —]  ● WS│  ← Header
+│  ⬡ LATTICE   [DRONES: 12,004] [SWARMS: 15] [TARGETS: —]  ● WS│  ← Header
 ├───────────┬─────────────────────────────┬───────────────┤
 │           │                             │               │
 │  SWARM &  │       CesiumJS 3D Map       │    ENEMY      │
@@ -1001,9 +1046,12 @@ Approved actions execute immediately; denied actions are logged and discarded. T
 
 ### 9.4 Swarm Status Panel
 
-- Lists all swarms with status, drone count, avg battery, and active objective
-- Expandable per-swarm to show individual drone status, battery, and current task
+- Lists all swarms as cards, sorted by urgency: `engaging` → `tracking` → `searching` → `returning` → `patrolling` → `idle` — most critical assets always visible at top
 - Status color-coded (idle/searching/tracking/engaging/returning)
+- Expandable per-swarm to show individual drone status, battery, **remaining range** (`max_range_km − range_used_km`), and current task
+- **Feature 16 — hide idle drones**: The expanded drone list within a swarm only shows non-idle drones; a summary line shows the idle count (e.g., "3 drones idle")
+- **Engage auto-select (Feature 15)**: When the operator clicks the ENGAGE button in the Target List panel, the assigned combat swarm is immediately selected in this panel (expanding its drone list) and floats to the top of the sorted list
+- For **recon drones** (MQ-9 and Scout), clicking an individual drone entry opens a **Detected Contacts** sub-panel listing every enemy target whose `reported_by` matches that drone — showing target type, position, confidence, and last-seen time. This satisfies the requirement that the operator can see what each recon drone is currently detecting.
 
 ### 9.5 Target List Panel
 
@@ -1104,6 +1152,30 @@ lattice/
 |---|---|---|
 | `OPENAI_API_KEY` | *(required for LLM)* | OpenAI API key |
 | `OPENAI_MODEL` | `gpt-4o` | OpenAI model name |
+| `ASSETS_CONFIG` | `assets_config.json` | Path to the asset configuration file (see below) |
+
+### Asset Configuration (`assets_config.json`)
+
+Friendly and enemy asset counts and properties are **not hard-coded** — they are loaded at startup from `assets_config.json` (path overridable via `ASSETS_CONFIG` env var). Modifying this file and restarting the backend changes the war game scenario without any code changes.
+
+**Configurable properties per asset type:**
+
+| Section | Configurable Fields |
+|---|---|
+| `mq9` | `count`, `scan_area_km2`, `detection_radius_km`, `max_flight_time_hours`, `max_range_km`, `always_airborne` |
+| `scout_recon` | `count`, `max_range_km`, `max_speed_kmh`, `detection_radius_km`, `grid_size_km`, `max_in_flight`, `patrol_priority` |
+| `fpv_combat` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh`, `swarm_count`, `swarm_size` |
+| `altius_600m` | `count`, `max_payload_kg`, `max_range_km`, `swarm_count`, `swarm_size` |
+| `enemy.long_range_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh` |
+| `enemy.fpv_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh` |
+| `enemy.tanks` | `count`, `speed_kmh` |
+| `enemy.ships` | `count`, `speed_knots` |
+| `enemy.missile_launchers` | `count`, `location` |
+| `enemy.soldiers` | `count`, `speed_kmh` |
+| `enemy.distribution` | `west_coast_pct`, `east_coast_pct` |
+| `deployment.taipei_pct` | Fraction of combat + scout drones based in the Taipei area |
+
+Default values in `assets_config.json` match the war game scenario defined in §8.
 
 ### Frontend Dev Server Proxy (`vite.config.js`)
 
@@ -1144,10 +1216,14 @@ npm run dev                   # starts at http://localhost:5173
 | **LLM natural language status responses (Feature 14)** | Status queries ("what is the battery of MQ9-01?") return a conversational `status_text` answer built from live state context — operator gets a human-readable briefing, not raw JSON; `request_status` action type routes responses to the command log without executing any command |
 | **Blue/green for friendly, red for enemy** | Universal military UI convention; operators instantly distinguish IFF (Identification Friend or Foe) at a glance; recon drones = blue shades, combat drones = green shades, all enemy = red shades |
 | Two drone models (FPV + Altius-600M) | Covers full threat spectrum: FPV for close swarm/infantry, Altius-600M for armoured/naval/long-range targets |
-| **Three recon tiers (MQ-9, Scout, none)** | MQ-9 for high-altitude wide-area ISR with 20 km detection radius; 100 Scout drones for distributed tactical coverage; all submit feeds to same `/api/recon/feed` endpoint |
+| **Three recon tiers (MQ-9, Scout, none)** | MQ-9 for high-altitude wide-area ISR with 15 km detection radius; 100 Scout drones for grid-based tactical coverage (20 drones in flight at all times, rotating across 100 × 50×50 km cells, coastal sea priority over cities, mountains excluded); all submit feeds to same `/api/recon/feed` endpoint |
 | **Movement simulator as 1 Hz asyncio task** | Co-located with broadcast loop; avoids additional threads; position updates are always consistent with the state broadcast that follows immediately |
 | **`range_used_km` range budget per drone** | Enforces FPV 15 km and Altius-600M 440 km range limits; FPV automatically expend on contact; Altius return to base when range consumed |
 | **Batch telemetry endpoint (`POST /api/swarm/telemetry`)** | Hardware drones and the simulator share a single interface; decouples position reporting from command execution |
+| **Configurable assets via `assets_config.json`** | Requirements specify assets must not be hard-coded; all drone counts, speeds, ranges, and enemy force sizes are read from a config file at startup so scenarios can be adjusted without code changes |
+| **Enemy asset movement simulation** | Enemy ships, tanks, soldiers, and drones move each tick via the same 1 Hz simulator as friendly drones; recon detection is re-evaluated after each tick, keeping enemy contact positions accurate as they advance |
+| **Engage auto-selects swarm in status panel (Feature 15)** | After clicking ENGAGE on a target, the frontend immediately calls `selectSwarm(assignedSwarm.id)` — the Swarm Status panel expands the tasked swarm so the operator can see its drones responding without having to manually locate it among 15 swarms |
+| **Idle drones hidden inside swarm cards (Feature 16)** | Swarm cards always render so the operator can see all 15 swarms; but the expanded drone list within a selected swarm hides idle members and shows a count instead — prevents clutter from 5 idle representative drones per swarm while preserving the at-a-glance swarm overview |
 | In-memory state (no database) | Simplicity for v1; easily replaced with Redis or PostgreSQL |
 | WebSocket broadcast (not on-change) | 1-second polling avoids complex change-tracking; sufficient for tactical update rate |
 | LLM JSON mode + low temperature | Deterministic structured output; safe for tactical command execution |

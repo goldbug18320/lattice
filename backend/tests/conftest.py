@@ -75,6 +75,7 @@ def empty_state():
     svc._targets = {}
     svc._drones = {}
     svc._swarms = {}
+    svc._approvals = {}
     svc._command_log = []
     return svc
 
@@ -124,7 +125,9 @@ def seeded_target(client) -> dict:
     """Post one recon feed and return the created target object."""
     resp = client.post("/api/recon/feed", json=make_recon_feed())
     assert resp.status_code == 200
-    targets = client.get("/api/recon/targets").json()
+    # Use reported_by filter so we get only the target we just posted,
+    # not the 23 targets seeded at startup (which have reported_by="seed").
+    targets = client.get("/api/recon/targets?reported_by=MQ9-01").json()
     assert len(targets) == 1
     return targets[0]
 

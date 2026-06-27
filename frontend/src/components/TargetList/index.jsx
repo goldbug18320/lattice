@@ -1,6 +1,7 @@
 import { useStore } from '../../store/index.js'
 import { swarmApi } from '../../services/api.js'
 
+
 const TYPE_ICONS = {
   drone: '✈',
   ship: '⚓',
@@ -29,6 +30,8 @@ export default function TargetList() {
   const selectedTargetId = useStore(s => s.selectedTargetId)
   const selectTarget = useStore(s => s.selectTarget)
 
+  const selectSwarm = useStore(s => s.selectSwarm)
+
   const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status))
 
   const grouped = activeTargets.reduce((acc, t) => {
@@ -46,6 +49,7 @@ export default function TargetList() {
       objective: `Engage target ${targetId}`,
       priority: 9,
     })
+    selectSwarm(idleSwarm.id)
   }
 
   return (

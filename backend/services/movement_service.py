@@ -1,8 +1,11 @@
-"""Drone movement simulator — advances all non-idle drone positions at 1 Hz."""
+"""Drone movement simulator — advances all non-idle drone positions at 1 Hz.
+Also advances mobile enemy targets each tick (§8.8).
+"""
 from __future__ import annotations
 import math
 from models.drone import DroneModel, DroneStatus
-from models.target import Position
+from models.target import Position, TargetStatus, TargetType
+from services.config_service import assets_config
 
 DT = 1.0  # seconds per tick
 
@@ -14,7 +17,9 @@ _MODEL_SPEED: dict[DroneModel, float] = {
     DroneModel.ALTIUS_600M: 50.0,   # 180 km/h
 }
 
-MQ9_DETECTION_RADIUS_KM = 20.0  # MQ-9 detects enemy assets within 20 km
+# Detection radii from config (configurable, not hard-coded)
+MQ9_DETECTION_RADIUS_KM   = assets_config["mq9"]["detection_radius_km"]
+SCOUT_DETECTION_RADIUS_KM = assets_config["scout_recon"]["detection_radius_km"]
 
 # Speed fraction per status
 _STATUS_SPEED_MULT: dict[DroneStatus, float] = {
@@ -26,7 +31,8 @@ _STATUS_SPEED_MULT: dict[DroneStatus, float] = {
 }
 
 _ARRIVE_THRESHOLD_KM = 0.5     # home arrival radius (500 m)
-_PATROL_HEADING_DELTA = 2.0    # degrees/tick for MQ-9 orbit
+_PATROL_HEADING_DELTA = 2.0    # degrees/tick for MQ-9 / scout orbit
+_FPV_PATROL_HEADING_DELTA = 3.0  # degrees/tick for enemy FPV patrol rotation
 
 
 def _advance(pos: Position, heading_deg: float, speed_ms: float, dt: float) -> Position:
@@ -56,7 +62,15 @@ class MovementService:
     """Ticked by the broadcast loop in main.py once per second."""
 
     def tick(self, state_service) -> None:
-        """Advance all non-idle drone positions one step."""
+        """Advance all non-idle drone positions and all mobile enemy targets one step."""
+        self._tick_friendly_drones(state_service)
+        self._tick_enemy_assets(state_service)
+        self._run_mq9_detection(state_service)
+        self._run_scout_detection(state_service)
+        self._refill_scout_patrols(state_service)
+
+    def _tick_friendly_drones(self, state_service) -> None:
+        """Advance all non-idle friendly drone positions one step."""
         for drone in state_service.get_all_drones():
             if drone.position is None:
                 continue
@@ -107,10 +121,8 @@ class MovementService:
 
             # ── Determine heading ────────────────────────────────────────────
             if drone.status == DroneStatus.PATROLLING and drone.model in (DroneModel.MQ9_RECON, DroneModel.SCOUT_RECON):
-                # Slow orbit: rotate heading each tick
                 new_heading = (drone.heading + _PATROL_HEADING_DELTA) % 360
             elif drone.status == DroneStatus.SEARCHING and drone.swarm_id:
-                # If inside the swarm's area_of_interest, switch to patrolling
                 swarm = state_service.get_swarm(drone.swarm_id)
                 if swarm and swarm.area_of_interest:
                     bbox = swarm.area_of_interest
@@ -125,11 +137,10 @@ class MovementService:
                         })
                         new_heading = (drone.heading + _PATROL_HEADING_DELTA) % 360
                     else:
-                        new_heading = drone.heading  # keep heading toward region center
+                        new_heading = drone.heading
                 else:
                     new_heading = drone.heading
             elif drone.status in (DroneStatus.TRACKING, DroneStatus.ENGAGING):
-                # Steer toward assigned swarm target if available
                 new_heading = drone.heading
                 if drone.swarm_id:
                     swarm = state_service.get_swarm(drone.swarm_id)
@@ -138,7 +149,7 @@ class MovementService:
                         if target and target.position:
                             new_heading = _bearing(drone.position, target.position)
             else:
-                new_heading = drone.heading  # searching / other: keep heading
+                new_heading = drone.heading
 
             # ── Advance position ─────────────────────────────────────────────
             mult = _STATUS_SPEED_MULT.get(drone.status, 0.5)
@@ -151,17 +162,27 @@ class MovementService:
                 "heading": new_heading,
                 "speed": eff_speed,
                 "range_used_km": range_used + delta_km,
-                "battery": max(0.0, drone.battery - 0.002),  # slow drain
+                "battery": max(0.0, drone.battery - 0.002),
             })
 
-        # ── MQ-9 Auto-Detection (20 km radius) ──────────────────────────────────
-        self._run_mq9_detection(state_service)
+    def _tick_enemy_assets(self, state_service) -> None:
+        """Advance all mobile enemy targets one step (§8.8).
+
+        Targets are mutated in-place; the next WebSocket broadcast delivers
+        the updated positions to all UI clients.
+        """
+        for target in state_service.get_all_targets():
+            if target.status in (TargetStatus.DESTROYED, TargetStatus.LOST):
+                continue
+            if target.position is None or target.speed <= 0:
+                continue
+            target.position = _advance(target.position, target.heading, target.speed, DT)
+            # Enemy FPV drones (low altitude) slowly rotate for a patrol pattern
+            if target.type == TargetType.DRONE and target.position.alt <= 500:
+                target.heading = (target.heading + _FPV_PATROL_HEADING_DELTA) % 360
 
     def _run_mq9_detection(self, state_service) -> None:
-        """
-        Each patrolling MQ-9 detects enemy targets within 20 km and refreshes
-        their last_seen timestamp, simulating continuous ISR coverage.
-        """
+        """Each patrolling MQ-9 detects enemy targets within its configured detection radius."""
         from datetime import datetime
         airborne_mq9 = [
             d for d in state_service.get_all_drones()
@@ -181,6 +202,71 @@ class MovementService:
                 if _distance_km(drone.position, target.position) <= MQ9_DETECTION_RADIUS_KM:
                     target.last_seen = now
                     target.reported_by = drone.name
+
+    def _run_scout_detection(self, state_service) -> None:
+        """Each patrolling scout recon drone detects enemy targets within its configured detection radius."""
+        from datetime import datetime
+        scouts = [
+            d for d in state_service.get_all_drones()
+            if d.model == DroneModel.SCOUT_RECON
+            and d.status == DroneStatus.PATROLLING
+            and d.position is not None
+        ]
+        if not scouts:
+            return
+
+        all_targets = state_service.get_all_targets()
+        now = datetime.utcnow()
+        for drone in scouts:
+            for target in all_targets:
+                if target.position is None:
+                    continue
+                if _distance_km(drone.position, target.position) <= SCOUT_DETECTION_RADIUS_KM:
+                    target.last_seen = now
+                    target.reported_by = drone.name
+
+    def _refill_scout_patrols(self, state_service) -> None:
+        """Launch idle scout drones to keep max_in_flight scouts airborne (§8.2).
+
+        Called each tick after _tick_friendly_drones so that any scout that just
+        arrived home (RETURNING → IDLE) immediately triggers a replacement launch.
+        Coastal-sea patrol grids are always refilled first (they appear first in
+        SCOUT_PATROL_GRIDS because of the priority sort in state_service).
+        """
+        from services.state_service import SCOUT_PATROL_GRIDS
+
+        max_in_flight = assets_config["scout_recon"].get("max_in_flight", 20)
+        scouts = [d for d in state_service.get_all_drones() if d.model == DroneModel.SCOUT_RECON]
+
+        # Collect patrol tasks currently covered (PATROLLING or still returning home)
+        covered: set[str] = set()
+        for d in scouts:
+            if d.status in (DroneStatus.PATROLLING, DroneStatus.RETURNING) and d.current_task:
+                covered.add(d.current_task)
+
+        if len(covered) >= max_in_flight:
+            return
+
+        idle_scouts = [d for d in scouts if d.status == DroneStatus.IDLE]
+        if not idle_scouts:
+            return
+
+        active_grids = SCOUT_PATROL_GRIDS[:max_in_flight]
+        replacements = []
+        for g_lat, g_lon in active_grids:
+            task = f"Grid patrol ({g_lat:.4f}°N, {g_lon:.4f}°E)"
+            if task not in covered:
+                replacements.append((g_lat, g_lon, task))
+
+        for idle, (g_lat, g_lon, task) in zip(idle_scouts, replacements):
+            state_service.update_drone(idle.id, {
+                "status": DroneStatus.PATROLLING,
+                "position": Position(lat=g_lat, lon=g_lon, alt=3000.0),
+                "current_task": task,
+                "range_used_km": 0.0,
+                "heading": 0.0,
+            })
+            covered.add(task)
 
 
 movement_service = MovementService()

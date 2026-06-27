@@ -59,9 +59,14 @@ async def get_targets(
     type: str | None = None,
     status: str | None = None,
     min_confidence: float = 0.0,
+    reported_by: str | None = None,
 ):
-    """Returns all tracked enemy targets, optionally filtered."""
-    targets = state_service.get_all_targets()
+    """Returns all tracked enemy targets, optionally filtered.
+
+    Use ``reported_by`` to retrieve only the targets detected by a specific
+    recon drone (MQ-9 or Scout), identified by drone name or ID.
+    """
+    targets = state_service.get_all_targets(reported_by=reported_by)
     if type:
         targets = [t for t in targets if t.type.value == type]
     if status:

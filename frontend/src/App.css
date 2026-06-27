@@ -103,7 +103,8 @@ html, body, #root {
 
 /* ─── Sidebars ───────────────────────────────────────────────────────────────── */
 .sidebar {
-  overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column;
+  overflow: hidden;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
 }
@@ -127,7 +128,7 @@ html, body, #root {
 /* ─── Panels ─────────────────────────────────────────────────────────────── */
 .panel {
   display: flex; flex-direction: column;
-  height: 100%; overflow: hidden;
+  flex: 1; min-height: 0; overflow: hidden;
 }
 .panel-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -188,8 +189,9 @@ html, body, #root {
 .swarm-group-count { color: var(--text-dim); font-size: 10px; }
 .section-label {
   font-family: var(--font-mono); font-size: 9px; color: var(--text-dim);
-  letter-spacing: 2px; margin-bottom: 4px;
+  letter-spacing: 2px; padding: 6px 8px 4px; margin-bottom: 0;
 }
+.idle-count { color: var(--text-dim); font-size: 9px; letter-spacing: 0; font-weight: normal; }
 .swarm-btns { display: flex; gap: 3px; }
 .action-btn {
   width: 26px; height: 22px;
@@ -248,7 +250,8 @@ html, body, #root {
 .cmd-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
 
 /* ─── Swarm Status Panel ─────────────────────────────────────────────────── */
-.swarm-panel { overflow-y: auto; }
+.swarm-panel { overflow: hidden; }
+.swarm-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .swarm-card {
   margin: 6px 8px; border: 1px solid var(--border);
   border-radius: 4px; background: var(--bg-card);
