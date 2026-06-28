@@ -73,20 +73,20 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "patrolling",
-        "heading": 10.563787827678581,
+        "heading": 100.62653388082694,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 52.418000000069746,
-        "range_used_km": 1427.4599999991854,
+        "battery": 29.094000000046403,
+        "range_used_km": 227.16000000000707,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 25.10893699812719,
-          "lon": 121.1550183137696,
-          "alt": 5999.999999999326
+          "lat": 25.07249440931111,
+          "lon": 121.56733643189264,
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.04,
@@ -99,21 +99,21 @@
         "name": "MQ9-02",
         "model": "mq9_recon",
         "type": "recon",
-        "status": "patrolling",
-        "heading": 224.19169779363898,
-        "speed": 60.0,
+        "status": "tracking",
+        "heading": 79.18385051733593,
+        "speed": 48.0,
         "altitude": 100.0,
-        "battery": 52.418000000069746,
-        "range_used_km": 1427.4599999991854,
+        "battery": 28.028000000046994,
+        "range_used_km": 240.56400000000758,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
-        "current_task": null,
+        "current_task": "Track target using MQ9-02",
         "position": {
-          "lat": 23.496379071619963,
-          "lon": 119.68929931788102,
-          "alt": 6000.0
+          "lat": 23.782732381177595,
+          "lon": 119.96445198360813,
+          "alt": 149.99999999197533
         },
         "home_position": {
           "lat": 23.55,
@@ -126,20 +126,20 @@
         "name": "MQ9-03",
         "model": "mq9_recon",
         "type": "recon",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "patrolling",
+        "heading": 47.935715429023276,
+        "speed": 60.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 96.90600000000721,
+        "range_used_km": 92.820000000002,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 22.62,
-          "lon": 120.3,
+          "lat": 22.636102950039913,
+          "lon": 120.28504188387207,
           "alt": 0.0
         },
         "home_position": {
@@ -181,20 +181,20 @@
         "model": "fpv_combat",
         "type": "swarm_member",
         "status": "idle",
-        "heading": 0.0,
+        "heading": 180.0,
         "speed": 0.0,
         "altitude": 100.0,
-        "battery": 100.0,
+        "battery": 98.57000000000333,
         "range_used_km": 0.0,
         "max_range_km": 15.0,
         "max_payload_kg": 4.0,
         "max_flight_time_hours": null,
         "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
-        "current_task": null,
+        "current_task": "Send FPV swarms to search the area and locate all enemy targets",
         "position": {
           "lat": 25.04,
           "lon": 121.56,
-          "alt": 150.0
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.04,
@@ -208,20 +208,20 @@
         "model": "fpv_combat",
         "type": "swarm_member",
         "status": "idle",
-        "heading": 0.0,
+        "heading": 180.0,
         "speed": 0.0,
         "altitude": 100.0,
-        "battery": 100.0,
+        "battery": 98.57000000000333,
         "range_used_km": 0.0,
         "max_range_km": 15.0,
         "max_payload_kg": 4.0,
         "max_flight_time_hours": null,
         "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
-        "current_task": null,
+        "current_task": "Send FPV swarms to search the area and locate all enemy targets",
         "position": {
           "lat": 25.041999999999998,
           "lon": 121.56,
-          "alt": 150.0
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.041999999999998,
@@ -235,20 +235,20 @@
         "model": "fpv_combat",
         "type": "swarm_member",
         "status": "idle",
-        "heading": 0.0,
+        "heading": 180.0,
         "speed": 0.0,
         "altitude": 100.0,
-        "battery": 100.0,
+        "battery": 98.57000000000333,
         "range_used_km": 0.0,
         "max_range_km": 15.0,
         "max_payload_kg": 4.0,
         "max_flight_time_hours": null,
         "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
-        "current_task": null,
+        "current_task": "Send FPV swarms to search the area and locate all enemy targets",
         "position": {
           "lat": 25.044,
           "lon": 121.56,
-          "alt": 150.0
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.044,
@@ -262,20 +262,20 @@
         "model": "fpv_combat",
         "type": "swarm_member",
         "status": "idle",
-        "heading": 0.0,
+        "heading": 180.0,
         "speed": 0.0,
         "altitude": 100.0,
-        "battery": 100.0,
+        "battery": 98.57000000000333,
         "range_used_km": 0.0,
         "max_range_km": 15.0,
         "max_payload_kg": 4.0,
         "max_flight_time_hours": null,
         "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
-        "current_task": null,
+        "current_task": "Send FPV swarms to search the area and locate all enemy targets",
         "position": {
           "lat": 25.046,
           "lon": 121.56,
-          "alt": 150.0
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.046,
@@ -289,20 +289,20 @@
         "model": "fpv_combat",
         "type": "swarm_member",
         "status": "idle",
-        "heading": 0.0,
+        "heading": 180.0,
         "speed": 0.0,
         "altitude": 100.0,
-        "battery": 100.0,
+        "battery": 98.57000000000333,
         "range_used_km": 0.0,
         "max_range_km": 15.0,
         "max_payload_kg": 4.0,
         "max_flight_time_hours": null,
         "swarm_id": "10eadd12-f410-4af9-ab0c-03bae92670db",
-        "current_task": null,
+        "current_task": "Send FPV swarms to search the area and locate all enemy targets",
         "position": {
           "lat": 25.048,
           "lon": 121.56,
-          "alt": 150.0
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.048,
@@ -3848,33 +3848,6 @@
         }
       },
       {
-        "id": "b43bc497-1e17-445b-8472-2a65fe60dc2e",
-        "name": "SCOUT-062",
-        "model": "scout_recon",
-        "type": "recon",
-        "status": "idle",
-        "heading": 192.0731288508197,
-        "speed": 0.0,
-        "altitude": 100.0,
-        "battery": 83.92600000003746,
-        "range_used_km": 0.0,
-        "max_range_km": 150.0,
-        "max_payload_kg": null,
-        "max_flight_time_hours": null,
-        "swarm_id": null,
-        "current_task": "Track target using SCOUT-062",
-        "position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        },
-        "home_position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        }
-      },
-      {
         "id": "99acb4c7-bc3f-4b55-8810-dba998a604a8",
         "name": "SCOUT-063",
         "model": "scout_recon",
@@ -3983,33 +3956,6 @@
         }
       },
       {
-        "id": "6a93250e-0aa5-4461-9175-5e20cd2272e7",
-        "name": "SCOUT-067",
-        "model": "scout_recon",
-        "type": "recon",
-        "status": "idle",
-        "heading": 291.8857039005933,
-        "speed": 0.0,
-        "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
-        "max_range_km": 150.0,
-        "max_payload_kg": null,
-        "max_flight_time_hours": null,
-        "swarm_id": null,
-        "current_task": null,
-        "position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        },
-        "home_position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        }
-      },
-      {
         "id": "2c8a53de-eed8-42ee-a13a-3560740f5789",
         "name": "SCOUT-068",
         "model": "scout_recon",
@@ -4114,33 +4060,6 @@
         "home_position": {
           "lat": 24.15,
           "lon": 120.68,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "ff44d536-32e0-4289-9093-776c15f6f99e",
-        "name": "SCOUT-072",
-        "model": "scout_recon",
-        "type": "recon",
-        "status": "idle",
-        "heading": 117.13978091979436,
-        "speed": 0.0,
-        "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
-        "max_range_km": 150.0,
-        "max_payload_kg": null,
-        "max_flight_time_hours": null,
-        "swarm_id": null,
-        "current_task": null,
-        "position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        },
-        "home_position": {
-          "lat": 23.0,
-          "lon": 120.21,
           "alt": 0.0
         }
       },
@@ -4257,21 +4176,21 @@
         "name": "SCOUT-077",
         "model": "scout_recon",
         "type": "recon",
-        "status": "idle",
-        "heading": 301.8382783092996,
-        "speed": 0.0,
+        "status": "tracking",
+        "heading": 55.9519685114511,
+        "speed": 33.6,
         "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
+        "battery": 91.69000000001937,
+        "range_used_km": 19.588799999999924,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
-        "current_task": null,
+        "current_task": "Track target using SCOUT-077",
         "position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
+          "lat": 23.146900617030425,
+          "lon": 119.2378436053634,
+          "alt": 150.00000000028822
         },
         "home_position": {
           "lat": 23.0,
@@ -4926,33 +4845,6 @@
           "lon": 119.72174962433994,
           "alt": 0.0
         }
-      },
-      {
-        "id": "0fd4194a-df12-4d7d-994d-ab960f453585",
-        "name": "MQ9-RECON-002",
-        "model": "mq9_recon",
-        "type": "recon",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
-        "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
-        "max_range_km": 1900.0,
-        "max_payload_kg": 1.7,
-        "max_flight_time_hours": 30.0,
-        "swarm_id": null,
-        "current_task": null,
-        "position": {
-          "lat": 24.495835305039186,
-          "lon": 119.6084135876741,
-          "alt": 0.0
-        },
-        "home_position": {
-          "lat": 24.495835305039186,
-          "lon": 119.6084135876741,
-          "alt": 0.0
-        }
       }
     ],
     "targets": [
@@ -5037,70 +4929,6 @@
         }
       },
       {
-        "id": "2fbb5241-67a8-4e25-bc8c-f71fdbff8337",
-        "type": "tank",
-        "status": "tracked",
-        "heading": 90.0,
-        "speed": 2.7777777777777777,
-        "confidence": 1.0,
-        "reported_by": "MQ9-01",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.870039616540286,
-          "lon": 121.39307656813187,
-          "alt": 9.999999995848963
-        }
-      },
-      {
-        "id": "5decc896-13e5-4631-bedc-eac294877f5c",
-        "type": "tank",
-        "status": "tracked",
-        "heading": 75.0,
-        "speed": 2.7777777777777777,
-        "confidence": 1.0,
-        "reported_by": "MQ9-01",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.653650235077162,
-          "lon": 121.23055633550405,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "8a3dc6d7-b066-43d4-8bf4-ad157e266969",
-        "type": "tank",
-        "status": "tracked",
-        "heading": 110.0,
-        "speed": 2.7777777777777777,
-        "confidence": 0.86,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.34898615836405,
-          "lon": 120.68366278331939,
-          "alt": 9.999999999004524
-        }
-      },
-      {
-        "id": "878e168e-7fb5-4407-bde6-e0e6e08d1a51",
-        "type": "tank",
-        "status": "active",
-        "heading": 95.0,
-        "speed": 2.7777777777777777,
-        "confidence": 0.83,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.948259215743185,
-          "lon": 121.14723773973624,
-          "alt": 9.999999997426618
-        }
-      },
-      {
         "id": "92756f30-9854-476c-bb36-2abac9060d75",
         "type": "missile_launcher",
         "status": "active",
@@ -5149,467 +4977,83 @@
         }
       },
       {
-        "id": "d2488006-2d08-44d1-917b-fc7193c0fb6a",
-        "type": "drone",
-        "status": "active",
-        "heading": 90.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.78,
-        "reported_by": "SCOUT-054",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.315201244835063,
-          "lon": 127.88004875113796,
-          "alt": 2999.999999996022
-        }
-      },
-      {
-        "id": "f50f724c-bc47-4152-afff-0082b16534c7",
-        "type": "drone",
-        "status": "active",
-        "heading": 88.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.72,
-        "reported_by": "SCOUT-084",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.21246629768992,
-          "lon": 126.89428017898999,
-          "alt": 2500.000000000213
-        }
-      },
-      {
-        "id": "c7359195-0db7-4822-b4a2-9a035d5e45fd",
-        "type": "drone",
-        "status": "active",
-        "heading": 85.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.8,
-        "reported_by": "MQ9-01",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.712251286677613,
-          "lon": 126.77655993366567,
-          "alt": 3500.000000001606
-        }
-      },
-      {
-        "id": "0b0cda46-48fe-4974-8c43-b0c690859f31",
-        "type": "drone",
-        "status": "active",
-        "heading": 92.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.75,
-        "reported_by": "SCOUT-094",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.547450821699282,
-          "lon": 127.62981707459954,
-          "alt": 1999.999999995628
-        }
-      },
-      {
-        "id": "858d1879-f4f9-4032-8264-2736a250e12c",
-        "type": "drone",
-        "status": "active",
-        "heading": 83.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.65,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 25.23958471046313,
-          "lon": 120.81823644434773,
-          "alt": 50.000000000788084
-        }
-      },
-      {
-        "id": "b17b0bc8-3701-4929-b1db-056813f63286",
-        "type": "drone",
-        "status": "active",
-        "heading": 53.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.6,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 24.483443576509764,
-          "lon": 120.38033131250756,
-          "alt": 30.000000002825917
-        }
-      },
-      {
-        "id": "3528eb34-fcf1-4ed4-9ee5-d29c208d1fea",
-        "type": "drone",
-        "status": "active",
-        "heading": 73.0,
-        "speed": 41.666666666666664,
-        "confidence": 0.62,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 23.809400143072313,
-          "lon": 120.3050584805728,
-          "alt": 40.0
-        }
-      },
-      {
-        "id": "6b7ec796-3000-4ca0-8832-9868cb79e726",
-        "type": "soldier_unit",
-        "status": "active",
-        "heading": 90.0,
-        "speed": 1.3888888888888888,
-        "confidence": 1.0,
-        "reported_by": "MQ9-01",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 24.914357634668214,
-          "lon": 121.2753426285201,
-          "alt": 9.999999999722586
-        }
-      },
-      {
-        "id": "5b4cb202-e362-4c50-972e-613accde43ee",
-        "type": "soldier_unit",
-        "status": "active",
-        "heading": 85.0,
-        "speed": 1.3888888888888888,
-        "confidence": 0.79,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 24.659483619917562,
-          "lon": 121.05841557287435,
-          "alt": 10.000000000255088
-        }
-      },
-      {
-        "id": "6b450d42-af28-48ba-9e8e-f3b48ca423a9",
-        "type": "soldier_unit",
-        "status": "active",
-        "heading": 95.0,
-        "speed": 1.3888888888888888,
-        "confidence": 0.76,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 24.17412960791385,
-          "lon": 120.8241568110439,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "560fe71a-41bb-4b7b-9e09-37fe248356d7",
-        "type": "soldier_unit",
-        "status": "active",
-        "heading": 88.0,
-        "speed": 1.3888888888888888,
-        "confidence": 0.73,
-        "reported_by": "seed",
-        "notes": null,
-        "threat_value": "low",
-        "position": {
-          "lat": 23.710359198817663,
-          "lon": 120.62398441961447,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "b28db315-cd0f-46be-bba5-f549d252ebb4",
+        "id": "d4e6399c-d3b5-4716-bcbc-d9be414a386b",
         "type": "ship",
-        "status": "active",
+        "status": "tracked",
         "heading": 0.0,
         "speed": 0.0,
         "confidence": 1.0,
-        "reported_by": "manual",
+        "reported_by": "MQ9-02",
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 24.900630389545476,
-          "lon": 119.99774765340783,
-          "alt": 0.0
+          "lat": 23.282579405552106,
+          "lon": 119.45621068112355,
+          "alt": 9.999999980306024
         }
       },
       {
-        "id": "870dc146-441a-46fd-ae40-759ca6375956",
-        "type": "drone",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.647418521147298,
-          "lon": 119.9121007585455,
-          "alt": 3000.0
-        }
-      },
-      {
-        "id": "b1d83be8-27b1-46c5-a778-52f7d495b628",
-        "type": "drone",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.580022888754364,
-          "lon": 119.84558860172984,
-          "alt": 3000.0
-        }
-      },
-      {
-        "id": "884a5ebc-b4e8-46e7-9d01-4a8f55686b4d",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.361458998763215,
-          "lon": 121.01665091069687,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "2c04e6b8-8adc-4544-9f75-4d3359b137d9",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.361152960270946,
-          "lon": 120.62420471676788,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "844e6af9-6e4b-4b38-9ff2-5918b651d7a1",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.923815671128757,
-          "lon": 120.50240325261186,
-          "alt": 9.999999998601186
-        }
-      },
-      {
-        "id": "6f27dd40-77b5-4bb0-9872-407bb70fc148",
-        "type": "ship",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "high",
-        "position": {
-          "lat": 24.020021620436278,
-          "lon": 120.30497644000204,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "60450464-3a56-4450-93c4-9341fafe4e6e",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.62383614720805,
-          "lon": 121.27789538705635,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "120d4e4c-fb61-44a3-afca-f839a3025561",
-        "type": "ship",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "high",
-        "position": {
-          "lat": 23.610382319202866,
-          "lon": 120.35970272176328,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "2474ae31-a6c4-406a-a720-15a4fbb537ef",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.434565702552597,
-          "lon": 120.23217569355575,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "d1c1b295-54be-4c34-a7d1-0c91679c7ad7",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 23.228955502626906,
-          "lon": 120.2233142890449,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "ffcb74f1-9ec7-4178-af6a-ee3334d88482",
+        "id": "2b9b7447-2eb6-4a2c-ad3d-4c076d994244",
         "type": "missile_launcher",
         "status": "active",
         "heading": 0.0,
         "speed": 0.0,
         "confidence": 1.0,
-        "reported_by": "manual",
+        "reported_by": "MQ9-02",
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.204619881029693,
-          "lon": 120.97915301939231,
+          "lat": 23.57491369395679,
+          "lon": 119.61623227913148,
           "alt": 0.0
         }
       },
       {
-        "id": "e9fd616e-45dc-4428-b6ff-4c7be0afba6c",
-        "type": "ship",
+        "id": "4ed35fc5-2ef5-4382-9e57-32dd16a29d4a",
+        "type": "soldier_unit",
         "status": "active",
         "heading": 0.0,
         "speed": 0.0,
         "confidence": 1.0,
-        "reported_by": "manual",
+        "reported_by": "MQ9-02",
         "notes": null,
-        "threat_value": "high",
+        "threat_value": "low",
         "position": {
-          "lat": 23.613305349094745,
-          "lon": 121.00284275727266,
+          "lat": 23.566356141810207,
+          "lon": 119.58432544227661,
           "alt": 0.0
         }
       },
       {
-        "id": "be158779-a710-49c4-9ede-5f20508cfea1",
-        "type": "tank",
+        "id": "eabd1b26-b666-4e1e-91b4-4c81d5d7f042",
+        "type": "drone",
         "status": "active",
         "heading": 0.0,
         "speed": 0.0,
         "confidence": 1.0,
-        "reported_by": "manual",
+        "reported_by": "MQ9-02",
+        "notes": null,
+        "threat_value": "low",
+        "position": {
+          "lat": 23.63561557710127,
+          "lon": 119.56652289306219,
+          "alt": 50.0
+        }
+      },
+      {
+        "id": "603525d4-e916-40f0-a8de-51192a129641",
+        "type": "drone",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 1.0,
+        "reported_by": "MQ9-02",
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.748470693637703,
-          "lon": 119.28247712668353,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "52122532-009c-4063-a37f-b9d393b51e7f",
-        "type": "ship",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "high",
-        "position": {
-          "lat": 23.57250302488598,
-          "lon": 120.71179982132905,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "e91d9284-a597-41f6-b410-2975904b7c1a",
-        "type": "ship",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "high",
-        "position": {
-          "lat": 24.70802864645535,
-          "lon": 121.93782574761215,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "d6f32e65-d44f-435b-8137-e5c05e0ad5d5",
-        "type": "ship",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "high",
-        "position": {
-          "lat": 24.776957944021515,
-          "lon": 121.83421413457759,
-          "alt": 0.0
-        }
-      },
-      {
-        "id": "a3fa378e-c431-42eb-89d8-0020b9b72ce7",
-        "type": "tank",
-        "status": "active",
-        "heading": 0.0,
-        "speed": 0.0,
-        "confidence": 1.0,
-        "reported_by": "manual",
-        "notes": null,
-        "threat_value": "medium",
-        "position": {
-          "lat": 24.675481074367628,
-          "lon": 121.81070129077797,
-          "alt": 0.0
+          "lat": 23.6051117657765,
+          "lon": 119.54986297947254,
+          "alt": 3000.0
         }
       }
     ],
@@ -5626,8 +5070,8 @@
           "5a703c6c-9ea2-43b9-8330-0ff88dcf84e8",
           "7760c745-b108-4819-adf3-a18489ba260d"
         ],
-        "status": "idle",
-        "objective": null,
+        "status": "searching",
+        "objective": "Send FPV swarms to search the area and locate all enemy targets",
         "target_ids": []
       },
       {

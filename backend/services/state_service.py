@@ -539,6 +539,18 @@ class StateService:
                 d.status = DroneStatus.PATROLLING
                 d.current_task = None
 
+    def replace_tracker_for_target(self, target_id: str) -> Optional[str]:
+        """Feature 28: find any drone currently tracking target_id and send it home.
+        Returns the released drone's ID, or None if no drone was tracking."""
+        with self._lock:
+            for d in self._drones.values():
+                if d.tracking_target_id == target_id:
+                    d.tracking_target_id = None
+                    d.status = DroneStatus.RETURNING
+                    d.current_task = None
+                    return d.id
+        return None
+
     # ─── Command Log ────────────────────────────────────────────────────────────
 
     def log_command(self, entry: dict):

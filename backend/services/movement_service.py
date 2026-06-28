@@ -119,6 +119,7 @@ _ARRIVE_THRESHOLD_KM = 0.5     # home arrival radius (500 m)
 _PATROL_HEADING_DELTA = 2.0    # degrees/tick for MQ-9 / scout orbit
 _FPV_PATROL_HEADING_DELTA = 3.0  # degrees/tick for enemy FPV patrol rotation
 CONTACT_RADIUS_KM = assets_config.get("combat", {}).get("contact_radius_m", 500.0) / 1000.0
+TRACKING_STANDOFF_KM = 10.0   # Feature 28: recon drones maintain this distance from their target
 
 
 def _advance(pos: Position, heading_deg: float, speed_ms: float, dt: float) -> Position:
@@ -207,6 +208,7 @@ class MovementService:
                 continue
 
             # ── Determine heading ────────────────────────────────────────────
+            hold_at_standoff = False  # Feature 28: set True below for tracking recon within standoff
             if drone.status == DroneStatus.PATROLLING and drone.model == DroneModel.MQ9_RECON:
                 # Stable circular orbit around home_position (§8.5): heading perpendicular
                 # to the inward radial gives constant-radius clockwise orbit.
@@ -251,22 +253,36 @@ class MovementService:
                 if target and target.position:
                     # Feature 26: recalculate bearing toward target's current position each tick
                     new_heading = _bearing(drone.position, target.position)
+                    # Feature 28: recon drones hold at 10 km standoff instead of closing further
+                    if (
+                        drone.status == DroneStatus.TRACKING
+                        and _distance_km(drone.position, target.position) <= TRACKING_STANDOFF_KM
+                    ):
+                        hold_at_standoff = True
             else:
                 new_heading = drone.heading
 
             # ── Advance position ─────────────────────────────────────────────
-            mult = _STATUS_SPEED_MULT.get(drone.status, 0.5)
-            eff_speed = speed * mult
-            new_pos = _advance(drone.position, new_heading, eff_speed, DT)
-            delta_km = eff_speed * DT / 1000
+            if hold_at_standoff:
+                # Feature 28: within standoff radius — hold position, face target, drain battery
+                state_service.update_drone(drone.id, {
+                    "heading": new_heading,
+                    "speed": 0.0,
+                    "battery": max(0.0, drone.battery - 0.002),
+                })
+            else:
+                mult = _STATUS_SPEED_MULT.get(drone.status, 0.5)
+                eff_speed = speed * mult
+                new_pos = _advance(drone.position, new_heading, eff_speed, DT)
+                delta_km = eff_speed * DT / 1000
 
-            state_service.update_drone(drone.id, {
-                "position": new_pos,
-                "heading": new_heading,
-                "speed": eff_speed,
-                "range_used_km": range_used + delta_km,
-                "battery": max(0.0, drone.battery - 0.002),
-            })
+                state_service.update_drone(drone.id, {
+                    "position": new_pos,
+                    "heading": new_heading,
+                    "speed": eff_speed,
+                    "range_used_km": range_used + delta_km,
+                    "battery": max(0.0, drone.battery - 0.002),
+                })
 
     def _tick_enemy_assets(self, state_service) -> None:
         """Advance all mobile enemy targets one step (§8.8).

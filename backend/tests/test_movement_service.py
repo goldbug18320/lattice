@@ -9,6 +9,7 @@ import services.movement_service as msvc
 from services.movement_service import (
     MovementService, _advance, _distance_km, _bearing, DT,
     MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM, CONTACT_RADIUS_KM,
+    TRACKING_STANDOFF_KM,
     _terrain_blocks, _GROUND_ASSET_TYPES, _is_land, _point_in_polygon,
     _TAIWAN_ISLAND, _CHINA_COAST,
 )
@@ -300,6 +301,128 @@ class TestTrackingTowardTarget:
         self.svc.tick(state)
         # Heading should be ~90° (east toward target at higher lon)
         assert 80 < drone.heading < 100
+
+
+# ─── Feature 28: recon drone 10 km standoff orbit ─────────────────────────────
+
+def _make_recon_drone_at_dist_km(dist_km: float, target_pos: Position, **kwargs) -> "Drone":
+    """Place a Scout recon drone due north of target_pos at exactly dist_km away."""
+    drone_lat = target_pos.lat + dist_km / 111.32
+    return _make_drone(
+        model=DroneModel.SCOUT_RECON,
+        type=DroneType.RECON,
+        status=DroneStatus.TRACKING,
+        position=Position(lat=drone_lat, lon=target_pos.lon, alt=500.0),
+        home_position=Position(lat=drone_lat + 0.5, lon=target_pos.lon, alt=0.0),
+        heading=180.0,  # pointing south (toward target)
+        max_range_km=150.0,
+        range_used_km=0.0,
+        swarm_id=None,
+        **kwargs,
+    )
+
+
+class TestTrackingStandoff:
+    """Feature 28: recon drone holds 10 km standoff when within TRACKING_STANDOFF_KM of its target."""
+
+    def setup_method(self):
+        self.svc = MovementService()
+
+    def _make_recon_state(self, dist_km: float):
+        target = Target(
+            type=TargetType.SHIP,
+            position=Position(lat=24.0, lon=119.8, alt=0.0),
+            confidence=0.9,
+            status=TargetStatus.ACTIVE,
+            speed=0.0,
+            heading=0.0,
+        )
+        drone = _make_recon_drone_at_dist_km(dist_km, target.position, tracking_target_id=target.id)
+        state = _make_state([drone], targets=[target])
+        return state, drone, target
+
+    def test_standoff_constant_is_10km(self):
+        assert TRACKING_STANDOFF_KM == 10.0
+
+    def test_drone_beyond_standoff_advances_toward_target(self):
+        """A tracking drone more than 10 km away should close on the target."""
+        state, drone, target = self._make_recon_state(dist_km=15.0)
+        orig_lat = drone.position.lat
+        self.svc.tick(state)
+        assert drone.position.lat < orig_lat  # moved south toward target
+
+    def test_drone_within_standoff_does_not_advance(self):
+        """A tracking drone within 10 km must hold its position (Feature 28)."""
+        state, drone, target = self._make_recon_state(dist_km=8.0)
+        orig_pos = (drone.position.lat, drone.position.lon)
+        self.svc.tick(state)
+        assert (drone.position.lat, drone.position.lon) == orig_pos
+
+    def test_drone_near_standoff_boundary_does_not_advance(self):
+        """A drone just inside the standoff boundary (9.99 km) must also hold."""
+        state, drone, target = self._make_recon_state(dist_km=9.99)
+        orig_pos = (drone.position.lat, drone.position.lon)
+        self.svc.tick(state)
+        assert (drone.position.lat, drone.position.lon) == orig_pos
+
+    def test_drone_within_standoff_faces_target(self):
+        """Heading must still be updated toward the target when holding."""
+        state, drone, target = self._make_recon_state(dist_km=8.0)
+        drone.heading = 0.0  # start facing north, away from target
+        self.svc.tick(state)
+        # Target is due south, so heading should be ~180°
+        assert 170 < drone.heading < 190
+
+    def test_drone_within_standoff_speed_is_zero(self):
+        """Speed must be 0 when holding at standoff."""
+        state, drone, target = self._make_recon_state(dist_km=8.0)
+        self.svc.tick(state)
+        assert drone.speed == 0.0
+
+    def test_drone_within_standoff_battery_drains(self):
+        """Battery still drains while hovering at standoff."""
+        state, drone, target = self._make_recon_state(dist_km=8.0)
+        drone.battery = 100.0
+        self.svc.tick(state)
+        assert drone.battery < 100.0
+
+    def test_drone_within_standoff_range_not_accumulated(self):
+        """Range budget must not accumulate while the drone is stationary."""
+        state, drone, target = self._make_recon_state(dist_km=8.0)
+        drone.range_used_km = 5.0
+        self.svc.tick(state)
+        assert drone.range_used_km == 5.0
+
+    def test_engaging_drone_within_10km_is_not_held(self):
+        """Feature 28 applies only to TRACKING drones; ENGAGING drones must keep closing."""
+        target = Target(
+            type=TargetType.SHIP,
+            position=Position(lat=24.0, lon=119.8, alt=0.0),
+            confidence=0.9,
+            status=TargetStatus.ACTIVE,
+            speed=0.0,
+            heading=0.0,
+        )
+        drone_lat = target.position.lat + 8.0 / 111.32  # 8 km away
+        drone = _make_drone(
+            model=DroneModel.ALTIUS_600M,
+            status=DroneStatus.ENGAGING,
+            position=Position(lat=drone_lat, lon=119.8, alt=200.0),
+            heading=180.0,
+            max_range_km=440.0,
+            range_used_km=0.0,
+            swarm_id="sw-engage",
+        )
+        swarm = Swarm(
+            id="sw-engage", name="ALT-Alpha",
+            drone_ids=[drone.id], target_ids=[target.id],
+            status=SwarmStatus.ENGAGING,
+        )
+        state = _make_state([drone], targets=[target], swarms=[swarm])
+        orig_lat = drone.position.lat
+        self.svc.tick(state)
+        # Engaging drone must advance (or be destroyed on contact — either way not held)
+        assert drone.position.lat != orig_lat or drone.status == DroneStatus.OFFLINE
 
 
 # ─── Enemy Asset Movement (§8.8) ─────────────────────────────────────────────
