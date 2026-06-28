@@ -43,6 +43,7 @@ Your role is to interpret natural language operator commands and translate them 
 - **assign_drone**: Assign a single drone to a mission.
 - **mark_target_destroyed**: Mark an enemy target as destroyed.
 - **request_approval**: Used for two scenarios: (1) INSTEAD of assign_swarm when command_type is "attack" — classify targets, embed assign_swarm in proposed_action; (2) INSTEAD of assign_drone when command_type is "track" (Feature 24) — select a recon drone in range, embed assign_drone in proposed_action.
+- **no_swarm_in_range**: Return ONLY for single-target ENGAGE (Feature 22) when no combat swarm can physically reach the target. Carry an `explanation` string. Do NOT create an approval.
 - **no_recon_in_range**: Return ONLY for single-target TRACK (Feature 24) when no recon drone (MQ-9 or Scout) can physically reach the target.
 - **request_status**: Provide a text status summary (no execution needed).
 - **ui_command**: Control the 3D map (pan/zoom/focus). Sub-types: fly_to, fly_to_target, fly_to_drone, zoom_in, zoom_out, set_view_mode, toggle_layer.
@@ -103,6 +104,7 @@ Always respond with a JSON object:
 - Attack commands: priority 8–10. Patrol/search: priority 3–6. Track: priority 6.
 - For UI commands, resolve place names to lat/lon: Taiwan (23.8, 121.0, alt 300km), Taipei (25.04, 121.56, alt 50km), Fujian (25.9, 119.3, alt 100km), Taiwan Strait (24.0, 119.5, alt 200km).
 - **HITL attack rule**: When command_type is "attack", ALWAYS return request_approval (not assign_swarm). Never execute an attack directly.
+- **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the combat swarm whose representative_position is within max_range_km of the target. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no swarm qualifies, return no_swarm_in_range instead of request_approval.
 - **HITL track rule (Feature 24)**: When command_type is "track" and a target ID is referenced, ALWAYS return request_approval with an assign_drone proposed_action. Select the nearest MQ-9 or Scout drone whose max_range_km ≥ haversine distance to the target. If none qualifies, return no_recon_in_range.
 """
 
@@ -280,8 +282,20 @@ Operator command: {command}"""
         drone_model = "fpv_combat"
 
         if any(w in cmd_lower for w in ["attack", "engage", "destroy", "strike"]):
-            # HITL: classify targets and return request_approval instead of assign_swarm
-            active_targets = [t for t in targets if t.get("status") == "active"][:6]
+            # Feature 22: if a specific target ID is referenced, engage ONLY that target
+            tid_match = re.search(r'target\s+with\s+id\s+(\S+)', cmd_lower)
+            single_target_id = tid_match.group(1) if tid_match else None
+
+            if single_target_id:
+                # Single-target ENGAGE — find only that target
+                single_target = next(
+                    (t for t in targets if t.get("id") == single_target_id),
+                    None,
+                )
+                active_targets = [single_target] if single_target else []
+            else:
+                active_targets = [t for t in targets if t.get("status") == "active"][:6]
+
             classified = []
             threat_counts: dict[str, int] = {"high": 0, "medium": 0, "low": 0}
             for t in active_targets:
@@ -293,26 +307,80 @@ Operator command: {command}"""
                     "threat_value": tv,
                     "position": t.get("position"),
                 })
+
             # Build the proposed assign_swarm action (to be executed if approved)
             heavy = {"tank", "ship", "missile_launcher", "drone"}
             has_heavy = any(t.get("type") in heavy for t in active_targets)
             drone_model = "altius_600m" if has_heavy else "fpv_combat"
             model_prefix = "ALT" if drone_model == "altius_600m" else "FPV"
+
+            # Range-aware swarm selection (Feature 22)
+            target_pos = active_targets[0].get("position") if active_targets else None
             swarm_id = None
-            for s in swarms:
-                if s.get("name", "").startswith(model_prefix):
-                    swarm_id = s["id"]
-                    break
+            selected_swarm_name = None
+            dist_str = ""
+            if target_pos:
+                best_dist = float("inf")
+                for s in swarms:
+                    if not s.get("name", "").startswith(model_prefix):
+                        continue
+                    if s.get("status") in ("engaging",):
+                        continue
+                    s_pos = s.get("representative_position")
+                    if not s_pos:
+                        # Fall back: pick first matching idle swarm without range check
+                        if swarm_id is None:
+                            swarm_id = s["id"]
+                            selected_swarm_name = s.get("name")
+                        continue
+                    dlat = (target_pos["lat"] - s_pos["lat"]) * 111.32
+                    dlon = (target_pos["lon"] - s_pos["lon"]) * 111.32 * math.cos(math.radians(s_pos["lat"]))
+                    dist = math.sqrt(dlat ** 2 + dlon ** 2)
+                    max_range = s.get("max_range_km", float("inf"))
+                    if dist <= max_range and dist < best_dist:
+                        best_dist = dist
+                        swarm_id = s["id"]
+                        selected_swarm_name = s.get("name")
+                        dist_str = f" ({round(dist)} km away)"
+            if swarm_id is None:
+                for s in swarms:
+                    if s.get("name", "").startswith(model_prefix):
+                        swarm_id = s["id"]
+                        selected_swarm_name = s.get("name")
+                        break
             if swarm_id is None and swarms:
                 swarm_id = swarms[0]["id"]
-            summary_parts = [f"{v} {k}-value" for k, v in threat_counts.items() if v > 0]
-            approval_prompt = (
-                f"Requesting approval to attack {len(classified)} target(s): "
-                + ", ".join(summary_parts)
-                + ". Proposed action: deploy "
-                + drone_model.replace("_", " ")
-                + " swarm."
-            )
+                selected_swarm_name = swarms[0].get("name")
+
+            if single_target_id and not classified:
+                return {
+                    "interpretation": "[MOCK] Engage command — target not found",
+                    "action": {
+                        "type": "no_swarm_in_range",
+                        "target_id": single_target_id,
+                        "explanation": "Target not found or already destroyed.",
+                    },
+                    "explanation": "[MOCK] Target not found.",
+                }
+
+            if single_target_id:
+                tv = classified[0]["threat_value"] if classified else "unknown"
+                t_type = classified[0]["type"] if classified else "target"
+                swarm_label = selected_swarm_name or "combat swarm"
+                approval_prompt = (
+                    f"Requesting approval to engage 1 {tv}-value {t_type} "
+                    f"using {swarm_label}{dist_str}."
+                )
+            else:
+                summary_parts = [f"{v} {k}-value" for k, v in threat_counts.items() if v > 0]
+                approval_prompt = (
+                    f"Requesting approval to attack {len(classified)} target(s): "
+                    + ", ".join(summary_parts)
+                    + ". Proposed action: deploy "
+                    + drone_model.replace("_", " ")
+                    + " swarm."
+                )
+
             proposed = {
                 "type": "assign_swarm",
                 "swarm_id": swarm_id,
