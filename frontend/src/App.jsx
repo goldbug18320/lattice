@@ -23,7 +23,8 @@ export default function App() {
 
   const statusColor = wsConnected ? '#10b981' : wsStatus === 'reconnecting' ? '#f59e0b' : '#ef4444'
   const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status)).length
-  const engagingSwarms = swarms.filter(s => s.status === 'engaging').length
+  const engagedTargets = targets.filter(t => t.status === 'engaged').length
+  const trackedTargets = targets.filter(t => t.status === 'tracked').length
 
   return (
     <div className="app">
@@ -47,9 +48,13 @@ export default function App() {
             <span className="stat-label">TARGETS</span>
             <span className="stat-value">{activeTargets}</span>
           </div>
-          <div className={`stat ${engagingSwarms > 0 ? 'engaging' : ''}`}>
-            <span className="stat-label">ENGAGING</span>
-            <span className="stat-value">{engagingSwarms}</span>
+          <div className={`stat ${engagedTargets > 0 ? 'engaging' : ''}`}>
+            <span className="stat-label">ENGAGED</span>
+            <span className="stat-value">{engagedTargets}</span>
+          </div>
+          <div className={`stat ${trackedTargets > 0 ? 'tracking' : ''}`}>
+            <span className="stat-label">TRACKED</span>
+            <span className="stat-value">{trackedTargets}</span>
           </div>
           {pendingApprovals.length > 0 && (
             <div className="stat" style={{ color: '#ef4444', borderColor: '#7f1d1d' }}>

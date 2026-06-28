@@ -91,6 +91,7 @@ html, body, #root {
 }
 .stat.threat .stat-value { color: var(--threat); }
 .stat.engaging .stat-value { color: var(--accent-orange); animation: pulse 1s infinite; }
+.stat.tracking .stat-value { color: var(--accent-cyan); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
 .header-status {
