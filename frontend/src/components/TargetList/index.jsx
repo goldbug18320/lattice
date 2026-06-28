@@ -140,14 +140,12 @@ export default function TargetList() {
                   <div className="target-actions">
                     <button
                       className="target-btn attack"
-                      disabled={target.status === 'engaged'}
                       onClick={e => { e.stopPropagation(); engageTarget(target.id) }}
                     >
                       ⚡ ENGAGE
                     </button>
                     <button
                       className="target-btn track"
-                      disabled={target.status === 'tracked'}
                       onClick={e => { e.stopPropagation(); trackTarget(target.id) }}
                     >
                       👁 TRACK
