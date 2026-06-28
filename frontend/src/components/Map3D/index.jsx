@@ -2,53 +2,92 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useStore } from '../../store/index.js'
 import { assetsApi } from '../../services/api.js'
 
-// Target type icons/colors — all enemy assets rendered in red shades (spec v1.7)
-const TARGET_CONFIG = {
-  drone:            { color: [200, 30,  30,  220], label: '✈ DRONE',  scale: 1.2 },  // dark red
-  ship:             { color: [240, 70,  30,  220], label: '⚓ SHIP',   scale: 1.8 },  // red-orange
-  tank:             { color: [230, 20,  20,  220], label: '⊞ TANK',   scale: 1.4 },  // bright red
-  missile_launcher: { color: [210, 10,  80,  220], label: '↑ MLRS',   scale: 1.6 },  // magenta-red
-  soldier_unit:     { color: [175, 20,  45,  220], label: '◉ SOLDIER', scale: 1.0 },  // crimson
+// Feature 18: type-specific SVG billboard icons on the 3D map.
+// Each icon is a white symbol path drawn on a colored circle background.
+const _ICON_PATH = {
+  drone:            '<path d="M12 6 L15 11 L19 12 L15 13 L13 17 L12 15.5 L11 17 L9 13 L5 12 L9 11 Z" fill="white"/>',
+  ship:             '<path d="M5 15.5 L7.5 19 L16.5 19 L19 15.5 Z" fill="white"/><rect x="10" y="7" width="5" height="10" fill="white"/><rect x="11" y="4" width="2" height="6" fill="white"/>',
+  tank:             '<rect x="6" y="14" width="12" height="5" rx="1" fill="white"/><rect x="8" y="10" width="8" height="6" rx="1" fill="white"/><rect x="11.5" y="7" width="2" height="7" fill="white"/>',
+  missile_launcher: '<path d="M12 4 L15.5 11 L13.5 11 L13.5 20 L10.5 20 L10.5 11 L8.5 11 Z" fill="white"/>',
+  soldier_unit:     '<circle cx="12" cy="8.5" r="3" fill="white"/><path d="M9 20 L9 15 Q9 12 12 12 Q15 12 15 15 L15 20 L13.5 20 L13.5 16.5 L10.5 16.5 L10.5 20 Z" fill="white"/>',
+}
+const _billboardCache = {}
+function _makeBillboardSVG(iconKey, bgColor, highlighted = false) {
+  const cacheKey = `${iconKey}:${bgColor}:${highlighted ? 1 : 0}`
+  if (_billboardCache[cacheKey]) return _billboardCache[cacheKey]
+  const path = _ICON_PATH[iconKey] || _ICON_PATH.drone
+  const stroke = highlighted ? 'yellow' : 'rgba(255,255,255,0.45)'
+  const sw = highlighted ? 3 : 1.5
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${bgColor}" stroke="${stroke}" stroke-width="${sw}"/>${path}</svg>`
+  const uri = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
+  _billboardCache[cacheKey] = uri
+  return uri
 }
 
-// Config keyed by drone.model first, then drone.type as fallback
-// Friendly: recon = blue shades, combat = green shades (spec v1.7)
-const DRONE_CONFIG = {
-  // model-specific
-  mq9_recon:    { color: [0,   200, 255, 220], label: '👁 MQ-9',   size: 14 },  // cyan-blue
-  scout_recon:  { color: [60,  120, 255, 220], label: '📡 SCOUT',  size: 10 },  // blue
-  fpv_combat:   { color: [50,  220,  50, 220], label: '⚡ FPV',    size: 8  },  // green
-  altius_600m:  { color: [40,  200,  80, 220], label: '🚀 ALT',    size: 8  },  // green-cyan
-  // type fallback
-  recon:        { color: [0,   200, 255, 220], label: '👁 RECON',  size: 12 },
-  combat:       { color: [50,  220,  50, 220], label: '⚡ COMBAT', size: 10 },
-  swarm_member: { color: [50,  220,  50, 220], label: '◈ SWARM',  size: 8  },
-}
+// Enemy target background colors and billboard pixel sizes per type
+const TARGET_BG   = { drone: '#c81e1e', ship: '#f04020', tank: '#e01010', missile_launcher: '#d0105a', soldier_unit: '#b01428' }
+const TARGET_SIZE = { drone: 24, ship: 36, tank: 28, missile_launcher: 32, soldier_unit: 20 }
 
-const STATUS_COLORS = {
-  idle:       [150, 150, 150],
-  patrolling: [0,   180, 255],
-  searching:  [255, 200, 0  ],
-  tracking:   [255, 140, 0  ],
-  engaging:   [255, 50,  50 ],
-  returning:  [0,   255, 150],
-}
+// Friendly drone base colors by model/type; status overrides take precedence (null = use model color)
+const MODEL_BG   = { mq9_recon: '#00a8d8', scout_recon: '#2860e0', fpv_combat: '#20c020', altius_600m: '#20a840', recon: '#00a8d8', combat: '#20c020', swarm_member: '#20c020' }
+const STATUS_BG  = { idle: '#4b5563', patrolling: null, searching: '#b45309', tracking: '#c2410c', engaging: '#b91c1c', returning: '#047857', offline: '#1f2937' }
+const DRONE_SIZE = { mq9_recon: 28, scout_recon: 22, fpv_combat: 18, altius_600m: 20, recon: 22, combat: 18, swarm_member: 16 }
 
 // Taiwan island-wide view
 const TAIWAN_HOME = { lon: 121.0, lat: 23.8, altM: 450_000 }
 
-// Feature 21: geographic land/sea heuristic for the Taiwan theater.
-// Using terrain height from sampleTerrainMostDetailed is unreliable because the
-// Taiwan Strait is shallow (~60-80 m) and Cesium may report near-zero heights there.
-function likelySea(lon, lat) {
-  // Taiwan Strait: extends from China coast (~119.0) to Taiwan's west coast (~121.0).
-  // The upper bound was previously 120.1, which incorrectly classified valid strait
-  // water (lon 120.1–121.0) as land — ships seeded at those coordinates appeared on
-  // terrain and could not be dragged back into water.
-  if (lon >= 119.0 && lon <= 121.0 && lat >= 21.5 && lat <= 26.5) return true  // Taiwan Strait
-  if (lon > 122.0) return true                                                   // Open Pacific east of Taiwan
-  if (lat < 21.5 && lon > 116.0) return true                                    // South China Sea / Bashi Channel
-  return false
+// Feature 21: exact land/sea check using Natural Earth 1:10m coastline polygons.
+// Polygons are served from /data/theater_land.json (generate with scripts/build_coastline.py).
+// Returns null while the file is still loading — callers skip the terrain constraint in that case.
+
+// Module-level store so data survives component remounts.
+let _theaterPolygons = null   // null = not yet loaded; [] = failed/empty; [...] = ready
+const _landCache = {}
+
+function _raycastInRing(ring, lon, lat) {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1]
+    const xj = ring[j][0], yj = ring[j][1]
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      inside = !inside
+    }
+  }
+  return inside
+}
+
+// Returns true (land), false (sea), or null (GeoJSON not loaded yet — caller skips constraint).
+function isLand(lon, lat) {
+  if (!_theaterPolygons || _theaterPolygons.length === 0) return null
+  const key = `${Math.round(lon * 200)},${Math.round(lat * 200)}`
+  if (key in _landCache) return _landCache[key]
+  let result = false
+  outer: for (const rings of _theaterPolygons) {
+    if (_raycastInRing(rings[0], lon, lat)) {
+      for (let h = 1; h < rings.length; h++) {
+        if (_raycastInRing(rings[h], lon, lat)) continue outer
+      }
+      result = true
+      break
+    }
+  }
+  _landCache[key] = result
+  return result
+}
+
+async function _loadTheaterLand() {
+  if (_theaterPolygons !== null) return
+  _theaterPolygons = []
+  try {
+    const resp = await fetch('/data/theater_land.json')
+    if (!resp.ok) throw new Error(resp.statusText)
+    const data = await resp.json()
+    _theaterPolygons = data.polygons ?? []
+    Object.keys(_landCache).forEach(k => delete _landCache[k])
+    console.info(`[coastline] loaded ${_theaterPolygons.length} polygon(s)`)
+  } catch {
+    console.warn('[coastline] theater_land.json not found — terrain constraints disabled. Run: python scripts/build_coastline.py')
+  }
 }
 
 export default function Map3D() {
@@ -111,6 +150,7 @@ export default function Map3D() {
 
       viewerRef.current = viewer
       setViewerReady(true)
+      _loadTheaterLand()
 
       const ET = Cesium.ScreenSpaceEventType
       const handler = viewer.screenSpaceEventHandler
@@ -195,17 +235,15 @@ export default function Map3D() {
 
             const revert = () => {
               if (drag.originalPosition) drag.entity.position.setValue(drag.originalPosition)
-              drag.entity.point.outlineColor.setValue(Cesium.Color.RED)
-              drag.entity.point.outlineWidth.setValue(5)
+              drag.entity.billboard.color.setValue(new Cesium.Color(1, 0.1, 0.1, 0.9))
               setTimeout(() => {
-                drag.entity.point.outlineColor.setValue(Cesium.Color.fromBytes(255, 200, 0, 200))
-                drag.entity.point.outlineWidth.setValue(1)
+                drag.entity.billboard.color.setValue(Cesium.Color.WHITE)
               }, 800)
             }
 
             if (needsLand || needsSea) {
-              const sea = likelySea(position.lon, position.lat)
-              if ((needsLand && sea) || (needsSea && !sea)) revert()
+              const land = isLand(position.lon, position.lat)
+              if (land !== null && ((needsLand && !land) || (needsSea && land))) revert()
               else persist()
             } else {
               persist()
@@ -263,8 +301,8 @@ export default function Map3D() {
             }
 
             if (needsLand || needsSea) {
-              const sea = likelySea(position.lon, position.lat)
-              if ((needsLand && sea) || (needsSea && !sea)) {
+              const land = isLand(position.lon, position.lat)
+              if (land !== null && ((needsLand && !land) || (needsSea && land))) {
                 const where = needsLand ? 'on land' : 'in water'
                 window.alert(`Cannot place ${pm.type} here — ${pm.type}s must be placed ${where}.`)
               } else {
@@ -447,44 +485,39 @@ export default function Map3D() {
         }
         continue
       }
-      const cfg = DRONE_CONFIG[drone.model] || DRONE_CONFIG[drone.type] || DRONE_CONFIG.swarm_member
-      const statusColor = STATUS_COLORS[drone.status] || [150, 150, 150]
-      const color = Cesium.Color.fromBytes(...statusColor, 220)
       const pos = Cesium.Cartesian3.fromDegrees(drone.position.lon, drone.position.lat, drone.position.alt || 150)
       const isHighlighted = drone.id === selectedDroneId ||
         (selectedSwarmId !== null && drone.swarm_id === selectedSwarmId)
-      const dronePixelSize  = isHighlighted ? cfg.size * 1.8 : cfg.size
-      const droneOutline    = isHighlighted ? Cesium.Color.YELLOW : Cesium.Color.WHITE
-      const droneOutlineW   = isHighlighted ? 3 : 1
+      const bgColor = STATUS_BG[drone.status] ?? MODEL_BG[drone.model] ?? MODEL_BG[drone.type] ?? '#4b5563'
+      const size = DRONE_SIZE[drone.model] || DRONE_SIZE[drone.type] || 16
+      const svg = _makeBillboardSVG('drone', bgColor, isHighlighted)
 
       if (entityMap.drones[drone.id]) {
         const e = entityMap.drones[drone.id]
         e.position.setValue(pos)
-        e.point.color.setValue(color)
-        e.point.pixelSize.setValue(dronePixelSize)
-        e.point.outlineColor.setValue(droneOutline)
-        e.point.outlineWidth.setValue(droneOutlineW)
-        if (e.label) e.label.text.setValue(`${cfg.label}  ${drone.name}`)
+        e.billboard.image.setValue(svg)
+        if (e.label) e.label.text.setValue(drone.name)
       } else {
         const e = viewer.entities.add({
           position: pos,
-          point: {
-            pixelSize: dronePixelSize,
-            color,
-            outlineColor: droneOutline,
-            outlineWidth: droneOutlineW,
+          billboard: {
+            image: svg,
+            width: size,
+            height: size,
             heightReference: Cesium.HeightReference.NONE,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            color: Cesium.Color.WHITE,
           },
           label: drone.type === 'recon' ? {
-            text: `${cfg.label}  ${drone.name}`,
-            font: '12px monospace',
-            fillColor: Cesium.Color.fromBytes(...cfg.color),
+            text: drone.name,
+            font: '11px monospace',
+            fillColor: Cesium.Color.WHITE,
             outlineColor: Cesium.Color.BLACK,
             outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            pixelOffset: new Cesium.Cartesian2(0, -14),
+            pixelOffset: new Cesium.Cartesian2(0, -(size / 2 + 3)),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
           } : undefined,
         })
@@ -511,39 +544,39 @@ export default function Map3D() {
         }
         continue
       }
-      const cfg = TARGET_CONFIG[target.type] || TARGET_CONFIG.drone
-      const isSelected = target.id === selectedTargetId
-      const alpha = Math.round(target.confidence * 220)
-      const color = Cesium.Color.fromBytes(...cfg.color.slice(0, 3), alpha)
       const pos = Cesium.Cartesian3.fromDegrees(target.position.lon, target.position.lat, target.position.alt || 10)
+      const isSelected = target.id === selectedTargetId
+      const bgColor = TARGET_BG[target.type] || '#c81e1e'
+      const size = TARGET_SIZE[target.type] || 22
+      const svg = _makeBillboardSVG(target.type, bgColor, isSelected)
+      const confLabel = `${Math.round(target.confidence * 100)}%`
 
       if (entityMap.targets[target.id]) {
         const e = entityMap.targets[target.id]
         e.position.setValue(pos)
-        e.point.color.setValue(color)
-        e.point.pixelSize.setValue(isSelected ? 20 : 14 * cfg.scale)
-        e.point.outlineColor.setValue(isSelected ? Cesium.Color.YELLOW : Cesium.Color.fromBytes(255, 200, 0, 200))
-        e.point.outlineWidth.setValue(isSelected ? 3 : 1)
+        e.billboard.image.setValue(svg)
+        e.label.text.setValue(confLabel)
       } else {
         const e = viewer.entities.add({
           position: pos,
-          point: {
-            pixelSize: isSelected ? 20 : 14 * cfg.scale,
-            color,
-            outlineColor: isSelected ? Cesium.Color.YELLOW : Cesium.Color.fromBytes(255, 200, 0, 200),
-            outlineWidth: isSelected ? 3 : 1,
+          billboard: {
+            image: svg,
+            width: size,
+            height: size,
             heightReference: Cesium.HeightReference.NONE,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            color: Cesium.Color.WHITE,
           },
           label: {
-            text: `${cfg.label}\n${Math.round(target.confidence * 100)}%`,
+            text: confLabel,
             font: '10px monospace',
-            fillColor: Cesium.Color.fromBytes(255, 80, 80, 255),
+            fillColor: Cesium.Color.fromCssColorString('#fca5a5'),
             outlineColor: Cesium.Color.BLACK,
             outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            pixelOffset: new Cesium.Cartesian2(0, -14),
+            pixelOffset: new Cesium.Cartesian2(0, -(size / 2 + 2)),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
         })

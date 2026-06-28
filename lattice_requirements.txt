@@ -14,7 +14,7 @@ Features and capabilities:
 10) All deployed drones should be constantly moving until their max range is reached. 
 11) All deployed drones should have their location, speed, battery status live feed to the Lattice.
 12) 
-13) LLM should determine classify the enemy assets to 1) high value target, such as ship, missile launchers. 2) medium value target, such as tanks. 3) low value targets. And ask human for permission to attack enemy targets according to value classification.
+13) LLM should determine classify the enemy assets to a) high value target, such as ship, missile launchers. b) medium value target, such as tanks. c) low value targets. And ask human for permission to attack enemy targets according to value classification.
 14) LLM should respond with natural language, such as "what is the current status of MQ9-01", instead of just translating inquiry into commands.
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 16) idling drones should not show up on on the swarm and drone status panel.
@@ -25,36 +25,40 @@ Features and capabilities:
 21) soldiers, tanks, missile launchers must be on the land. soldiers, tanks, missile launchers must stop at the sea. ships must be in the sea. ships must stop when reaching shores. drones can be on land, at sea or in the air. 
 22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
 23) when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
-24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be tracked. Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance drone list. (i.e. one drone cannot be used to track multiple enemy targets).
+24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
+Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be tracked. 
+Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance drone list. (i.e. one drone cannot be used to track multiple enemy targets).
 25) the number of enemy targets being engaged should be displayed at the header bar. the number of enemy targets being tracked should be displayed at the header bar.
-26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location.
+26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
+27) the platform must use actual coastline polygons to define the land or sea. 
+  - The platform loads the real coastline polygons on first mount via fetch('/data/theater_land.json')
+  - Point-in-polygon uses the standard ray-casting algorithm, correctly handling holes (e.g. lakes inside land polygons)
+  - Covered correctly: Taiwan's actual irregular coastline, all offshore islands (Penghu, Kinmen, Matsu, Green Island,
+  Orchid Island), Fujian's indented coast including Xiamen Bay
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
 2) No default deployments of friendly and enemy assets by the system.
   
 Friendly assets:
-4 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
+MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
 MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.
 
-There are always 2 reconnaissance drones in the air at all time. 
-100 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
+reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
 reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
-10000 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
-1000 altius-600m drones, max payload 12kg, max range 440km.
-reconnaissance and combat drones are deployed across major cities in Taiwan, with 60% of assets around Taipei.
+combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
+altius-600m drones, max payload 12kg, max range 440km.
 reconnaissance and combat drones should be marked as blue or green.
 
 
 Enermy assets:
-10000 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
-10000 FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
-100 tanks in Taiwan, moving at 10km/hr.
-1000 ships in Taiwan strait, moving at 22 knots from mainline China towards Taiwan.
-400 missle launchers in Fujian.
-100000 PLA solders in Taiwan.
-90% enemy assets are on the west coast. The remaining in east coast.
+long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
+FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
+tanks in Taiwan, moving at 10km/hr.
+ships in Taiwan strait, moving at 22 knots from mainline China towards Taiwan.
+missle launchers in Fujian.
+PLA solders in Taiwan.
 Enemy assets should be marked as red.
 
 Friendly assets and enermy assets should be configurable (i.e. not hard coded).

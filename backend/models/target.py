@@ -53,6 +53,7 @@ class PendingApproval(BaseModel):
     """Pending human-in-the-loop attack approval request."""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     command: str = Field(..., description="Original natural language command")
+    interpretation: str = Field("", description="LLM plain-English interpretation of the command")
     approval_prompt: str = Field(..., description="LLM-generated summary for the operator")
     threat_summary: dict = Field(default_factory=dict, description="high/medium/low counts")
     classified_targets: list[dict] = Field(default_factory=list, description="List of classified target entries")

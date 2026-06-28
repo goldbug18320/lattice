@@ -98,6 +98,7 @@ async def process_nlp_command(req: NLPCommandRequest):
     if action.get("type") == "request_approval":
         approval = PendingApproval(
             command=req.command,
+            interpretation=llm_result.get("interpretation", ""),
             approval_prompt=action.get("approval_prompt", req.command),
             threat_summary=action.get("threat_summary", {}),
             classified_targets=action.get("classified_targets", []),

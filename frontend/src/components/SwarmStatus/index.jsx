@@ -137,17 +137,32 @@ export default function SwarmStatus() {
             )}
             {isSelected && (
               <div className="drone-list">
-                {swarmDrones.filter(d => d.status !== 'idle').map(d => (
-                  <div key={d.id} className="drone-item">
-                    <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
-                    <span className="drone-name">{d.name}</span>
-                    <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
-                      {d.status}
-                    </span>
-                    <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
-                    <span className="drone-range">↗{remainingRange(d)} km</span>
-                  </div>
-                ))}
+                {swarmDrones.filter(d => d.status !== 'idle').map(d => {
+                  const isDroneSelected = d.id === selectedDroneId
+                  return (
+                    <div
+                      key={d.id}
+                      className={`drone-item ${isDroneSelected ? 'selected' : ''}`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const next = isDroneSelected ? null : d.id
+                        selectDrone(next)
+                        if (next && d.position) {
+                          setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: d.position.lat, lon: d.position.lon } })
+                        }
+                      }}
+                    >
+                      <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
+                      <span className="drone-name">{d.name}</span>
+                      <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
+                        {d.status}
+                      </span>
+                      <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
+                      <span className="drone-range">↗{remainingRange(d)} km</span>
+                    </div>
+                  )
+                })}
                 {swarmDrones.filter(d => d.status === 'idle').length > 0 && (
                   <div className="drone-item" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
                     {swarmDrones.filter(d => d.status === 'idle').length} drones idle

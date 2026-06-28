@@ -27,6 +27,12 @@ const STATUS_BADGES = {
   lost: { label: 'LOST', color: '#4b5563' },
 }
 
+const THREAT_COLORS = {
+  high:   '#ef4444',
+  medium: '#f59e0b',
+  low:    '#60a5fa',
+}
+
 export default function TargetList() {
   const targets = useStore(s => s.targets)
   const selectedTargetId = useStore(s => s.selectedTargetId)
@@ -118,6 +124,11 @@ export default function TargetList() {
                   <span className="target-type-icon" style={{ color: TYPE_COLORS[type] }}>
                     {TYPE_ICONS[type]}
                   </span>
+                  {target.threat_value && (
+                    <span className="threat-badge" style={{ color: THREAT_COLORS[target.threat_value] }}>
+                      {target.threat_value.toUpperCase()}
+                    </span>
+                  )}
                   <span className="target-coords">
                     {target.position.lat.toFixed(4)}°, {target.position.lon.toFixed(4)}°
                   </span>
