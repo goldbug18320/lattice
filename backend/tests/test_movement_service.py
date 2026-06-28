@@ -568,6 +568,48 @@ class TestCombatContact:
         assert call_kwargs["type"] == "combat_contact"
         assert call_kwargs["target_id"] == target.id
         assert call_kwargs["swarm_id"] == swarm.id
+        assert call_kwargs["drones_destroyed"] == len(swarm.drone_ids)
+
+    def test_entire_swarm_destroyed_including_non_contact_drones(self):
+        """Feature 23: ALL drones in the swarm go offline on contact, even those not in range."""
+        target = _make_target(
+            type=TargetType.SHIP,
+            position=Position(lat=24.0, lon=119.8, alt=0.0),
+            status=TargetStatus.ACTIVE,
+            speed=0.0,
+            heading=0.0,
+        )
+        # d_near is within contact radius; d_far is 10 km away
+        near_lat = target.position.lat + 0.2 / 111.32
+        far_lat  = target.position.lat + 10.0 / 111.32
+        d_near = _make_drone(
+            model=DroneModel.ALTIUS_600M, status=DroneStatus.ENGAGING,
+            position=Position(lat=near_lat, lon=119.8, alt=200.0),
+            swarm_id="sw-entire", max_range_km=440.0,
+        )
+        d_far = _make_drone(
+            model=DroneModel.ALTIUS_600M, status=DroneStatus.ENGAGING,
+            position=Position(lat=far_lat, lon=119.8, alt=200.0),
+            swarm_id="sw-entire", max_range_km=440.0,
+        )
+        d_returning = _make_drone(
+            model=DroneModel.ALTIUS_600M, status=DroneStatus.RETURNING,
+            position=Position(lat=far_lat, lon=119.9, alt=200.0),
+            swarm_id="sw-entire", max_range_km=440.0,
+        )
+        swarm = Swarm(
+            id="sw-entire", name="ALT-Alpha",
+            drone_ids=[d_near.id, d_far.id, d_returning.id],
+            target_ids=[target.id],
+            status=SwarmStatus.ENGAGING,
+        )
+        state = _make_state([d_near, d_far, d_returning], targets=[target], swarms=[swarm])
+        self.svc.tick(state)
+        # Entire swarm destroyed — no drones survive or return
+        assert d_near.status == DroneStatus.OFFLINE
+        assert d_far.status == DroneStatus.OFFLINE
+        assert d_returning.status == DroneStatus.OFFLINE
+        assert state.log_command.call_args[0][0]["drones_destroyed"] == 3
 
 
 # ─── Feature 21: terrain-constrained movement ────────────────────────────────

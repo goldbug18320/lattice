@@ -289,7 +289,8 @@ class MovementService:
 
     def _check_combat_contacts(self, state_service) -> None:
         """Feature 23: when any engaging drone reaches its target, destroy the target
-        and expend all drones in that swarm (one-way strike weapons)."""
+        and destroy the entire combat drone swarm — every member drone goes offline,
+        no drones survive or return."""
         for swarm in state_service.get_all_swarms():
             if swarm.status != SwarmStatus.ENGAGING:
                 continue
@@ -316,8 +317,9 @@ class MovementService:
             if not contact:
                 continue
 
-            # ── Contact: destroy target, expend swarm ─────────────────────────
+            # ── Contact: destroy target and entire swarm ──────────────────────
             state_service.mark_target_destroyed(target.id)
+            drones_destroyed = len(swarm.drone_ids)
             for did in swarm.drone_ids:
                 state_service.update_drone(did, {"status": DroneStatus.OFFLINE, "speed": 0.0})
             state_service.update_swarm_status(swarm.id, SwarmStatus.IDLE)
@@ -335,6 +337,7 @@ class MovementService:
                 "swarm_name": swarm.name,
                 "target_id": target.id,
                 "target_type": target.type.value,
+                "drones_destroyed": drones_destroyed,
             })
 
     def _run_mq9_detection(self, state_service) -> None:

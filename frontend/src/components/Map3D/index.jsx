@@ -32,7 +32,6 @@ const STATUS_COLORS = {
   tracking:   [255, 140, 0  ],
   engaging:   [255, 50,  50 ],
   returning:  [0,   255, 150],
-  offline:    [80,  80,  80 ],
 }
 
 // Taiwan island-wide view
@@ -441,6 +440,13 @@ export default function Map3D() {
     }
     for (const drone of drones) {
       if (!drone.position) continue
+      if (drone.status === 'offline') {
+        if (entityMap.drones[drone.id]) {
+          viewer.entities.remove(entityMap.drones[drone.id])
+          delete entityMap.drones[drone.id]
+        }
+        continue
+      }
       const cfg = DRONE_CONFIG[drone.model] || DRONE_CONFIG[drone.type] || DRONE_CONFIG.swarm_member
       const statusColor = STATUS_COLORS[drone.status] || [150, 150, 150]
       const color = Cesium.Color.fromBytes(...statusColor, 220)
