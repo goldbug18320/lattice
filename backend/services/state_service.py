@@ -530,6 +530,15 @@ class StateService:
                 if approval.status == "pending" and approval.expires_at <= now:
                     approval.status = "expired"
 
+    def release_tracking_drone(self, drone_id: str) -> None:
+        """Feature 26: clear target assignment and resume patrolling when target is gone."""
+        with self._lock:
+            if drone_id in self._drones:
+                d = self._drones[drone_id]
+                d.tracking_target_id = None
+                d.status = DroneStatus.PATROLLING
+                d.current_task = None
+
     # ─── Command Log ────────────────────────────────────────────────────────────
 
     def log_command(self, entry: dict):

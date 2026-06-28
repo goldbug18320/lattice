@@ -244,7 +244,12 @@ class MovementService:
                         target = state_service.get_target(swarm.target_ids[0])
                 elif drone.tracking_target_id:
                     target = state_service.get_target(drone.tracking_target_id)
+                    # Feature 26: release recon drone when its target is gone or destroyed
+                    if target is None or target.status == TargetStatus.DESTROYED:
+                        state_service.release_tracking_drone(drone.id)
+                        continue
                 if target and target.position:
+                    # Feature 26: recalculate bearing toward target's current position each tick
                     new_heading = _bearing(drone.position, target.position)
             else:
                 new_heading = drone.heading
@@ -320,6 +325,10 @@ class MovementService:
             if live_swarm:
                 live_swarm.target_ids = []
                 live_swarm.objective = None
+            # Feature 26: release any recon drone that was tracking this target
+            for d in state_service.get_all_drones():
+                if d.tracking_target_id == target.id:
+                    state_service.release_tracking_drone(d.id)
             state_service.log_command({
                 "type": "combat_contact",
                 "swarm_id": swarm.id,
