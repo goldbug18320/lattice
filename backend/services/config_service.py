@@ -48,6 +48,9 @@ _DEFAULTS: dict = {
     "deployment": {
         "taipei_pct": 0.6,
     },
+    "combat": {
+        "contact_radius_m": 500.0,
+    },
 }
 
 CONFIG_PATH: str = os.environ.get("ASSETS_CONFIG", "assets_config.json")

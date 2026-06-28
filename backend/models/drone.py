@@ -65,6 +65,7 @@ class Drone(BaseModel):
     range_used_km: float = Field(0.0, description="Distance travelled since launch")
     current_task: Optional[str] = None
     swarm_id: Optional[str] = None
+    tracking_target_id: Optional[str] = None  # Feature 24: target being tracked by a standalone recon drone
     last_update: datetime = Field(default_factory=datetime.utcnow)
 
 

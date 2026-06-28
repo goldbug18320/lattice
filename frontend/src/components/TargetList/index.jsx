@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useStore } from '../../store/index.js'
-import { swarmApi, nlpApi } from '../../services/api.js'
+import { nlpApi } from '../../services/api.js'
 
 
 const TYPE_ICONS = {
@@ -28,12 +29,14 @@ const STATUS_BADGES = {
 
 export default function TargetList() {
   const targets = useStore(s => s.targets)
-  const swarms = useStore(s => s.swarms)
   const selectedTargetId = useStore(s => s.selectedTargetId)
   const selectTarget = useStore(s => s.selectTarget)
   const setCameraCommand = useStore(s => s.setCameraCommand)
-
   const selectSwarm = useStore(s => s.selectSwarm)
+  const selectDrone = useStore(s => s.selectDrone)
+
+  // Inline error state for TRACK button: { [targetId]: string | null }
+  const [trackErrors, setTrackErrors] = useState({})
 
   const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status))
 
@@ -58,18 +61,18 @@ export default function TargetList() {
     }
   }
 
-  // TRACK executes immediately — non-attack commands bypass HITL (§6.4)
+  // TRACK routes through HITL with a recon drone (Feature 24). On no_recon_in_range
+  // show an inline error; on approval pre-select the chosen drone in the status panel.
   const trackTarget = async (targetId) => {
-    const availableSwarm = swarms.find(s => s.status === 'idle' || s.status === 'patrolling') || swarms[0]
-    if (!availableSwarm) return
+    setTrackErrors(prev => ({ ...prev, [targetId]: null }))
     try {
-      await swarmApi.commandSwarm(availableSwarm.id, {
-        command_type: 'track',
-        target_ids: [targetId],
-        objective: `Track target ${targetId}`,
-        priority: 6,
-      })
-      selectSwarm(availableSwarm.id)
+      const result = await nlpApi.command(`track target with id ${targetId}`)
+      if (result.action?.type === 'no_recon_in_range') {
+        setTrackErrors(prev => ({ ...prev, [targetId]: 'No reconnaissance drone in range' }))
+      } else if (result.action?.type === 'request_approval') {
+        const proposedDroneId = result.action?.proposed_action?.drone_id
+        if (proposedDroneId) selectDrone(proposedDroneId)
+      }
     } catch (e) {
       console.error('Track failed:', e)
     }
@@ -137,6 +140,9 @@ export default function TargetList() {
                     <button className="target-btn track" onClick={e => { e.stopPropagation(); trackTarget(target.id) }}>
                       👁 TRACK
                     </button>
+                    {trackErrors[target.id] && (
+                      <div className="track-error">{trackErrors[target.id]}</div>
+                    )}
                     {target.notes && <div className="target-notes">{target.notes}</div>}
                   </div>
                 )}

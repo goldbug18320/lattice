@@ -3,11 +3,11 @@ from __future__ import annotations
 import math
 import pytest
 from unittest.mock import MagicMock
-from models.drone import Drone, DroneType, DroneModel, DroneStatus
+from models.drone import Drone, DroneType, DroneModel, DroneStatus, Swarm, SwarmStatus
 from models.target import Position, Target, TargetType, TargetStatus
 from services.movement_service import (
     MovementService, _advance, _distance_km, _bearing, DT,
-    MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM,
+    MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM, CONTACT_RADIUS_KM,
 )
 
 
@@ -68,6 +68,7 @@ def _make_state(drones, targets=None, swarms=None):
 
     svc.get_all_drones.return_value = list(drones)
     svc.get_all_targets.return_value = list(targets or [])
+    svc.get_all_swarms.return_value = list(swarms or [])
     svc.get_drone.side_effect = lambda did: drone_map.get(did)
     svc.get_target.side_effect = lambda tid: target_map.get(tid)
     svc.get_swarm.side_effect = lambda sid: swarm_map.get(sid)
@@ -80,6 +81,25 @@ def _make_state(drones, targets=None, swarms=None):
                 setattr(d, k, v)
         return d
     svc.update_drone.side_effect = update_drone
+
+    # update_swarm_status applies status to the swarm object
+    def update_swarm_status(swarm_id, new_status, objective=None):
+        s = swarm_map.get(swarm_id)
+        if s:
+            s.status = new_status
+            if objective is not None:
+                s.objective = objective
+        return bool(s)
+    svc.update_swarm_status.side_effect = update_swarm_status
+
+    # mark_target_destroyed sets target.status to DESTROYED
+    def mark_target_destroyed(tid):
+        t = target_map.get(tid)
+        if t:
+            t.status = TargetStatus.DESTROYED
+        return bool(t)
+    svc.mark_target_destroyed.side_effect = mark_target_destroyed
+
     return svc
 
 
@@ -261,7 +281,6 @@ class TestTrackingTowardTarget:
 
     def test_tracking_drone_steers_toward_target(self):
         """Drone in tracking status should point toward swarm target."""
-        from models.drone import Swarm, SwarmStatus
         target = Target(
             type=TargetType.TANK,
             position=Position(lat=25.0, lon=122.0, alt=0.0),  # east of drone
@@ -398,4 +417,139 @@ class TestEnemyMovement:
         assert MQ9_DETECTION_RADIUS_KM == 15.0
         assert SCOUT_DETECTION_RADIUS_KM == 10.0
 
+
+# ─── Feature 23: combat-on-contact destruction ────────────────────────────────
+
+def _make_engaging_swarm_state(drone_dist_km: float, swarm_status: SwarmStatus = SwarmStatus.ENGAGING):
+    """Return (state, drone, target, swarm) with the drone `drone_dist_km` from the target."""
+    target = _make_target(
+        type=TargetType.SHIP,
+        position=Position(lat=24.0, lon=119.8, alt=0.0),
+        status=TargetStatus.ACTIVE,
+        speed=0.0,
+        heading=0.0,
+    )
+    # Place the drone due north of the target at the specified distance
+    drone_lat = target.position.lat + drone_dist_km / 111.32
+    drone = _make_drone(
+        model=DroneModel.ALTIUS_600M,
+        status=DroneStatus.ENGAGING,
+        position=Position(lat=drone_lat, lon=119.8, alt=200.0),
+        swarm_id="swarm-contact-1",
+        max_range_km=440.0,
+    )
+    swarm = Swarm(
+        id="swarm-contact-1",
+        name="ALT-Alpha",
+        drone_ids=[drone.id],
+        target_ids=[target.id],
+        status=swarm_status,
+    )
+    state = _make_state([drone], targets=[target], swarms=[swarm])
+    return state, drone, target, swarm
+
+
+class TestCombatContact:
+    """Feature 23: combat swarm destroys target and expends itself on contact."""
+
+    def setup_method(self):
+        self.svc = MovementService()
+
+    def test_contact_radius_is_500m(self):
+        assert abs(CONTACT_RADIUS_KM - 0.5) < 1e-9
+
+    def test_contact_marks_target_destroyed(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        assert target.status == TargetStatus.DESTROYED
+
+    def test_contact_sets_drones_offline(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        assert drone.status == DroneStatus.OFFLINE
+
+    def test_contact_sets_drone_speed_to_zero(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        assert drone.speed == 0.0
+
+    def test_contact_resets_swarm_to_idle(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        assert swarm.status == SwarmStatus.IDLE
+
+    def test_contact_clears_swarm_target_ids(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        assert swarm.target_ids == []
+
+    def test_contact_clears_swarm_objective(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        swarm.objective = "destroy ship"
+        self.svc.tick(state)
+        assert swarm.objective is None
+
+    def test_beyond_contact_radius_no_destruction(self):
+        """A drone 1 km away (> 500 m) must not trigger contact."""
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=1.0)
+        self.svc.tick(state)
+        assert target.status == TargetStatus.ACTIVE
+
+    def test_beyond_contact_radius_drone_stays_engaging(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=1.0)
+        self.svc.tick(state)
+        assert drone.status == DroneStatus.ENGAGING
+
+    def test_already_destroyed_target_skipped(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        target.status = TargetStatus.DESTROYED
+        self.svc.tick(state)
+        state.mark_target_destroyed.assert_not_called()
+
+    def test_non_engaging_swarm_not_checked(self):
+        """Swarm in TRACKING status must not trigger combat contact."""
+        state, drone, target, swarm = _make_engaging_swarm_state(
+            drone_dist_km=0.3, swarm_status=SwarmStatus.TRACKING
+        )
+        drone.status = DroneStatus.TRACKING
+        self.svc.tick(state)
+        assert target.status == TargetStatus.ACTIVE
+
+    def test_multiple_drones_contact_on_first_in_range(self):
+        """Contact triggers as long as at least one drone is within radius."""
+        target = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=24.0, lon=119.8, alt=0.0),
+            status=TargetStatus.ACTIVE,
+            speed=0.0,
+            heading=0.0,
+        )
+        # Drone 1 is far (2 km), drone 2 is close (0.2 km)
+        far_lat  = target.position.lat + 2.0 / 111.32
+        near_lat = target.position.lat + 0.2 / 111.32
+        d1 = _make_drone(model=DroneModel.ALTIUS_600M, status=DroneStatus.ENGAGING,
+                         position=Position(lat=far_lat,  lon=119.8, alt=200.0),
+                         swarm_id="sw-multi", max_range_km=440.0)
+        d2 = _make_drone(model=DroneModel.ALTIUS_600M, status=DroneStatus.ENGAGING,
+                         position=Position(lat=near_lat, lon=119.8, alt=200.0),
+                         swarm_id="sw-multi", max_range_km=440.0)
+        swarm = Swarm(
+            id="sw-multi", name="ALT-Beta",
+            drone_ids=[d1.id, d2.id], target_ids=[target.id],
+            status=SwarmStatus.ENGAGING,
+        )
+        state = _make_state([d1, d2], targets=[target], swarms=[swarm])
+        self.svc.tick(state)
+        assert target.status == TargetStatus.DESTROYED
+        assert d1.status == DroneStatus.OFFLINE
+        assert d2.status == DroneStatus.OFFLINE
+
+    def test_logs_combat_contact_event(self):
+        state, drone, target, swarm = _make_engaging_swarm_state(drone_dist_km=0.3)
+        self.svc.tick(state)
+        state.log_command.assert_called()
+        call_kwargs = state.log_command.call_args[0][0]
+        assert call_kwargs["type"] == "combat_contact"
+        assert call_kwargs["target_id"] == target.id
+        assert call_kwargs["swarm_id"] == swarm.id
 

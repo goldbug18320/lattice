@@ -418,6 +418,13 @@ class StateService:
             targets = [t for t in targets if t.reported_by == reported_by]
         return targets
 
+    def update_target_status(self, target_id: str, status: TargetStatus) -> bool:
+        with self._lock:
+            if target_id in self._targets:
+                self._targets[target_id].status = status
+                return True
+        return False
+
     def mark_target_destroyed(self, target_id: str) -> bool:
         with self._lock:
             if target_id in self._targets:

@@ -1,6 +1,7 @@
 """Swarm command execution service."""
 from __future__ import annotations
 from models.drone import SwarmCommand, DroneCommand, CommandType, SwarmStatus, DroneStatus, DroneModel
+from models.target import TargetStatus
 from services.state_service import state_service
 
 
@@ -36,6 +37,14 @@ class SwarmService:
         swarm = state_service.get_swarm(swarm_id)
         if swarm and command.target_ids:
             swarm.target_ids = command.target_ids
+
+        # Reflect the mission in each target's status
+        if command.command_type == CommandType.ATTACK:
+            for tid in (command.target_ids or []):
+                state_service.update_target_status(tid, TargetStatus.ENGAGED)
+        elif command.command_type == CommandType.TRACK:
+            for tid in (command.target_ids or []):
+                state_service.update_target_status(tid, TargetStatus.TRACKED)
 
         # Propagate status to individual drones (they will self-coordinate internally)
         updated_drones = 0
@@ -85,6 +94,11 @@ class SwarmService:
             "status": new_status,
             "current_task": command.objective or command.command_type.value,
         })
+        # Feature 24: persist target so the movement simulator can steer toward it;
+        # also mark the target as tracked in the state
+        if command.command_type == CommandType.TRACK and command.target_id:
+            state_service.update_drone(drone_id, {"tracking_target_id": command.target_id})
+            state_service.update_target_status(command.target_id, TargetStatus.TRACKED)
         state_service.log_command({
             "type": "drone_command",
             "drone_id": drone_id,

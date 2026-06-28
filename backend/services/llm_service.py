@@ -1,7 +1,9 @@
 """LLM-powered natural language command processor using OpenAI."""
 from __future__ import annotations
 import json
+import math
 import os
+import re
 from typing import Optional
 from openai import AsyncOpenAI
 
@@ -26,6 +28,7 @@ Your role is to interpret natural language operator commands and translate them 
 
 ## Drone Fleet
 - **MQ-9 Recon** (mq9_recon): Reconnaissance only. Max range 1,900 km, 30+ hour endurance. Do NOT assign to attack missions.
+- **Scout Recon** (scout_recon): Reconnaissance only. Max range 150 km, max speed 150 km/h. Do NOT assign to attack missions.
 - **FPV Combat** (fpv_combat): Light payload 4 kg, max range 15 km. Best for enemy FPV drones, soldiers, light vehicles at close range.
 - **Altius-600M** (altius_600m): Heavy payload 12 kg, max range 440 km. Best for tanks, ships, missile launchers, long-range drones, and targets on mainland China (Fujian).
 
@@ -36,10 +39,11 @@ Your role is to interpret natural language operator commands and translate them 
 4. **Inventory**: Context includes current drone counts per model — select realistically.
 
 ## Available Action Types
-- **assign_swarm**: Assign a swarm to a mission (locate/track/attack/patrol/return/abort). Include drone_model and recommended_swarm_size.
+- **assign_swarm**: Assign a swarm to a mission (locate/patrol/return/abort). Include drone_model and recommended_swarm_size.
 - **assign_drone**: Assign a single drone to a mission.
 - **mark_target_destroyed**: Mark an enemy target as destroyed.
-- **request_approval**: Used INSTEAD of assign_swarm/assign_drone when the command_type is "attack". Classify each active target as high/medium/low, produce an approval_prompt for the operator, and embed the proposed assign_swarm action in proposed_action. The operator must approve before execution.
+- **request_approval**: Used for two scenarios: (1) INSTEAD of assign_swarm when command_type is "attack" — classify targets, embed assign_swarm in proposed_action; (2) INSTEAD of assign_drone when command_type is "track" (Feature 24) — select a recon drone in range, embed assign_drone in proposed_action.
+- **no_recon_in_range**: Return ONLY for single-target TRACK (Feature 24) when no recon drone (MQ-9 or Scout) can physically reach the target.
 - **request_status**: Provide a text status summary (no execution needed).
 - **ui_command**: Control the 3D map (pan/zoom/focus). Sub-types: fly_to, fly_to_target, fly_to_drone, zoom_in, zoom_out, set_view_mode, toggle_layer.
 - **none**: Command could not be interpreted.
@@ -96,9 +100,10 @@ Always respond with a JSON object:
 - Always prefer swarm assignments over single-drone assignments for combat missions.
 - Map target references (e.g. "enemy tank") to matching target IDs from context.
 - Map swarm references (e.g. "ALT-Alpha") to correct swarm IDs from context.
-- Attack commands: priority 8–10. Patrol/search: priority 3–6.
+- Attack commands: priority 8–10. Patrol/search: priority 3–6. Track: priority 6.
 - For UI commands, resolve place names to lat/lon: Taiwan (23.8, 121.0, alt 300km), Taipei (25.04, 121.56, alt 50km), Fujian (25.9, 119.3, alt 100km), Taiwan Strait (24.0, 119.5, alt 200km).
-- **HITL rule**: When command_type is "attack", ALWAYS return request_approval instead of assign_swarm. Never execute an attack directly.
+- **HITL attack rule**: When command_type is "attack", ALWAYS return request_approval (not assign_swarm). Never execute an attack directly.
+- **HITL track rule (Feature 24)**: When command_type is "track" and a target ID is referenced, ALWAYS return request_approval with an assign_drone proposed_action. Select the nearest MQ-9 or Scout drone whose max_range_km ≥ haversine distance to the target. If none qualifies, return no_recon_in_range.
 """
 
 # Hardcoded place-name lookups for mock fallback
@@ -331,8 +336,82 @@ Operator command: {command}"""
                 "explanation": "[MOCK] Attack classified and queued for operator approval.",
             }
         elif any(w in cmd_lower for w in ["track", "follow", "monitor"]):
-            action_type = "assign_swarm"
-            cmd_type = "track"
+            # Feature 24: TRACK routes through HITL with a recon drone
+            tid_match = re.search(r'target\s+with\s+id\s+(\S+)', cmd_lower)
+            target_id = tid_match.group(1) if tid_match else None
+
+            target_pos = None
+            if target_id:
+                for t in targets:
+                    if t.get("id") == target_id:
+                        target_pos = t.get("position")
+                        break
+
+            recon_models = {"mq9_recon", "scout_recon"}
+            drones = context.get("drones", [])
+            available_recon = [
+                d for d in drones
+                if d.get("model") in recon_models
+                and d.get("status") not in ("tracking", "engaging", "offline")
+                and d.get("position")
+                and d.get("max_range_km")
+            ]
+
+            selected_drone = None
+            if target_pos and available_recon:
+                best_dist = float("inf")
+                for d in available_recon:
+                    d_pos = d["position"]
+                    dlat = (target_pos["lat"] - d_pos["lat"]) * 111.32
+                    dlon = (target_pos["lon"] - d_pos["lon"]) * 111.32 * math.cos(math.radians(d_pos["lat"]))
+                    dist = math.sqrt(dlat ** 2 + dlon ** 2)
+                    if dist <= d["max_range_km"] and dist < best_dist:
+                        best_dist = dist
+                        selected_drone = d
+            elif available_recon:
+                selected_drone = available_recon[0]
+
+            if selected_drone is None:
+                return {
+                    "interpretation": "[MOCK] Track command — no reconnaissance drone in range",
+                    "action": {
+                        "type": "no_recon_in_range",
+                        "target_id": target_id,
+                        "explanation": "No reconnaissance drone can reach this target.",
+                    },
+                    "explanation": "[MOCK] No recon drone is available or in range.",
+                }
+
+            drone_name = selected_drone.get("name", "Unknown")
+            dist_str = ""
+            if target_pos and selected_drone.get("position"):
+                d_pos = selected_drone["position"]
+                dlat = (target_pos["lat"] - d_pos["lat"]) * 111.32
+                dlon = (target_pos["lon"] - d_pos["lon"]) * 111.32 * math.cos(math.radians(d_pos["lat"]))
+                dist_km = round(math.sqrt(dlat ** 2 + dlon ** 2))
+                dist_str = f" ({dist_km} km away)"
+            approval_prompt = f"Requesting approval to track target using {drone_name}{dist_str}."
+            proposed = {
+                "type": "assign_drone",
+                "drone_id": selected_drone["id"],
+                "command_type": "track",
+                "target_ids": [target_id] if target_id else [],
+                "objective": f"Track target using {drone_name}",
+                "priority": 6,
+                "notes": f"Mock — {drone_name} selected for reconnaissance tracking.",
+            }
+            return {
+                "interpretation": f"[MOCK] Track command — routing through HITL with {drone_name}",
+                "action": {
+                    "type": "request_approval",
+                    "classified_targets": [],
+                    "threat_summary": {"high": 0, "medium": 0, "low": 0},
+                    "approval_prompt": approval_prompt,
+                    "proposed_action": proposed,
+                },
+                "explanation": f"[MOCK] Track request queued for operator approval. Selected: {drone_name}.",
+            }
+
         elif any(w in cmd_lower for w in ["locate", "find", "search", "scout"]):
             action_type = "assign_swarm"
             cmd_type = "locate"

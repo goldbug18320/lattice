@@ -6,8 +6,25 @@ from datetime import datetime, timedelta
 from services.state_service import state_service, APPROVAL_TTL_MINUTES
 from services.llm_service import llm_service
 from services.swarm_service import swarm_service
-from models.drone import SwarmCommand, DroneCommand, CommandType
+from models.drone import SwarmCommand, DroneCommand, CommandType, Swarm, Drone
 from models.target import PendingApproval
+
+
+def _swarm_representative_position(swarm: Swarm, all_drones: list[Drone]) -> Optional[dict]:
+    """Return the average lat/lon of a swarm's member drones, or None if no positioned members."""
+    members = [d for d in all_drones if d.swarm_id == swarm.id and d.position]
+    if not members:
+        return None
+    return {
+        "lat": sum(d.position.lat for d in members) / len(members),
+        "lon": sum(d.position.lon for d in members) / len(members),
+    }
+
+
+def _swarm_max_range_km(swarm: Swarm, all_drones: list[Drone]) -> Optional[float]:
+    """Return the max_range_km of the first member drone (all share the same model)."""
+    member = next((d for d in all_drones if d.swarm_id == swarm.id and d.max_range_km), None)
+    return member.max_range_km if member else None
 
 router = APIRouter()
 
@@ -28,6 +45,7 @@ async def process_nlp_command(req: NLPCommandRequest):
         raise HTTPException(status_code=400, detail="Command cannot be empty")
 
     # Build battlefield context for the LLM
+    all_drones = state_service.get_all_drones()
     context = req.context_override or {
         "swarms": [
             {
@@ -38,6 +56,9 @@ async def process_nlp_command(req: NLPCommandRequest):
                 "status": s.status.value,
                 "drone_count": len(s.drone_ids),
                 "objective": s.objective,
+                # Feature 22: provide position + range so the LLM can do a range check
+                "representative_position": _swarm_representative_position(s, all_drones),
+                "max_range_km": _swarm_max_range_km(s, all_drones),
             }
             for s in state_service.get_all_swarms()
         ],
@@ -54,7 +75,7 @@ async def process_nlp_command(req: NLPCommandRequest):
                 "swarm_id": d.swarm_id,
                 "position": d.position.model_dump() if d.position else None,
             }
-            for d in state_service.get_all_drones()
+            for d in all_drones
         ],
         "targets": [
             {
@@ -104,6 +125,14 @@ async def process_nlp_command(req: NLPCommandRequest):
             notes=action.get("notes"),
         )
         execution_result = swarm_service.execute_drone_command(action["drone_id"], cmd)
+
+    elif action.get("type") == "no_swarm_in_range":
+        # Feature 22: no idle swarm can reach the target — nothing to execute or store
+        execution_result = {"no_swarm_in_range": True, "target_id": action.get("target_id")}
+
+    elif action.get("type") == "no_recon_in_range":
+        # Feature 24: no recon drone can reach the target — nothing to execute or store
+        execution_result = {"no_recon_in_range": True, "target_id": action.get("target_id")}
 
     elif action.get("type") == "mark_target_destroyed":
         for tid in action.get("target_ids", []):

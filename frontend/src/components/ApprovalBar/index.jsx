@@ -61,6 +61,10 @@ export default function ApprovalBar() {
     setDeciding(null)
   }
 
+  const hasAttack = approvals.some(a => a.proposed_action?.command_type === 'attack')
+  const allTrack  = approvals.every(a => a.proposed_action?.command_type === 'track')
+  const headerLabel = allTrack ? 'TRACK APPROVAL REQUIRED' : hasAttack ? 'ATTACK APPROVAL REQUIRED' : 'COMMAND APPROVAL REQUIRED'
+
   return (
     <div style={{
       background: '#1a0a0a',
@@ -72,7 +76,7 @@ export default function ApprovalBar() {
       gap: 4,
     }}>
       <div style={{ fontSize: '0.65rem', color: '#ef4444', fontWeight: 700, letterSpacing: '0.1em', marginBottom: 2 }}>
-        ⚠ ATTACK APPROVAL REQUIRED ({approvals.length})
+        ⚠ {headerLabel} ({approvals.length})
       </div>
       {approvals.map(a => (
         <div key={a.id} style={{

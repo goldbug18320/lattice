@@ -3,7 +3,7 @@ Also advances mobile enemy targets each tick (§8.8).
 """
 from __future__ import annotations
 import math
-from models.drone import DroneModel, DroneStatus
+from models.drone import DroneModel, DroneStatus, SwarmStatus
 from models.target import Position, TargetStatus, TargetType
 from services.config_service import assets_config
 
@@ -33,6 +33,7 @@ _STATUS_SPEED_MULT: dict[DroneStatus, float] = {
 _ARRIVE_THRESHOLD_KM = 0.5     # home arrival radius (500 m)
 _PATROL_HEADING_DELTA = 2.0    # degrees/tick for MQ-9 / scout orbit
 _FPV_PATROL_HEADING_DELTA = 3.0  # degrees/tick for enemy FPV patrol rotation
+CONTACT_RADIUS_KM = assets_config.get("combat", {}).get("contact_radius_m", 500.0) / 1000.0
 
 
 def _advance(pos: Position, heading_deg: float, speed_ms: float, dt: float) -> Position:
@@ -65,6 +66,7 @@ class MovementService:
         """Advance all non-idle drone positions and all mobile enemy targets one step."""
         self._tick_friendly_drones(state_service)
         self._tick_enemy_assets(state_service)
+        self._check_combat_contacts(state_service)
         self._run_mq9_detection(state_service)
         self._run_scout_detection(state_service)
         self._maybe_launch_standby_mq9(state_service)
@@ -150,12 +152,15 @@ class MovementService:
                     new_heading = drone.heading
             elif drone.status in (DroneStatus.TRACKING, DroneStatus.ENGAGING):
                 new_heading = drone.heading
+                target = None
                 if drone.swarm_id:
                     swarm = state_service.get_swarm(drone.swarm_id)
                     if swarm and swarm.target_ids:
                         target = state_service.get_target(swarm.target_ids[0])
-                        if target and target.position:
-                            new_heading = _bearing(drone.position, target.position)
+                elif drone.tracking_target_id:
+                    target = state_service.get_target(drone.tracking_target_id)
+                if target and target.position:
+                    new_heading = _bearing(drone.position, target.position)
             else:
                 new_heading = drone.heading
 
@@ -188,6 +193,52 @@ class MovementService:
             # Enemy FPV drones (low altitude) slowly rotate for a patrol pattern
             if target.type == TargetType.DRONE and target.position.alt <= 500:
                 target.heading = (target.heading + _FPV_PATROL_HEADING_DELTA) % 360
+
+    def _check_combat_contacts(self, state_service) -> None:
+        """Feature 23: when any engaging drone reaches its target, destroy the target
+        and expend all drones in that swarm (one-way strike weapons)."""
+        for swarm in state_service.get_all_swarms():
+            if swarm.status != SwarmStatus.ENGAGING:
+                continue
+            if not swarm.target_ids:
+                continue
+            target = state_service.get_target(swarm.target_ids[0])
+            if target is None or target.status == TargetStatus.DESTROYED:
+                continue
+            if target.position is None:
+                continue
+
+            # Check whether any member drone has reached the target
+            contact = False
+            for did in swarm.drone_ids:
+                d = state_service.get_drone(did)
+                if (
+                    d is not None
+                    and d.position is not None
+                    and d.status == DroneStatus.ENGAGING
+                    and _distance_km(d.position, target.position) <= CONTACT_RADIUS_KM
+                ):
+                    contact = True
+                    break
+            if not contact:
+                continue
+
+            # ── Contact: destroy target, expend swarm ─────────────────────────
+            state_service.mark_target_destroyed(target.id)
+            for did in swarm.drone_ids:
+                state_service.update_drone(did, {"status": DroneStatus.OFFLINE, "speed": 0.0})
+            state_service.update_swarm_status(swarm.id, SwarmStatus.IDLE)
+            live_swarm = state_service.get_swarm(swarm.id)
+            if live_swarm:
+                live_swarm.target_ids = []
+                live_swarm.objective = None
+            state_service.log_command({
+                "type": "combat_contact",
+                "swarm_id": swarm.id,
+                "swarm_name": swarm.name,
+                "target_id": target.id,
+                "target_type": target.type.value,
+            })
 
     def _run_mq9_detection(self, state_service) -> None:
         """Each patrolling MQ-9 detects enemy targets within its configured detection radius."""

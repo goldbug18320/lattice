@@ -46,11 +46,13 @@ class TestNLPCommand:
         assert body["action"]["type"] == "assign_swarm"
         assert body["action"]["command_type"] == "locate"
 
-    def test_track_command_triggers_swarm_assignment(self, client):
+    def test_track_command_routes_through_hitl(self, client):
+        """Track now routes through HITL with a recon drone (Feature 24)."""
         resp = client.post("/api/nlp/command", json={"command": "track enemy movements"})
         body = resp.json()
-        assert body["action"]["type"] == "assign_swarm"
-        assert body["action"]["command_type"] == "track"
+        assert body["action"]["type"] == "request_approval"
+        assert body["action"]["proposed_action"]["command_type"] == "track"
+        assert body["action"]["proposed_action"]["type"] == "assign_drone"
 
     def test_return_command_triggers_swarm_assignment(self, client):
         resp = client.post("/api/nlp/command", json={"command": "recall all units rtb"})
