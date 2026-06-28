@@ -2,12 +2,15 @@
 from __future__ import annotations
 import math
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from models.drone import Drone, DroneType, DroneModel, DroneStatus, Swarm, SwarmStatus
 from models.target import Position, Target, TargetType, TargetStatus
+import services.movement_service as msvc
 from services.movement_service import (
     MovementService, _advance, _distance_km, _bearing, DT,
     MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM, CONTACT_RADIUS_KM,
+    _terrain_blocks, _GROUND_ASSET_TYPES, _is_land, _point_in_polygon,
+    _TAIWAN_ISLAND, _CHINA_COAST,
 )
 
 
@@ -326,18 +329,30 @@ class TestEnemyMovement:
         assert ship.position.lon > orig_lon
 
     def test_tank_advances_along_heading(self):
-        tank = _make_target(type=TargetType.TANK, heading=90.0, speed=2.78)
+        # Place tank on land (inland Taiwan: 25°N, 121.5°E) so terrain allows movement
+        tank = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            heading=270.0,  # heading west (deeper inland)
+            speed=2.78,
+        )
         orig_lon = tank.position.lon
         state = _make_state([], targets=[tank])
         self.svc.tick(state)
-        assert tank.position.lon > orig_lon
+        assert tank.position.lon < orig_lon
 
     def test_soldier_advances_along_heading(self):
-        soldier = _make_target(type=TargetType.SOLDIER_UNIT, heading=90.0, speed=1.39)
+        # Place soldier on land (inland Taiwan) so terrain allows movement
+        soldier = _make_target(
+            type=TargetType.SOLDIER_UNIT,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            heading=270.0,  # heading west (deeper inland)
+            speed=1.39,
+        )
         orig_lon = soldier.position.lon
         state = _make_state([], targets=[soldier])
         self.svc.tick(state)
-        assert soldier.position.lon > orig_lon
+        assert soldier.position.lon < orig_lon
 
     def test_missile_launcher_stationary(self):
         ml = _make_target(type=TargetType.MISSILE_LAUNCHER, heading=0.0, speed=0.0)
@@ -400,10 +415,11 @@ class TestEnemyMovement:
 
     def test_multiple_enemy_targets_all_advance(self):
         ship = _make_target(type=TargetType.SHIP, heading=90.0, speed=11.3)
+        # Tank on inland Taiwan (land) heading west so it stays on land
         tank = _make_target(
             type=TargetType.TANK,
-            position=Position(lat=25.0, lon=120.5, alt=0.0),
-            heading=90.0,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            heading=270.0,
             speed=2.78,
         )
         orig_ship_lon = ship.position.lon
@@ -411,7 +427,7 @@ class TestEnemyMovement:
         state = _make_state([], targets=[ship, tank])
         self.svc.tick(state)
         assert ship.position.lon > orig_ship_lon
-        assert tank.position.lon > orig_tank_lon
+        assert tank.position.lon < orig_tank_lon
 
     def test_detection_radii_match_config(self):
         assert MQ9_DETECTION_RADIUS_KM == 15.0
@@ -552,4 +568,190 @@ class TestCombatContact:
         assert call_kwargs["type"] == "combat_contact"
         assert call_kwargs["target_id"] == target.id
         assert call_kwargs["swarm_id"] == swarm.id
+
+
+# ─── Feature 21: terrain-constrained movement ────────────────────────────────
+
+class TestTerrainConstraints:
+    """Feature 21: ground assets halt at water; ships halt at shore; drones unconstrained."""
+
+    def setup_method(self):
+        self.svc = MovementService()
+
+    # ── _terrain_blocks unit tests ──────────────────────────────────────────
+
+    def test_ground_types_set_contains_expected_types(self):
+        assert TargetType.SOLDIER_UNIT in _GROUND_ASSET_TYPES
+        assert TargetType.TANK in _GROUND_ASSET_TYPES
+        assert TargetType.MISSILE_LAUNCHER in _GROUND_ASSET_TYPES
+        assert TargetType.SHIP not in _GROUND_ASSET_TYPES
+        assert TargetType.DRONE not in _GROUND_ASSET_TYPES
+
+    # ── polygon sanity checks (known coordinates) ──────────────────────────
+
+    def test_taipei_is_land(self):
+        # Taipei (25.0°N, 121.5°E) is clearly on Taiwan island
+        assert _is_land(25.0, 121.5) is True
+
+    def test_taiwan_strait_is_sea(self):
+        # 24°N, 119.5°E is open water in the Taiwan Strait
+        assert _is_land(24.0, 119.5) is False
+
+    def test_fujian_coast_is_land(self):
+        # 25.0°N, 119.0°E is on the Fujian mainland coast
+        assert _is_land(25.0, 119.0) is True
+
+    def test_pacific_east_of_taiwan_is_sea(self):
+        # 24°N, 123°E is the Pacific Ocean east of Taiwan
+        assert _is_land(24.0, 123.0) is False
+
+    def test_point_in_polygon_basic(self):
+        # Simple square polygon (lon, lat)
+        square = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+        assert _point_in_polygon(0.5, 0.5, square) is True
+        assert _point_in_polygon(1.5, 0.5, square) is False
+
+    def test_terrain_blocks_ground_when_next_pos_is_water(self):
+        pos = Position(lat=24.0, lon=119.5, alt=0.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=False):
+            assert _terrain_blocks(TargetType.TANK, pos) is True
+            assert _terrain_blocks(TargetType.SOLDIER_UNIT, pos) is True
+            assert _terrain_blocks(TargetType.MISSILE_LAUNCHER, pos) is True
+
+    def test_terrain_allows_ground_when_next_pos_is_land(self):
+        pos = Position(lat=25.0, lon=121.5, alt=0.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=True):
+            assert _terrain_blocks(TargetType.TANK, pos) is False
+            assert _terrain_blocks(TargetType.SOLDIER_UNIT, pos) is False
+            assert _terrain_blocks(TargetType.MISSILE_LAUNCHER, pos) is False
+
+    def test_terrain_blocks_ship_when_next_pos_is_land(self):
+        pos = Position(lat=25.0, lon=121.5, alt=0.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=True):
+            assert _terrain_blocks(TargetType.SHIP, pos) is True
+
+    def test_terrain_allows_ship_when_next_pos_is_water(self):
+        pos = Position(lat=24.0, lon=119.5, alt=0.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=False):
+            assert _terrain_blocks(TargetType.SHIP, pos) is False
+
+    def test_terrain_never_blocks_drone(self):
+        pos = Position(lat=25.0, lon=121.5, alt=3000.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', True):
+            # Drones are unconstrained regardless of land/sea result
+            with patch.object(msvc, '_is_land', return_value=True):
+                assert _terrain_blocks(TargetType.DRONE, pos) is False
+            with patch.object(msvc, '_is_land', return_value=False):
+                assert _terrain_blocks(TargetType.DRONE, pos) is False
+
+    def test_terrain_disabled_never_blocks_anything(self):
+        pos = Position(lat=25.0, lon=121.5, alt=0.0)
+        with patch.object(msvc, '_TERRAIN_ENABLED', False):
+            assert _terrain_blocks(TargetType.TANK, pos) is False
+            assert _terrain_blocks(TargetType.SHIP, pos) is False
+            assert _terrain_blocks(TargetType.SOLDIER_UNIT, pos) is False
+
+    # ── integration: terrain blocking in tick ──────────────────────────────
+
+    def test_tank_halts_when_next_pos_is_water(self):
+        tank = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=25.0, lon=121.9, alt=0.0),
+            heading=90.0,  # heading east toward shore
+            speed=2.78,
+        )
+        orig_pos = (tank.position.lat, tank.position.lon)
+        state = _make_state([], targets=[tank])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=False):
+            self.svc.tick(state)
+        assert (tank.position.lat, tank.position.lon) == orig_pos
+
+    def test_tank_advances_when_next_pos_is_land(self):
+        tank = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            heading=270.0,
+            speed=2.78,
+        )
+        orig_lon = tank.position.lon
+        state = _make_state([], targets=[tank])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=True):
+            self.svc.tick(state)
+        assert tank.position.lon < orig_lon
+
+    def test_soldier_halts_when_next_pos_is_water(self):
+        soldier = _make_target(
+            type=TargetType.SOLDIER_UNIT,
+            position=Position(lat=25.0, lon=121.9, alt=0.0),
+            heading=90.0,
+            speed=1.39,
+        )
+        orig_pos = (soldier.position.lat, soldier.position.lon)
+        state = _make_state([], targets=[soldier])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=False):
+            self.svc.tick(state)
+        assert (soldier.position.lat, soldier.position.lon) == orig_pos
+
+    def test_ship_halts_when_next_pos_is_land(self):
+        ship = _make_target(
+            type=TargetType.SHIP,
+            position=Position(lat=24.0, lon=119.8, alt=0.0),
+            heading=90.0,
+            speed=11.3,
+        )
+        orig_pos = (ship.position.lat, ship.position.lon)
+        state = _make_state([], targets=[ship])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=True):
+            self.svc.tick(state)
+        assert (ship.position.lat, ship.position.lon) == orig_pos
+
+    def test_ship_advances_when_next_pos_is_water(self):
+        ship = _make_target(
+            type=TargetType.SHIP,
+            position=Position(lat=24.0, lon=119.5, alt=0.0),
+            heading=90.0,
+            speed=11.3,
+        )
+        orig_lon = ship.position.lon
+        state = _make_state([], targets=[ship])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=False):
+            self.svc.tick(state)
+        assert ship.position.lon > orig_lon
+
+    def test_drone_advances_even_when_next_pos_is_land(self):
+        drone = _make_target(
+            type=TargetType.DRONE,
+            position=Position(lat=24.0, lon=120.0, alt=3000.0),
+            heading=90.0,
+            speed=41.7,
+        )
+        orig_lon = drone.position.lon
+        state = _make_state([], targets=[drone])
+        with patch.object(msvc, '_TERRAIN_ENABLED', True), \
+             patch.object(msvc, '_is_land', return_value=True):
+            self.svc.tick(state)
+        assert drone.position.lon > orig_lon
+
+    def test_terrain_disabled_tank_advances_in_water(self):
+        """When terrain library is absent, terrain constraints are skipped entirely."""
+        tank = _make_target(
+            type=TargetType.TANK,
+            position=Position(lat=24.0, lon=119.5, alt=0.0),
+            heading=90.0,
+            speed=2.78,
+        )
+        orig_lon = tank.position.lon
+        state = _make_state([], targets=[tank])
+        with patch.object(msvc, '_TERRAIN_ENABLED', False):
+            self.svc.tick(state)
+        assert tank.position.lon > orig_lon  # no terrain blocking when disabled
 

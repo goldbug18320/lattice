@@ -73,19 +73,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "patrolling",
-        "heading": 206.10281577649369,
+        "heading": 260.9863594742137,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 82.2800000000413,
-        "range_used_km": 531.6,
+        "battery": 80.97000000004435,
+        "range_used_km": 570.8999999999643,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.8776268021374,
-          "lon": 121.92395166010027,
+          "lat": 24.675984836684503,
+          "lon": 121.62294546570384,
           "alt": 5999.999999999326
         },
         "home_position": {
@@ -100,19 +100,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "patrolling",
-        "heading": 122.05065418904502,
+        "heading": 270.1868823221832,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 82.2800000000413,
-        "range_used_km": 531.6,
+        "battery": 80.97000000004435,
+        "range_used_km": 570.8999999999643,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 23.58243368960486,
-          "lon": 119.65285106649895,
+          "lat": 23.508992401958103,
+          "lon": 119.62926636111925,
           "alt": 6000.0
         },
         "home_position": {
@@ -1530,20 +1530,20 @@
         "name": "ALT-Alpha-001",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 272.1921217620834,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.72000000000298,
+        "range_used_km": 32.00000000000032,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
-        "current_task": null,
+        "current_task": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "position": {
-          "lat": 25.04,
-          "lon": 121.56,
+          "lat": 25.023869970126807,
+          "lon": 121.25165691903574,
           "alt": 200.0
         },
         "home_position": {
@@ -1557,20 +1557,20 @@
         "name": "ALT-Alpha-002",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 271.960751330632,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.72000000000298,
+        "range_used_km": 32.00000000000032,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
-        "current_task": null,
+        "current_task": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "position": {
-          "lat": 25.041999999999998,
-          "lon": 121.56,
+          "lat": 25.024914346547355,
+          "lon": 121.25165198046138,
           "alt": 200.0
         },
         "home_position": {
@@ -1584,20 +1584,20 @@
         "name": "ALT-Alpha-003",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 271.7293221176918,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.72000000000298,
+        "range_used_km": 32.00000000000032,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
-        "current_task": null,
+        "current_task": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "position": {
-          "lat": 25.044,
-          "lon": 121.56,
+          "lat": 25.025958542170017,
+          "lon": 121.25165081802038,
           "alt": 200.0
         },
         "home_position": {
@@ -1611,20 +1611,20 @@
         "name": "ALT-Alpha-004",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 271.49784222926326,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.72000000000298,
+        "range_used_km": 32.00000000000032,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
-        "current_task": null,
+        "current_task": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "position": {
-          "lat": 25.046,
-          "lon": 121.56,
+          "lat": 25.02700259584851,
+          "lon": 121.25165343476498,
           "alt": 200.0
         },
         "home_position": {
@@ -1638,20 +1638,20 @@
         "name": "ALT-Alpha-005",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 271.2663197820843,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.72000000000298,
+        "range_used_km": 32.00000000000032,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "c48442b3-bda8-4625-81c3-7dcf628705c7",
-        "current_task": null,
+        "current_task": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "position": {
-          "lat": 25.048,
-          "lon": 121.56,
+          "lat": 25.028046546485076,
+          "lon": 121.25165983326261,
           "alt": 200.0
         },
         "home_position": {
@@ -1665,20 +1665,20 @@
         "name": "ALT-Bravo-001",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "engaging",
-        "heading": 299.1579491581224,
-        "speed": 50.0,
+        "status": "offline",
+        "heading": 324.94578607591427,
+        "speed": 0.0,
         "altitude": 100.0,
-        "battery": 99.69200000000072,
-        "range_used_km": 7.699999999999981,
+        "battery": 98.57200000000333,
+        "range_used_km": 35.70000000000011,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
         "current_task": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "position": {
-          "lat": 24.18301655863202,
-          "lon": 120.61338170822219,
+          "lat": 24.32557372011022,
+          "lon": 120.38757146789406,
           "alt": 200.0
         },
         "home_position": {
@@ -1692,20 +1692,20 @@
         "name": "ALT-Bravo-002",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "engaging",
-        "heading": 298.8906564821329,
-        "speed": 50.0,
+        "status": "offline",
+        "heading": 325.72250371371933,
+        "speed": 0.0,
         "altitude": 100.0,
-        "battery": 99.69200000000072,
-        "range_used_km": 7.699999999999981,
+        "battery": 98.57200000000333,
+        "range_used_km": 35.70000000000011,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
         "current_task": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "position": {
-          "lat": 24.184736528747408,
-          "lon": 120.61321490008552,
+          "lat": 24.326414903359144,
+          "lon": 120.38679149499893,
           "alt": 200.0
         },
         "home_position": {
@@ -1719,20 +1719,20 @@
         "name": "ALT-Bravo-003",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "engaging",
-        "heading": 298.6219644677048,
-        "speed": 50.0,
+        "status": "offline",
+        "heading": 326.6927444236531,
+        "speed": 0.0,
         "altitude": 100.0,
-        "battery": 99.69200000000072,
-        "range_used_km": 7.699999999999981,
+        "battery": 98.57200000000333,
+        "range_used_km": 35.70000000000011,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
         "current_task": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "position": {
-          "lat": 24.186454397237192,
-          "lon": 120.6130486812249,
+          "lat": 24.327253496873404,
+          "lon": 120.38602493833673,
           "alt": 200.0
         },
         "home_position": {
@@ -1746,20 +1746,20 @@
         "name": "ALT-Bravo-004",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "engaging",
-        "heading": 298.35187399993697,
-        "speed": 50.0,
+        "status": "offline",
+        "heading": 327.932339963979,
+        "speed": 0.0,
         "altitude": 100.0,
-        "battery": 99.69200000000072,
-        "range_used_km": 7.699999999999981,
+        "battery": 98.57200000000333,
+        "range_used_km": 35.70000000000011,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
         "current_task": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "position": {
-          "lat": 24.18817016126498,
-          "lon": 120.61288307749848,
+          "lat": 24.328091282916045,
+          "lon": 120.38527536333751,
           "alt": 200.0
         },
         "home_position": {
@@ -1773,20 +1773,20 @@
         "name": "ALT-Bravo-005",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "engaging",
-        "heading": 298.080386223512,
-        "speed": 50.0,
+        "status": "offline",
+        "heading": 329.56858470458087,
+        "speed": 0.0,
         "altitude": 100.0,
-        "battery": 99.69200000000072,
-        "range_used_km": 7.699999999999981,
+        "battery": 98.57200000000333,
+        "range_used_km": 35.70000000000011,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
         "current_task": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "position": {
-          "lat": 24.18988381841513,
-          "lon": 120.61271811506387,
+          "lat": 24.328930750839767,
+          "lon": 120.38454806989908,
           "alt": 200.0
         },
         "home_position": {
@@ -1801,19 +1801,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 341.4847856658567,
+        "heading": 353.22602435716493,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.82000000000042,
-        "range_used_km": 4.499999999999992,
+        "battery": 98.51000000000347,
+        "range_used_km": 37.25000000000002,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
         "current_task": "engage and attack target with id a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "position": {
-          "lat": 23.0382248091141,
-          "lon": 120.19571216082196,
+          "lat": 23.323613323642853,
+          "lon": 120.12021869373199,
           "alt": 200.0
         },
         "home_position": {
@@ -1828,19 +1828,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 341.41698536672294,
+        "heading": 353.23586662534865,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.82000000000042,
-        "range_used_km": 4.499999999999992,
+        "battery": 98.51000000000347,
+        "range_used_km": 37.25000000000002,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
         "current_task": "engage and attack target with id a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "position": {
-          "lat": 23.040208875148824,
-          "lon": 120.19566173354781,
+          "lat": 23.32553938452022,
+          "lon": 120.11993639515828,
           "alt": 200.0
         },
         "home_position": {
@@ -1855,19 +1855,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 341.3487022462519,
+        "heading": 353.24636390518623,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.82000000000042,
-        "range_used_km": 4.499999999999992,
+        "battery": 98.51000000000347,
+        "range_used_km": 37.25000000000002,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
         "current_task": "engage and attack target with id a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "position": {
-          "lat": 23.042192771845325,
-          "lon": 120.19561097029408,
+          "lat": 23.327464745296194,
+          "lon": 120.11965270636414,
           "alt": 200.0
         },
         "home_position": {
@@ -1882,19 +1882,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 341.27993132214226,
+        "heading": 353.2575386954333,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.82000000000042,
-        "range_used_km": 4.499999999999992,
+        "battery": 98.51000000000347,
+        "range_used_km": 37.25000000000002,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
         "current_task": "engage and attack target with id a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "position": {
-          "lat": 23.044176496866324,
-          "lon": 120.19555986793284,
+          "lat": 23.329389398084764,
+          "lon": 120.11936762615922,
           "alt": 200.0
         },
         "home_position": {
@@ -1909,19 +1909,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 341.210667546175,
+        "heading": 353.2694143814056,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.82000000000042,
-        "range_used_km": 4.499999999999992,
+        "battery": 98.51000000000347,
+        "range_used_km": 37.25000000000002,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "61b50270-f489-48ba-a305-84b24921c1fd",
         "current_task": "engage and attack target with id a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "position": {
-          "lat": 23.046160047835297,
-          "lon": 120.1955084233012,
+          "lat": 23.331313334914366,
+          "lon": 120.11908115374185,
           "alt": 200.0
         },
         "home_position": {
@@ -1935,20 +1935,20 @@
         "name": "ALT-Delta-001",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 3.0173609960315213,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.73600000000295,
+        "range_used_km": 31.600000000000314,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
-        "current_task": null,
+        "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 22.63,
-          "lon": 120.3,
+          "lat": 22.913727381489984,
+          "lon": 120.30865576429402,
           "alt": 200.0
         },
         "home_position": {
@@ -1962,20 +1962,20 @@
         "name": "ALT-Delta-002",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 3.0217439146717497,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.73600000000295,
+        "range_used_km": 31.600000000000314,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
-        "current_task": null,
+        "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 22.631999999999998,
-          "lon": 120.3,
+          "lat": 22.915726988886927,
+          "lon": 120.30866800095387,
           "alt": 200.0
         },
         "home_position": {
@@ -1989,20 +1989,20 @@
         "name": "ALT-Delta-003",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 3.0261397521509203,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.73600000000295,
+        "range_used_km": 31.600000000000314,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
-        "current_task": null,
+        "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 22.634,
-          "lon": 120.3,
+          "lat": 22.917726594603504,
+          "lon": 120.30868027232626,
           "alt": 200.0
         },
         "home_position": {
@@ -2016,20 +2016,20 @@
         "name": "ALT-Delta-004",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 3.0305485658665066,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.73600000000295,
+        "range_used_km": 31.600000000000314,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
-        "current_task": null,
+        "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 22.636,
-          "lon": 120.3,
+          "lat": 22.91972619863008,
+          "lon": 120.30869257855943,
           "alt": 200.0
         },
         "home_position": {
@@ -2043,20 +2043,20 @@
         "name": "ALT-Delta-005",
         "model": "altius_600m",
         "type": "swarm_member",
-        "status": "idle",
-        "heading": 0.0,
-        "speed": 0.0,
+        "status": "engaging",
+        "heading": 3.0349704135623115,
+        "speed": 50.0,
         "altitude": 100.0,
-        "battery": 100.0,
-        "range_used_km": 0.0,
+        "battery": 98.73600000000295,
+        "range_used_km": 31.600000000000314,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "8b5a1fa3-76ff-4784-bd43-81a2fdd98522",
-        "current_task": null,
+        "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 22.637999999999998,
-          "lon": 120.3,
+          "lat": 22.921725800957034,
+          "lon": 120.30870491980238,
           "alt": 200.0
         },
         "home_position": {
@@ -2071,19 +2071,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 221.75981162638467,
+        "heading": 217.73737175414465,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.73800000000061,
-        "range_used_km": 6.549999999999985,
+        "battery": 98.42800000000366,
+        "range_used_km": 39.299999999999905,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
         "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 24.756308687517283,
-          "lon": 120.92659432837236,
+          "lat": 24.530800109665368,
+          "lon": 120.71882003679671,
           "alt": 200.0
         },
         "home_position": {
@@ -2098,19 +2098,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 221.67522902711198,
+        "heading": 217.65664560825854,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.73800000000061,
-        "range_used_km": 6.549999999999985,
+        "battery": 98.42800000000366,
+        "range_used_km": 39.299999999999905,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
         "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 24.758250524651032,
-          "lon": 120.92666476615697,
+          "lat": 24.532467338670166,
+          "lon": 120.71924860877769,
           "alt": 200.0
         },
         "home_position": {
@@ -2125,19 +2125,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 221.59092344680963,
+        "heading": 217.5762173308654,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.73800000000061,
-        "range_used_km": 6.549999999999985,
+        "battery": 98.42800000000366,
+        "range_used_km": 39.299999999999905,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
         "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 24.76019264534748,
-          "lon": 120.92673506954458,
+          "lat": 24.53413627937701,
+          "lon": 120.71967623721915,
           "alt": 200.0
         },
         "home_position": {
@@ -2152,19 +2152,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 221.50689388879735,
+        "heading": 217.49608553269223,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.73800000000061,
-        "range_used_km": 6.549999999999985,
+        "battery": 98.42800000000366,
+        "range_used_km": 39.299999999999905,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
         "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 24.7621350481428,
-          "lon": 120.92680523827725,
+          "lat": 24.53580692207574,
+          "lon": 120.72010292167035,
           "alt": 200.0
         },
         "home_position": {
@@ -2179,19 +2179,19 @@
         "model": "altius_600m",
         "type": "swarm_member",
         "status": "engaging",
-        "heading": 221.42313935816898,
+        "heading": 217.41624883087582,
         "speed": 50.0,
         "altitude": 100.0,
-        "battery": 99.73800000000061,
-        "range_used_km": 6.549999999999985,
+        "battery": 98.42800000000366,
+        "range_used_km": 39.299999999999905,
         "max_range_km": 440.0,
         "max_payload_kg": 12.0,
         "max_flight_time_hours": 4.0,
         "swarm_id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
         "current_task": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "position": {
-          "lat": 24.764077731578887,
-          "lon": 120.92687527210555,
+          "lat": 24.537479257104817,
+          "lon": 120.72052866172656,
           "alt": 200.0
         },
         "home_position": {
@@ -3717,21 +3717,21 @@
         "name": "SCOUT-057",
         "model": "scout_recon",
         "type": "recon",
-        "status": "returning",
-        "heading": 52.43653793814072,
-        "speed": 42.0,
+        "status": "idle",
+        "heading": 52.417359256377395,
+        "speed": 0.0,
         "altitude": 100.0,
         "battery": 92.85600000001665,
-        "range_used_km": 372.0779999999349,
+        "range_used_km": 0.0,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.952202777254485,
-          "lon": 121.43409026410983,
-          "alt": 3000.0000000032887
+          "lat": 25.04,
+          "lon": 121.56,
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.04,
@@ -3744,21 +3744,21 @@
         "name": "SCOUT-058",
         "model": "scout_recon",
         "type": "recon",
-        "status": "returning",
-        "heading": 81.38850481510482,
-        "speed": 42.0,
+        "status": "idle",
+        "heading": 81.38707400716821,
+        "speed": 0.0,
         "altitude": 100.0,
         "battery": 92.85600000001665,
-        "range_used_km": 372.0779999999349,
+        "range_used_km": 0.0,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.978606163403278,
-          "lon": 121.31415470329432,
-          "alt": 2999.9999999908537
+          "lat": 25.0,
+          "lon": 121.47,
+          "alt": 0.0
         },
         "home_position": {
           "lat": 25.0,
@@ -3852,20 +3852,20 @@
         "name": "SCOUT-062",
         "model": "scout_recon",
         "type": "recon",
-        "status": "idle",
-        "heading": 107.09005058414114,
-        "speed": 0.0,
+        "status": "tracking",
+        "heading": 12.015554820280373,
+        "speed": 33.6,
         "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
+        "battery": 92.78600000001681,
+        "range_used_km": 1.1760000000000002,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
-        "current_task": null,
+        "current_task": "Track target using SCOUT-062",
         "position": {
-          "lat": 23.0,
-          "lon": 120.21,
+          "lat": 23.010334622260064,
+          "lon": 120.21237934039422,
           "alt": 0.0
         },
         "home_position": {
@@ -3933,20 +3933,20 @@
         "name": "SCOUT-065",
         "model": "scout_recon",
         "type": "recon",
-        "status": "idle",
-        "heading": 218.26232433376256,
-        "speed": 0.0,
+        "status": "tracking",
+        "heading": 89.99833764056471,
+        "speed": 33.6,
         "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
+        "battery": 91.78400000001915,
+        "range_used_km": 18.00959999999993,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
-        "current_task": null,
+        "current_task": "Track target using SCOUT-065",
         "position": {
-          "lat": 24.8,
-          "lon": 120.97,
+          "lat": 24.792712094401207,
+          "lon": 121.08474268975061,
           "alt": 0.0
         },
         "home_position": {
@@ -4608,20 +4608,20 @@
         "name": "SCOUT-090",
         "model": "scout_recon",
         "type": "recon",
-        "status": "idle",
-        "heading": 62.84773826347644,
-        "speed": 0.0,
+        "status": "tracking",
+        "heading": 124.60236428733894,
+        "speed": 33.6,
         "altitude": 100.0,
-        "battery": 92.85600000001665,
-        "range_used_km": 0.0,
+        "battery": 91.83600000001903,
+        "range_used_km": 17.135999999999935,
         "max_range_km": 150.0,
         "max_payload_kg": null,
         "max_flight_time_hours": null,
         "swarm_id": null,
-        "current_task": null,
+        "current_task": "Track target using SCOUT-090",
         "position": {
-          "lat": 24.70026273849897,
-          "lon": 120.92209102996352,
+          "lat": 24.561306270125783,
+          "lon": 120.85228659594051,
           "alt": 149.99999999839022
         },
         "home_position": {
@@ -4905,7 +4905,7 @@
       {
         "id": "48b4d8f6-cc62-4f2f-aac7-a4655149012b",
         "type": "ship",
-        "status": "active",
+        "status": "destroyed",
         "heading": 90.0,
         "speed": 11.316799999999999,
         "confidence": 0.92,
@@ -4914,14 +4914,14 @@
         "threat_value": "high",
         "position": {
           "lat": 24.332431094984415,
-          "lon": 120.31992332534004,
+          "lon": 120.38240302911107,
           "alt": 10.000000001096158
         }
       },
       {
         "id": "10f731c3-d2ef-47e9-afc3-814ba9e8c093",
         "type": "ship",
-        "status": "active",
+        "status": "engaged",
         "heading": 85.0,
         "speed": 11.316799999999999,
         "confidence": 0.88,
@@ -4929,15 +4929,15 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 24.124719758320875,
-          "lon": 120.30571612050896,
+          "lat": 24.130523228422728,
+          "lon": 120.37839994605858,
           "alt": 9.999999997814284
         }
       },
       {
         "id": "a2e77c65-d019-4d34-9c0e-8a1953a1ac21",
         "type": "ship",
-        "status": "active",
+        "status": "engaged",
         "heading": 95.0,
         "speed": 11.316799999999999,
         "confidence": 0.85,
@@ -4945,15 +4945,15 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.507871173584967,
-          "lon": 120.02490854435173,
+          "lat": 23.502067703483114,
+          "lon": 120.09724455907472,
           "alt": 9.999999998415987
         }
       },
       {
         "id": "7b9e18a8-3ca3-4a26-b193-3d05890866ff",
         "type": "ship",
-        "status": "active",
+        "status": "engaged",
         "heading": 80.0,
         "speed": 11.316799999999999,
         "confidence": 0.9,
@@ -4961,15 +4961,15 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.237145547667915,
-          "lon": 119.96801352784473,
+          "lat": 23.248708319959626,
+          "lon": 120.03938149270968,
           "alt": 9.999999992007542
         }
       },
       {
         "id": "37d31b85-7d24-4091-9167-0ff8bf98a15c",
         "type": "ship",
-        "status": "active",
+        "status": "engaged",
         "heading": 88.0,
         "speed": 11.316799999999999,
         "confidence": 0.87,
@@ -4977,15 +4977,15 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 25.031434266364627,
-          "lon": 120.89334334572293,
+          "lat": 25.03375813142883,
+          "lon": 120.96678909787543,
           "alt": 0.0
         }
       },
       {
         "id": "2fbb5241-67a8-4e25-bc8c-f71fdbff8337",
         "type": "tank",
-        "status": "active",
+        "status": "tracked",
         "heading": 90.0,
         "speed": 2.7777777777777777,
         "confidence": 0.91,
@@ -4994,14 +4994,14 @@
         "threat_value": "medium",
         "position": {
           "lat": 24.792712087913756,
-          "lon": 121.06652022004347,
+          "lon": 121.084523874827,
           "alt": 9.999999996285833
         }
       },
       {
         "id": "5decc896-13e5-4631-bedc-eac294877f5c",
         "type": "tank",
-        "status": "active",
+        "status": "tracked",
         "heading": 75.0,
         "speed": 2.7777777777777777,
         "confidence": 0.89,
@@ -5009,15 +5009,15 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 24.557220843292995,
-          "lon": 120.83473497483443,
+          "lat": 24.561451052362624,
+          "lon": 120.85209265605808,
           "alt": 0.0
         }
       },
       {
         "id": "8a3dc6d7-b066-43d4-8bf4-ad157e266969",
         "type": "tank",
-        "status": "active",
+        "status": "tracked",
         "heading": 110.0,
         "speed": 2.7777777777777777,
         "confidence": 0.86,
@@ -5025,8 +5025,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.476414162708544,
-          "lon": 120.30214548069179,
+          "lat": 23.47082409219447,
+          "lon": 120.31888977135206,
           "alt": 9.999999999004524
         }
       },
@@ -5041,8 +5041,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.980731228257937,
-          "lon": 120.74106801227926,
+          "lat": 23.979306731024185,
+          "lon": 120.75888819976458,
           "alt": 0.0
         }
       },
@@ -5105,9 +5105,9 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 24.291151732628418,
-          "lon": 122.38803958375864,
-          "alt": 2999.999999997094
+          "lat": 24.315201244835063,
+          "lon": 122.01645925640997,
+          "alt": 2999.999999996022
         }
       },
       {
@@ -5121,8 +5121,8 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 24.01742632837421,
-          "lon": 120.77502041036476,
+          "lat": 24.025982431776647,
+          "lon": 121.04326768621452,
           "alt": 2500.000000000213
         }
       },
@@ -5137,9 +5137,9 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 22.904960302157665,
-          "lon": 121.71084521154424,
-          "alt": 3499.999999999453
+          "lat": 23.2465385578176,
+          "lon": 120.97289601036539,
+          "alt": 3500.000000001606
         }
       },
       {
@@ -5153,24 +5153,24 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.55514474549477,
-          "lon": 121.96921163047439,
-          "alt": 1999.9999999980023
+          "lat": 23.733934687612557,
+          "lon": 121.80039883398585,
+          "alt": 1999.999999995628
         }
       },
       {
         "id": "858d1879-f4f9-4032-8264-2736a250e12c",
         "type": "drone",
         "status": "active",
-        "heading": 290.0,
+        "heading": 95.0,
         "speed": 41.666666666666664,
         "confidence": 0.65,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 25.225733992466797,
-          "lon": 120.81671536619199,
+          "lat": 25.239649904920135,
+          "lon": 120.81971357345843,
           "alt": 50.000000000788084
         }
       },
@@ -5178,15 +5178,15 @@
         "id": "b17b0bc8-3701-4929-b1db-056813f63286",
         "type": "drone",
         "status": "active",
-        "heading": 260.0,
+        "heading": 65.0,
         "speed": 41.666666666666664,
         "confidence": 0.6,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.497731478002347,
-          "lon": 120.40755448854125,
+          "lat": 24.511135501386082,
+          "lon": 120.40248985551436,
           "alt": 30.0
         }
       },
@@ -5194,15 +5194,15 @@
         "id": "3528eb34-fcf1-4ed4-9ee5-d29c208d1fea",
         "type": "drone",
         "status": "active",
-        "heading": 280.0,
+        "heading": 85.0,
         "speed": 41.666666666666664,
         "confidence": 0.62,
         "reported_by": "seed",
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 23.79554942507598,
-          "lon": 120.30621496897336,
+          "lat": 23.809723638287558,
+          "lon": 120.30649269788381,
           "alt": 40.0
         }
       },
@@ -5218,7 +5218,7 @@
         "threat_value": "low",
         "position": {
           "lat": 24.914357634668214,
-          "lon": 121.06994029519198,
+          "lon": 121.07895097956208,
           "alt": 9.999999999722586
         }
       },
@@ -5233,8 +5233,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.643247613686707,
-          "lon": 120.85422804090463,
+          "lat": 24.64395986230242,
+          "lon": 120.86318487700001,
           "alt": 10.000000000255088
         }
       },
@@ -5249,8 +5249,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 24.190365614144707,
-          "lon": 120.62072683477848,
+          "lat": 24.189653365528994,
+          "lon": 120.6296515378292,
           "alt": 0.0
         }
       },
@@ -5265,8 +5265,8 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 23.703857866484153,
-          "lon": 120.42065194622106,
+          "lat": 23.70414306993191,
+          "lon": 120.42957161655707,
           "alt": 0.0
         }
       }
@@ -5444,9 +5444,11 @@
           "751c0762-e7ac-43ab-b559-246e7981a30c",
           "2a70fe9a-6725-4068-85fb-4bf3f18cf863"
         ],
-        "status": "idle",
-        "objective": null,
-        "target_ids": []
+        "status": "engaging",
+        "objective": "engage and attack target with id 37d31b85-7d24-4091-9167-0ff8bf98a15c",
+        "target_ids": [
+          "37d31b85-7d24-4091-9167-0ff8bf98a15c"
+        ]
       },
       {
         "id": "51fe1658-4470-4972-b1f2-ec3e001a1200",
@@ -5460,11 +5462,9 @@
           "5909a18c-44bf-4ec6-b517-b65f4ef78c7d",
           "2e6a1726-efeb-4467-a89f-62413d7fc764"
         ],
-        "status": "engaging",
-        "objective": "engage and attack target with id 48b4d8f6-cc62-4f2f-aac7-a4655149012b",
-        "target_ids": [
-          "48b4d8f6-cc62-4f2f-aac7-a4655149012b"
-        ]
+        "status": "idle",
+        "objective": null,
+        "target_ids": []
       },
       {
         "id": "61b50270-f489-48ba-a305-84b24921c1fd",
@@ -5496,9 +5496,11 @@
           "f9d90d7d-9d56-450e-a367-378158ffe2e7",
           "cb71ede8-c3d4-4ca8-9230-20b1f1afbf41"
         ],
-        "status": "idle",
-        "objective": null,
-        "target_ids": []
+        "status": "engaging",
+        "objective": "engage and attack target with id 10f731c3-d2ef-47e9-afc3-814ba9e8c093",
+        "target_ids": [
+          "10f731c3-d2ef-47e9-afc3-814ba9e8c093"
+        ]
       },
       {
         "id": "ea611e05-55bb-4b53-82a1-d78785bf0f3c",
