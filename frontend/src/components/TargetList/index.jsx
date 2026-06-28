@@ -35,7 +35,8 @@ export default function TargetList() {
   const selectSwarm = useStore(s => s.selectSwarm)
   const selectDrone = useStore(s => s.selectDrone)
 
-  // Inline error state for TRACK button: { [targetId]: string | null }
+  // Inline error state for ENGAGE/TRACK buttons: { [targetId]: string | null }
+  const [engageErrors, setEngageErrors] = useState({})
   const [trackErrors, setTrackErrors] = useState({})
 
   const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status))
@@ -50,9 +51,12 @@ export default function TargetList() {
   // pending approval; the proposed swarm is pre-selected in the status panel
   // so the operator sees which swarm will be tasked (Feature 13 + Feature 15).
   const engageTarget = async (targetId) => {
+    setEngageErrors(prev => ({ ...prev, [targetId]: null }))
     try {
       const result = await nlpApi.command(`engage and attack target with id ${targetId}`)
-      if (result.action?.type === 'request_approval') {
+      if (result.action?.type === 'no_swarm_in_range') {
+        setEngageErrors(prev => ({ ...prev, [targetId]: 'No combat swarm in range' }))
+      } else if (result.action?.type === 'request_approval') {
         const proposedSwarmId = result.action?.proposed_action?.swarm_id
         if (proposedSwarmId) selectSwarm(proposedSwarmId)
       }
@@ -134,12 +138,23 @@ export default function TargetList() {
                 </div>
                 {isSelected && (
                   <div className="target-actions">
-                    <button className="target-btn attack" onClick={e => { e.stopPropagation(); engageTarget(target.id) }}>
+                    <button
+                      className="target-btn attack"
+                      disabled={target.status === 'engaged'}
+                      onClick={e => { e.stopPropagation(); engageTarget(target.id) }}
+                    >
                       ⚡ ENGAGE
                     </button>
-                    <button className="target-btn track" onClick={e => { e.stopPropagation(); trackTarget(target.id) }}>
+                    <button
+                      className="target-btn track"
+                      disabled={target.status === 'tracked'}
+                      onClick={e => { e.stopPropagation(); trackTarget(target.id) }}
+                    >
                       👁 TRACK
                     </button>
+                    {engageErrors[target.id] && (
+                      <div className="engage-error">{engageErrors[target.id]}</div>
+                    )}
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>
                     )}
