@@ -329,11 +329,11 @@ class StateService:
         # ── Seeded Enemy Assets ────────────────────────────────────────────────
         from models.target import TargetType, TargetStatus, ThreatValue
 
-        _SHIP_MS    = cfg_en["ships"]["speed_knots"] * 0.5144      # knots → m/s
-        _TANK_MS    = cfg_en["tanks"]["speed_kmh"] / 3.6           # km/h → m/s
+        _SHIP_MS    = 0.0   # stationary by default (Feature 33); operator sets via context menu
+        _TANK_MS    = 0.0
         _LR_MS      = cfg_en["long_range_drones"]["max_speed_kmh"] / 3.6
         _FPV_MS     = cfg_en["fpv_drones"]["max_speed_kmh"] / 3.6
-        _SOLDIER_MS = cfg_en["soldiers"]["speed_kmh"] / 3.6
+        _SOLDIER_MS = 0.0
 
         _enemy_seed = [
             # Ships in Taiwan Strait — heading east toward Taiwan
@@ -347,7 +347,7 @@ class StateService:
             (TargetType.TANK,             24.50, 120.60,    0,  75, _TANK_MS, 0.89),
             (TargetType.TANK,             23.50, 120.30,    0, 110, _TANK_MS, 0.86),
             (TargetType.TANK,             24.00, 120.50,    0,  95, _TANK_MS, 0.83),
-            # Missile launchers in Fujian — stationary
+            # Missile launchers — mobile ground asset, stationary by default (Feature 33)
             (TargetType.MISSILE_LAUNCHER, 25.90, 119.30,    0,   0,  0.0, 0.94),
             (TargetType.MISSILE_LAUNCHER, 25.00, 119.00,    0,   0,  0.0, 0.90),
             (TargetType.MISSILE_LAUNCHER, 24.50, 118.50,    0,   0,  0.0, 0.88),

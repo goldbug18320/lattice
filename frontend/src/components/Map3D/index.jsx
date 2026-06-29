@@ -27,6 +27,8 @@ function _makeBillboardSVG(iconKey, bgColor, highlighted = false) {
 // Enemy target background colors and billboard pixel sizes per type
 const TARGET_BG   = { drone: '#c81e1e', ship: '#f04020', tank: '#e01010', missile_launcher: '#d0105a', soldier_unit: '#b01428' }
 const TARGET_SIZE = { drone: 24, ship: 36, tank: 28, missile_launcher: 32, soldier_unit: 20 }
+// Feature 33: max speeds (km/h) per enemy target type — mirrors backend _MAX_SPEED_MPS table
+const _TARGET_MAX_SPEED_KMH = { drone: 150, ship: 55, tank: 30, soldier_unit: 5, missile_launcher: 40 }
 
 // Friendly drone base colors by model/type; status overrides take precedence (null = use model color)
 const MODEL_BG   = { mq9_recon: '#00a8d8', scout_recon: '#2860e0', fpv_combat: '#20c020', altius_600m: '#20a840', recon: '#00a8d8', combat: '#20c020', swarm_member: '#20c020' }
@@ -99,6 +101,8 @@ export default function Map3D() {
   // Tracks whether a drag just completed so LEFT_CLICK can ignore the synthetic click
   const dragJustFinishedRef = useRef(false)
   const [viewerReady, setViewerReady] = useState(false)
+  // Feature 33: context menu state — null when hidden, {x,y,type,id} when open
+  const [ctxMenu, setCtxMenu] = useState(null)
 
   const drones           = useStore(s => s.drones)
   const targets          = useStore(s => s.targets)
@@ -253,19 +257,16 @@ export default function Map3D() {
         dragRef.current = { active: false, entity: null, type: null, id: null, subtype: null, moved: false, originalPosition: null }
       }, ET.LEFT_UP)
 
-      // ── RIGHT_CLICK — remove entity from scenario ───────────────────────────
+      // ── RIGHT_CLICK — context menu (Feature 33) ─────────────────────────────
       handler.setInputAction((event) => {
         const picked = viewer.scene.pick(event.position)
         if (picked?.id?._lattice_type) {
-          const type = picked.id._lattice_type
-          const id   = picked.id._lattice_id
-          const label = type === 'drone' ? 'drone' : 'target'
-          if (window.confirm(`Remove this ${label} from the scenario?`)) {
-            const del = type === 'drone'
-              ? assetsApi.deleteDrone(id)
-              : assetsApi.deleteTarget(id)
-            del.catch(console.error)
-          }
+          setCtxMenu({
+            x: event.position.x,
+            y: event.position.y,
+            type: picked.id._lattice_type,
+            id:   picked.id._lattice_id,
+          })
         }
       }, ET.RIGHT_CLICK)
 
@@ -513,13 +514,83 @@ export default function Map3D() {
 
   useEffect(() => { updateEntities() }, [updateEntities, viewerReady])
 
+  // Feature 33: context menu action handlers
+  function handleCtxRemove() {
+    const { type, id } = ctxMenu
+    setCtxMenu(null)
+    const del = type === 'drone' ? assetsApi.deleteDrone(id) : assetsApi.deleteTarget(id)
+    del.catch(console.error)
+  }
+
+  function handleCtxSetSpeed() {
+    const { id } = ctxMenu
+    setCtxMenu(null)
+    const target = targets.find(t => t.id === id)
+    const maxKmh = _TARGET_MAX_SPEED_KMH[target?.type] ?? Infinity
+    const label = isFinite(maxKmh) ? `Set speed (km/h, max ${maxKmh}):` : 'Set speed (km/h):'
+    const raw = window.prompt(label, '0')
+    if (raw === null) return
+    const kmh = parseFloat(raw)
+    if (isNaN(kmh) || kmh < 0) { window.alert('Invalid speed. Enter a number ≥ 0.'); return }
+    if (isFinite(maxKmh) && kmh > maxKmh) { window.alert(`Speed exceeds max capability (${maxKmh} km/h). Value will be clamped.`) }
+    assetsApi.updateTargetMovement(id, { speed: kmh / 3.6 }).then(() => assetsApi.saveConfig()).catch(console.error)
+  }
+
+  function handleCtxSetHeading() {
+    const { id } = ctxMenu
+    setCtxMenu(null)
+    const raw = window.prompt('Set heading (0–360°):', '0')
+    if (raw === null) return
+    const deg = parseFloat(raw)
+    if (isNaN(deg)) { window.alert('Invalid heading. Enter a number between 0 and 360.'); return }
+    assetsApi.updateTargetMovement(id, { heading: ((deg % 360) + 360) % 360 }).then(() => assetsApi.saveConfig()).catch(console.error)
+  }
+
   return (
     <div
-      ref={containerRef}
-      style={{
-        width: '100%', height: '100%', background: '#0a0e1a',
-        cursor: placementMode ? 'crosshair' : 'default',
-      }}
-    />
+      style={{ position: 'relative', width: '100%', height: '100%' }}
+      onClick={() => ctxMenu && setCtxMenu(null)}
+    >
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%', height: '100%', background: '#0a0e1a',
+          cursor: placementMode ? 'crosshair' : 'default',
+        }}
+      />
+      {ctxMenu && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: ctxMenu.y,
+            left: ctxMenu.x,
+            background: '#1a2035',
+            border: '1px solid #334155',
+            borderRadius: 4,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+            zIndex: 1000,
+            minWidth: 140,
+            overflow: 'hidden',
+          }}
+        >
+          {ctxMenu.type === 'target' && (
+            <>
+              <button onClick={handleCtxSetSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
+              <button onClick={handleCtxSetHeading} style={CTX_BTN_STYLE}>Set Heading</button>
+              <div style={{ borderTop: '1px solid #334155' }} />
+            </>
+          )}
+          <button onClick={handleCtxRemove} style={{ ...CTX_BTN_STYLE, color: '#f87171' }}>Remove</button>
+        </div>
+      )}
+    </div>
   )
+}
+
+const CTX_BTN_STYLE = {
+  display: 'block', width: '100%', padding: '8px 14px',
+  background: 'transparent', border: 'none', color: '#cbd5e1',
+  textAlign: 'left', cursor: 'pointer', fontSize: 13,
+  fontFamily: 'inherit',
 }

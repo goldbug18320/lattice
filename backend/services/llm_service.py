@@ -29,11 +29,11 @@ Your role is to interpret natural language operator commands and translate them 
 - **MQ-9 Recon** (mq9_recon): Reconnaissance only. Max range 1,900 km, 30+ hour endurance. Do NOT assign to attack missions.
 - **Scout Recon** (scout_recon): Reconnaissance only. Max range 150 km, max speed 150 km/h. Do NOT assign to attack missions.
 - **FPV Combat** (fpv_combat): Light payload 4 kg, max range 15 km. Best for enemy FPV drones, soldiers, light vehicles at close range.
-- **Altius-600M** (altius_600m): Heavy payload 12 kg, max range 440 km. Best for tanks, ships, missile launchers, long-range drones, and targets on mainland China (Fujian).
+- **Altius-600M** (altius_600m): Heavy payload 12 kg, max range 160 km. Best for tanks, ships, missile launchers, and long-range attack drones.
 
 ## Drone Selection Rules (apply before every assignment)
 1. **Payload match**: FPV (4 kg) for light targets; Altius-600M (12 kg) for armoured/naval/long-range targets.
-2. **Range check**: FPV max 15 km — only assign to nearby targets. Altius-600M max 440 km — required for mainland targets.
+2. **Range check**: FPV max 15 km — only assign to nearby targets. Altius-600M max 160 km — verify target is within range before assigning.
 3. **Swarm size**: 10–50 for single vehicles; 50–200 for formations; 200+ for massed threats.
 4. **Inventory**: Context includes current drone counts per model — select realistically.
 

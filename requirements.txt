@@ -33,6 +33,9 @@ Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets
 to the configuration file. if a combat drone swarm is deployed, it should be displayed in "swarm & drone status" panel. If an enemy asset is deployed, 
 it should be displayed in enemy target panel.
+33) Deployed assets are by default stationary. For enemy assets on the map, right click on the asset bring up a context menu displaying the following options:
+a) set speed, b) set heading, c) remove the object. The speed and heading of the enemy target should be persisted to the configuration file. The speed should
+not be over the max. capability of the object. 
 
 Map:
 18) use appropriate icons on the map for the combat objects. For example, use drone icon for drones. use ship icon for ships. use tank icon for tanks.
@@ -81,17 +84,17 @@ reconnaissance drones are capable of detecting enemy assets within 10km in radiu
 remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
-altius-600m drones, max payload 12kg, max range 440km.
+altius-600m drones, max payload 12kg, max range 160km, max speed 90km/hr.
 reconnaissance and combat drones should be marked as blue or green.
 
 
 Enermy assets:
 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
 FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
-tanks in Taiwan, moving at 10km/hr.
-ships in Taiwan strait, moving at 22 knots from mainline China towards Taiwan.
-missle launchers in Fujian.
-PLA solders in Taiwan.
+tanks, max speed 30km/hr, max range 400km.
+ships, max speed 55km/hr, max range 8000km.
+missle launchers, max speed 40km/hr, max range 400km.
+PLA solders, max speed 5km/hr.
 Enemy assets should be marked as red.
 
 Friendly assets and enermy assets should be configurable (i.e. not hard coded).

@@ -45,7 +45,7 @@ _MODEL_SPEED: dict[DroneModel, float] = {
     DroneModel.MQ9_RECON:   60.0,   # 216 km/h
     DroneModel.SCOUT_RECON: 42.0,   # 150 km/h
     DroneModel.FPV_COMBAT:  42.0,   # 150 km/h
-    DroneModel.ALTIUS_600M: 50.0,   # 180 km/h
+    DroneModel.ALTIUS_600M: 25.0,   # 90 km/h
 }
 
 # Detection radii from config (configurable, not hard-coded)

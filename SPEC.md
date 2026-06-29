@@ -19,6 +19,7 @@
 - **Engage → auto-select combat swarm (Feature 15)**: When the operator clicks the ENGAGE button on a target in the Target List panel, the assigned combat swarm is automatically selected and highlighted in the Swarm & Drone Status panel, and swarms are sorted by activity (engaging first) — giving immediate visual confirmation of which swarm was tasked
 - **Hide idle drones from Swarm & Drone Status panel (Feature 16)**: Idle individual drones are suppressed to reduce clutter — swarm cards always show (so the operator can see all swarms), but the expanded drone list within a selected swarm only shows active (non-idle) drones with a summary count of idle ones; idle recon drones are also hidden from the RECONNAISSANCE section
 - **Drag-and-drop asset deployment (Feature 17)**: Both friendly and enemy assets can be dragged to new positions on the 3D map; new assets can be dragged from an Asset Palette onto the map to deploy them; every position change is immediately persisted to `assets_config.json` so the scenario layout survives restarts; when a combat drone swarm is deployed via drag-and-drop it immediately appears in the Swarm & Drone Status panel; when an enemy asset is deployed via drag-and-drop it immediately appears in the Enemy Targets panel
+- **Stationary-by-default with enemy asset context menu (Feature 33)**: All deployed assets are stationary at spawn by default — no automatic movement on placement. For enemy assets on the 3D map, right-clicking the entity opens a context menu with three options: **Set Speed** (enter a speed in km/h; capped at the asset's `max_speed_kmh` from config; the backend writes the clamped value to `assets_config.json` immediately and the asset begins moving at the next Movement Simulator tick), **Set Heading** (enter a bearing in degrees 0–360; the backend writes the new heading to `assets_config.json` immediately and the asset travels in that direction), and **Remove** (deletes the asset from state and `assets_config.json`); once set, the Movement Simulator advances the enemy asset each 1 Hz tick; terrain-stop rules (Feature 21) apply — ground assets halt at water boundaries, ships halt at shore, drones are unrestricted
 - **Type-specific map icons (Feature 18)**: Every asset type on the 3D map is rendered with a representative, type-appropriate icon — drone/UAV icon for all drone types (friendly and enemy), ship icon for ships, tank icon for tanks, rocket/launcher icon for missile launchers, person icon for soldier units — so operators can visually distinguish asset type at a glance without reading labels; icons are colored per the IFF scheme (blue/green for friendly, red for enemy)
 - **Click-to-highlight enemy asset from Target List (Feature 19)**: When the operator clicks an enemy asset in the Enemy Targets panel, that entity is visually highlighted on the 3D map (enlarged point, yellow outline) and the camera flies to center on it — giving instant spatial context for any listed threat without requiring the operator to manually locate it on the map
 - **Click-to-highlight asset from Swarm & Drone Status panel (Feature 20)**: When the operator clicks an asset (swarm card or individual drone) in the Swarm & Drone Status panel, the corresponding entity is highlighted on the 3D map and the camera flies to show it — lets the operator instantly locate any friendly asset in the scene
@@ -529,7 +530,7 @@ And returns a structured JSON action that covers two categories:
 The LLM system prompt instructs the model to apply these rules before assigning assets:
 
 1. **Payload match**: FPV drones (4 kg) for light targets (enemy FPVs, soldiers); Altius-600M (12 kg) for heavy targets (tanks, ships, missile launchers, long-range drones).
-2. **Range check**: FPV max 15 km — only assign to targets within range. Altius-600M max 440 km — suitable for mainland targets (e.g., Fujian missile launchers).
+2. **Range check**: FPV max 15 km — only assign to targets within range. Altius-600M max 160 km — range-check required before assignment.
 3. **Swarm size**: Scale swarm size to threat — small swarms (10–20) for single vehicles, large swarms (50–200) for formations or high-value targets.
 4. **Inventory awareness**: LLM is given current available drone counts per model and selects realistically.
 
@@ -745,7 +746,8 @@ Scout drones continuously fly patrol routes and automatically submit reconnaissa
 | Model | Altius-600M |
 | Naming | ALT-{N} |
 | Max payload | 12 kg |
-| Max range | 440 km |
+| Max range | 160 km |
+| Max speed | 90 km/h |
 | Best against | Tanks, ships, missile launchers, long-range attack drones |
 | Swarm grouping | Multiple swarms (count configurable in `assets_config.json`) |
 
@@ -765,15 +767,15 @@ MQ-9 recon drones patrol from high altitude and are not city-bound.
 |---|---|---|---|---|---|
 | Long-range attack drones | Airborne / mainland China | 50 kg | 400 km | 150 km/h | Primary air threat; launched from mainland |
 | FPV drones | Airborne over Taiwan | 4 kg | 15 km | 150 km/h | Deployed by PLA soldiers already landed in Taiwan |
-| Tanks | Taiwan | — | — | 10 km/h | Armoured ground threat |
-| Ships | Taiwan Strait | — | — | 22 knots (~41 km/h) | Naval blockade / amphibious assault from mainland |
-| Missile launchers | Fujian, mainland China | — | — | stationary | Long-range land-attack; requires Altius-600M counter-strike |
+| Tanks | Taiwan | — | 400 km | 30 km/h | Armoured ground threat |
+| Ships | Taiwan Strait | — | 8,000 km | 55 km/h | Naval blockade / amphibious assault from mainland |
+| Missile launchers | Mainland China | — | 400 km | 40 km/h | Mobile land-attack launchers; ground-constrained |
 | Soldiers | Landed in Taiwan | — | — | ~5 km/h | Ground invasion force; `soldier_unit` target type |
 
 All enemy asset counts are configurable in `assets_config.json`. Enemy assets are registered in the platform via reconnaissance drone feeds (`POST /api/recon/feed`). The `soldier_unit` target type is used for soldier formations.
 
 #### Enemy Asset Distribution
-- Missile launchers remain in **Fujian, mainland China** (range: up to 400 km — Altius-600M required for counter-strike).
+- Missile launchers are **mobile ground assets** (max speed 40 km/h, max range 400 km) — terrain-constrained to land; operator sets heading and speed via the right-click context menu.
 - Long-range attack drones **launch from mainland China** and travel east toward Taiwan.
 - Enemy FPV drones are **deployed by PLA soldiers already landed in Taiwan** — short-range, high-density urban threat.
 - Enemy asset distribution across the west and east coasts of Taiwan is configurable in `assets_config.json`.
@@ -907,18 +909,20 @@ The LLM evaluates target count, confidence level, and available drone inventory 
 
 ### 8.8 Enemy Asset Movement Simulation
 
-Mobile enemy assets also move during the simulation. The Movement Simulator updates enemy positions each tick alongside friendly drone movement. Updated positions are reflected in the State Service immediately; the next WebSocket broadcast delivers new coordinates to the UI and triggers recon detection checks.
+**Enemy assets are stationary by default (Feature 33).** Movement is initiated by the operator via the right-click context menu on the map — the operator sets a speed (km/h) and heading (degrees) for each asset. The entered speed is clamped to the asset type's `max_speed_kmh` from `assets_config.json` before being applied (e.g., a tank cannot be set faster than 30 km/h, a ship no faster than 55 km/h, a missile launcher no faster than 40 km/h). Speed and heading are persisted to `assets_config.json` immediately so they survive a restart. Once speed and heading are set, the Movement Simulator advances the enemy asset each tick alongside friendly drone movement; terrain-stop rules apply — ground assets (tanks, soldiers, missile launchers) halt when they reach a water boundary, ships halt when they reach a shoreline, drones are unrestricted. Updated positions are reflected in the State Service immediately; the next WebSocket broadcast delivers new coordinates to the UI and triggers recon detection checks.
 
 #### Enemy Movement Rules
 
-| Asset Type | Movement Behaviour | Speed |
+The values below are the typical scenario speeds for reference; the actual speed and heading in use are whatever the operator has configured via the context menu.
+
+| Asset Type | Movement Behaviour | Typical Speed |
 |---|---|---|
-| Ships | Advance eastward from mainland China across the Taiwan Strait toward Taiwan; **halt when reaching shore** (land boundary) | 22 knots (~41 km/h / 11.3 m/s) |
-| Tanks | Advance at constant heading from landing zones inland; **halt when reaching water** (land/sea boundary) | 10 km/h (2.78 m/s) |
-| Soldiers | Move slowly across terrain toward objectives; **halt when reaching water** (land/sea boundary) | ~5 km/h (1.39 m/s) |
-| Long-range attack drones | Fly eastward toward Taiwan from mainland launch points | 150 km/h (41.7 m/s) |
-| FPV drones (enemy) | Roam in random patrol patterns within their deployment zone in Taiwan | 150 km/h (41.7 m/s) |
-| Missile launchers | Stationary | 0 |
+| Ships | Advance at operator-set heading; **halt when reaching shore** (land boundary) | up to 55 km/h (15.3 m/s); range 8,000 km |
+| Tanks | Advance at operator-set heading; **halt when reaching water** (land/sea boundary) | up to 30 km/h (8.33 m/s); range 400 km |
+| Soldiers | Move at operator-set heading; **halt when reaching water** (land/sea boundary) | ~5 km/h (1.39 m/s) |
+| Long-range attack drones | Fly at operator-set heading | 150 km/h (41.7 m/s) |
+| FPV drones (enemy) | Fly at operator-set heading | 150 km/h (41.7 m/s) |
+| Missile launchers | Advance at operator-set heading; **halt when reaching water** (land boundary) | up to 40 km/h (11.1 m/s); range 400 km |
 
 #### Position Update (per tick)
 
@@ -983,7 +987,7 @@ After each movement tick, the simulator checks all airborne recon drones against
 - **Drag-and-drop deployment (Feature 17):**
   - **Reposition existing asset**: drag any entity on the map to a new location; on drop the frontend calls the appropriate PATCH endpoint (`PATCH /api/swarm/drones/{id}` for friendly, `PATCH /api/recon/targets/{id}` for enemy); the backend applies the update to in-memory state and immediately writes the new position to `assets_config.json`.
   - **Deploy new asset**: an **Asset Palette** panel (collapsible, docked to the left map edge) lists all available asset types (MQ-9, Scout, FPV, Altius-600M, enemy drone, ship, tank, missile launcher, soldier unit); drag a type from the palette and drop it on the map to spawn a new instance at that location; the backend registers the new asset and persists it to `assets_config.json`; a newly deployed combat drone swarm immediately appears in the Swarm & Drone Status panel and a newly deployed enemy asset immediately appears in the Enemy Targets panel.
-  - **Remove asset**: right-click any entity → **Remove** to delete it; the backend removes it from state and config.
+  - **Enemy asset context menu (Feature 33)**: right-click an enemy asset on the map to open a context menu with three options — **Set Speed**: enter a speed in km/h; the backend clamps the value to the asset type's `max_speed_kmh` (e.g., ≤30 km/h for tanks, ≤55 km/h for ships, ≤40 km/h for missile launchers, ≤150 km/h for drones, ≤5 km/h for soldiers) before applying it, then persists to `assets_config.json`; the Movement Simulator begins advancing the asset next tick; **Set Heading**: enter a bearing in degrees (0–360); the backend updates heading in state and `assets_config.json`; **Remove**: deletes the asset from state and `assets_config.json`; terrain-stop rules (Feature 21) continue to apply during movement — ground assets halt at water, ships halt at shore, drones are unrestricted. Friendly assets support right-click **Remove** only.
   - **Terrain validation (Feature 21)**: when dropping a ground asset (soldier, tank, missile launcher), the system checks that the drop position is on land; when dropping a ship, it checks for water; drone drops are accepted anywhere (land, sea, or air); invalid drops are rejected with a visual indicator and the asset stays at its previous position; ground assets and ships that reach a terrain boundary during movement simulation are also halted in place rather than crossing it
 - **Camera:** Default bird's-eye tactical view; free navigation
 
@@ -1195,7 +1199,7 @@ npm run dev                   # starts at http://localhost:5173
 | Two drone models (FPV + Altius-600M) | Covers full threat spectrum: FPV for close swarm/infantry, Altius-600M for armoured/naval/long-range targets |
 | **Three recon tiers (MQ-9, Scout, none)** | MQ-9 for high-altitude wide-area ISR with 15 km detection radius and 30+ hours endurance; Scout drones for tactical area coverage with 10 km detection radius (counts configured in `assets_config.json`); all submit feeds to same `/api/recon/feed` endpoint |
 | **Movement simulator as 1 Hz asyncio task** | Co-located with broadcast loop; avoids additional threads; position updates are always consistent with the state broadcast that follows immediately |
-| **`range_used_km` range budget per drone** | Enforces configured range limits (e.g., FPV 15 km, Altius-600M 440 km); FPV automatically expend on contact; Altius return to base when range consumed |
+| **`range_used_km` range budget per drone** | Enforces configured range limits (e.g., FPV 15 km, Altius-600M 160 km); FPV automatically expend on contact; Altius return to base when range consumed |
 | **Batch telemetry endpoint (`POST /api/swarm/telemetry`)** | Hardware drones and the simulator share a single interface; decouples position reporting from command execution |
 | **Configurable assets via `assets_config.json`** | Requirements specify assets must not be hard-coded; all drone counts, speeds, ranges, and enemy force sizes are read from a config file at startup so scenarios can be adjusted without code changes |
 | **Enemy asset movement simulation** | Enemy ships, tanks, soldiers, and drones move each tick via the same 1 Hz simulator as friendly drones; recon detection is re-evaluated after each tick, keeping enemy contact positions accurate as they advance |
@@ -1215,6 +1219,7 @@ npm run dev                   # starts at http://localhost:5173
 | **Recon drone 10 km standoff orbit + already-tracking notification (Feature 28)** | **Standoff**: at every 1 Hz Movement Simulator tick, after computing the bearing to the target, the Movement Simulator checks the haversine distance from the tracking recon drone to its assigned target; if the distance is ≤ 10 km the drone does not advance that tick (position unchanged) — it holds its current position at the 10 km perimeter and rotates heading to keep the target in the forward arc; if the target subsequently moves and the distance exceeds 10 km, the drone resumes advancing normally. **Already-tracking notification**: when the operator re-clicks TRACK on a target that already has a tracking drone assigned, the platform displays a message identifying which drone is currently tracking that target — no new HITL approval flow is started and the existing tracking drone is not replaced or released. **Tracking drone target display**: a `tracking` recon drone's row in the Swarm & Drone Status panel always shows the target type and short ID it is shadowing inline — no click required; the operator can see all active tracking assignments at a glance |
 | **Enemy target type and short ID always visible in Target Panel (Feature 29)** | Each target card in the Enemy Targets panel renders the target type and short ID as a permanent subtitle — no click required; operators can immediately distinguish asset type and identity across all listed threats without reading coordinates or opening an expand view |
 | **Suppress DETECTED CONTACTS for recon drones in Swarm & Drone Status panel (Feature 30)** | Reconnaissance drone rows (MQ-9 and Scout) do not show a DETECTED CONTACTS sub-panel — clicking a recon drone row expands movement/status details only; detection data is accessed via the Enemy Targets panel, separating ISR output from drone status and keeping the panel uncluttered |
+| **Stationary-by-default with operator-controlled enemy movement (Feature 33)** | All deployed assets spawn stationary — no automatic movement on placement; enemy assets move only when the operator explicitly sets speed and heading via the right-click context menu; entered speed is clamped to the asset type's `max_speed_kmh` so operators cannot exceed realistic capabilities; speed and heading are immediately written to `assets_config.json` so movement configuration survives restarts; terrain-stop rules still apply — ground assets halt at water, ships halt at shore, drones are unrestricted |
 | In-memory state (no database) | Simplicity for v1; easily replaced with Redis or PostgreSQL |
 | WebSocket broadcast (not on-change) | 1-second polling avoids complex change-tracking; sufficient for tactical update rate |
 | LLM JSON mode + low temperature | Deterministic structured output; safe for tactical command execution |

@@ -1,11 +1,20 @@
 """Reconnaissance feed API endpoints."""
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
-from models.target import ReconFeed, Target, TargetReport, TargetStatus, TargetUpdate
+from models.target import ReconFeed, Target, TargetReport, TargetStatus, TargetType, TargetUpdate
 from models.drone import DroneStatus
 from services.state_service import state_service
 
 router = APIRouter()
+
+# Feature 33: max speeds (m/s) per enemy target type — operator cannot exceed these via Set Speed.
+_MAX_SPEED_MPS: dict[TargetType, float] = {
+    TargetType.DRONE:             41.67,   # 150 km/h
+    TargetType.TANK:               8.33,   # 30 km/h
+    TargetType.SHIP:              15.28,   # 55 km/h
+    TargetType.SOLDIER_UNIT:       1.39,   # 5 km/h
+    TargetType.MISSILE_LAUNCHER:  11.11,   # 40 km/h
+}
 
 
 @router.post("/feed", summary="Submit reconnaissance data from a drone")
@@ -92,6 +101,9 @@ async def update_target(target_id: str, update: TargetUpdate):
     for field in update.model_fields_set:
         value = getattr(update, field)
         if value is not None and hasattr(target, field):
+            if field == "speed":
+                max_mps = _MAX_SPEED_MPS.get(target.type, float("inf"))
+                value = min(float(value), max_mps)
             setattr(target, field, value)
     target.last_seen = datetime.utcnow()
     state_service.upsert_target(target)
