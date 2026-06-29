@@ -25,6 +25,7 @@ Features and capabilities:
 21) soldiers, tanks, missile launchers must be on the land. soldiers, tanks, missile launchers must stop at the sea. ships must be in the sea. ships must stop when reaching shores. drones can be on land, at sea or in the air. 
 22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
 23) Engaging: when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
+the engaging drone on "the Swarm and drone status" panel should display target type and id.
 24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
 Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be tracked. 
 Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance drone list. (i.e. one drone cannot be used to track multiple enemy targets).
@@ -38,11 +39,12 @@ Once the user approve the request, the trace button on the target remains enable
 28) Tracking: when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
 if a target is being tracked by one drone, clicking on the track button again, another drone will be assign to track the target, and the the first drone stop tracking the target.
 the first drone's status should be changed from tracking to returning.
-Clicking on the tracking drone on the Swarm and drone status panel should reveal enemy target id.
+the tracking drone on the "Swarm and drone status" panel should show target type and id.
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
 2) No default deployments of friendly and enemy assets by the system.
+3) all drone status should always be idle in the initial configuration file. Other status (e.g. tracking, engaging, searching, returning should be kept in memory -- i.e. lost when system reset).
   
 Friendly assets:
 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.

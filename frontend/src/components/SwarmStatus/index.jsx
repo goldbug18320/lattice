@@ -139,27 +139,49 @@ export default function SwarmStatus() {
               <div className="drone-list">
                 {swarmDrones.filter(d => d.status !== 'idle').map(d => {
                   const isDroneSelected = d.id === selectedDroneId
+                  const engagingTargets = isDroneSelected && d.status === 'engaging'
+                    ? (swarm.target_ids || []).map(tid => targets.find(t => t.id === tid)).filter(Boolean)
+                    : []
                   return (
-                    <div
-                      key={d.id}
-                      className={`drone-item ${isDroneSelected ? 'selected' : ''}`}
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const next = isDroneSelected ? null : d.id
-                        selectDrone(next)
-                        if (next && d.position) {
-                          setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: d.position.lat, lon: d.position.lon } })
-                        }
-                      }}
-                    >
-                      <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
-                      <span className="drone-name">{d.name}</span>
-                      <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
-                        {d.status}
-                      </span>
-                      <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
-                      <span className="drone-range">↗{remainingRange(d)} km</span>
+                    <div key={d.id}>
+                      <div
+                        className={`drone-item ${isDroneSelected ? 'selected' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const next = isDroneSelected ? null : d.id
+                          selectDrone(next)
+                          if (next && d.position) {
+                            setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: d.position.lat, lon: d.position.lon } })
+                          }
+                        }}
+                      >
+                        <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
+                        <span className="drone-name">{d.name}</span>
+                        <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
+                          {d.status}
+                        </span>
+                        <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
+                        <span className="drone-range">↗{remainingRange(d)} km</span>
+                      </div>
+                      {isDroneSelected && d.status === 'engaging' && (
+                        <div className="recon-detail">
+                          <div className="recon-detail-header" style={{ color: STATUS_COLORS.engaging }}>
+                            ENGAGING TARGET
+                          </div>
+                          {engagingTargets.length > 0 ? engagingTargets.map(t => (
+                            <div key={t.id} className="detected-item">
+                              <span className="detected-icon">{TARGET_ICONS[t.type] || '?'}</span>
+                              <span className="detected-type">{t.type.replace('_', ' ')}</span>
+                              <span className="detected-conf" style={{ color: 'var(--text-dim)', fontSize: '0.65rem' }}>
+                                ID: {t.id}
+                              </span>
+                            </div>
+                          )) : (
+                            <div className="detected-empty">Target data unavailable</div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -206,6 +228,14 @@ export default function SwarmStatus() {
                   <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
                   <span className="drone-range">↗{remainingRange(d)} km</span>
                 </div>
+                {d.status === 'tracking' && d.tracking_target_id && (() => {
+                  const trackedTarget = targets.find(t => t.id === d.tracking_target_id)
+                  return (
+                    <div className="recon-detail-header" style={{ color: '#9ca3af', margin: '1px 8px 2px' }}>
+                      tracking {trackedTarget ? trackedTarget.type.replace('_', ' ') : 'unknown'} target with id {d.tracking_target_id}
+                    </div>
+                  )
+                })()}
                 {isReconSelected && (
                   <div className="recon-detail">
                     <div className="recon-detail-header">

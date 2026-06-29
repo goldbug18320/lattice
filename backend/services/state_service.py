@@ -138,7 +138,7 @@ class StateService:
                 "name": d.name,
                 "model": d.model.value if d.model else None,
                 "type": d.type.value,
-                "status": d.status.value,
+                "status": "idle",
                 "heading": d.heading,
                 "speed": d.speed,
                 "altitude": d.altitude,
@@ -148,7 +148,7 @@ class StateService:
                 "max_payload_kg": d.max_payload_kg,
                 "max_flight_time_hours": d.max_flight_time_hours,
                 "swarm_id": d.swarm_id,
-                "current_task": d.current_task,
+                "current_task": None,
             }
             if d.position:
                 entry["position"] = {"lat": d.position.lat, "lon": d.position.lon, "alt": d.position.alt}
@@ -181,9 +181,9 @@ class StateService:
                 "drone_model": s.drone_model.value if s.drone_model else None,
                 "total_drone_count": s.total_drone_count,
                 "drone_ids": list(s.drone_ids),
-                "status": s.status.value,
-                "objective": s.objective,
-                "target_ids": list(s.target_ids),
+                "status": "idle",
+                "objective": None,
+                "target_ids": [],
             })
 
         return {"drones": drones_data, "targets": targets_data, "swarms": swarms_data}
