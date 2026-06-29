@@ -20,11 +20,10 @@ def classify_target(target_type: str, altitude: float) -> str:
 
 SYSTEM_PROMPT = """You are the AI tactical coordinator and UI controller for the Lattice drone swarm command and control platform — a war game simulator over Taiwan.
 
-Your role is to interpret natural language operator commands and translate them into structured JSON actions covering four categories:
+Your role is to interpret natural language operator commands and translate them into structured JSON actions covering three categories:
 1. **Tactical commands** — assign drone swarms or single drones to missions
-2. **UI commands** — control the 3D map view (pan, zoom, focus on entities)
-3. **Attack approval requests (HITL)** — classify targets and queue for operator confirmation before any attack executes
-4. **Natural language status responses** — answer status queries in plain English without issuing commands
+2. **Attack approval requests (HITL)** — classify targets and queue for operator confirmation before any attack executes
+3. **Natural language status responses** — answer status queries in plain English without issuing commands
 
 ## Drone Fleet
 - **MQ-9 Recon** (mq9_recon): Reconnaissance only. Max range 1,900 km, 30+ hour endurance. Do NOT assign to attack missions.
@@ -45,8 +44,6 @@ Your role is to interpret natural language operator commands and translate them 
 - **request_approval**: Used for two scenarios: (1) INSTEAD of assign_swarm when command_type is "attack" — classify targets, embed assign_swarm in proposed_action; (2) INSTEAD of assign_drone when command_type is "track" (Feature 24) — select a recon drone in range, embed assign_drone in proposed_action.
 - **no_swarm_in_range**: Return ONLY for single-target ENGAGE (Feature 22) when no combat swarm can physically reach the target. Carry an `explanation` string. Do NOT create an approval.
 - **no_recon_in_range**: Return ONLY for single-target TRACK (Feature 24) when no recon drone (MQ-9 or Scout) can physically reach the target.
-- **request_status**: Provide a text status summary (no execution needed).
-- **ui_command**: Control the 3D map (pan/zoom/focus). Sub-types: fly_to, fly_to_target, fly_to_drone, zoom_in, zoom_out, set_view_mode, toggle_layer.
 - **none**: Command could not be interpreted.
 
 ## Target Threat Classification (for request_approval)
@@ -64,7 +61,7 @@ Always respond with a JSON object:
 {
   "interpretation": "plain English explanation of what you understood",
   "action": {
-    "type": "assign_swarm | assign_drone | mark_target_destroyed | request_approval | request_status | ui_command | none",
+    "type": "assign_swarm | assign_drone | mark_target_destroyed | request_approval | none",
 
     // Tactical fields (assign_swarm / assign_drone):
     "swarm_id": "<id>",
@@ -83,15 +80,7 @@ Always respond with a JSON object:
     ],
     "threat_summary": {"high": 2, "medium": 3, "low": 1},
     "approval_prompt": "Requesting approval to attack 6 targets: 2 high-value ships, 3 medium-value tanks, 1 low-value FPV drone.",
-    "proposed_action": { /* the assign_swarm action to execute on approval */ },
-
-    // UI command fields (ui_command):
-    "ui_subtype": "fly_to | fly_to_target | fly_to_drone | zoom_in | zoom_out | set_view_mode | toggle_layer",
-    "destination": { "name": "Taiwan", "lat": 23.8, "lon": 121.0, "altitude_km": 300 },
-    "target_id": "<id>",
-    "layer": "friendly | enemy | swarms | all",
-    "visible": true,
-    "view_mode": "tactical | ground | globe"
+    "proposed_action": { /* the assign_swarm action to execute on approval */ }
   },
   "explanation": "what action was taken or why no action was possible"
 }
@@ -102,24 +91,10 @@ Always respond with a JSON object:
 - Map target references (e.g. "enemy tank") to matching target IDs from context.
 - Map swarm references (e.g. "ALT-Alpha") to correct swarm IDs from context.
 - Attack commands: priority 8–10. Patrol/search: priority 3–6. Track: priority 6.
-- For UI commands, resolve place names to lat/lon: Taiwan (23.8, 121.0, alt 300km), Taipei (25.04, 121.56, alt 50km), Fujian (25.9, 119.3, alt 100km), Taiwan Strait (24.0, 119.5, alt 200km).
 - **HITL attack rule**: When command_type is "attack", ALWAYS return request_approval (not assign_swarm). Never execute an attack directly.
 - **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the combat swarm whose representative_position is within max_range_km of the target. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no swarm qualifies, return no_swarm_in_range instead of request_approval.
 - **HITL track rule (Feature 24)**: When command_type is "track" and a target ID is referenced, ALWAYS return request_approval with an assign_drone proposed_action. Select the nearest MQ-9 or Scout drone whose max_range_km ≥ haversine distance to the target. If none qualifies, return no_recon_in_range.
 """
-
-# Hardcoded place-name lookups for mock fallback
-_PLACE_COORDS = {
-    "taiwan":        {"lat": 23.8,  "lon": 121.0,  "altitude_km": 300},
-    "taipei":        {"lat": 25.04, "lon": 121.56, "altitude_km": 50},
-    "fujian":        {"lat": 25.9,  "lon": 119.3,  "altitude_km": 100},
-    "taiwan strait": {"lat": 24.0,  "lon": 119.5,  "altitude_km": 200},
-    "strait":        {"lat": 24.0,  "lon": 119.5,  "altitude_km": 200},
-    "kaohsiung":     {"lat": 22.63, "lon": 120.30, "altitude_km": 30},
-    "taichung":      {"lat": 24.15, "lon": 120.68, "altitude_km": 30},
-    "tainan":        {"lat": 23.00, "lon": 120.21, "altitude_km": 30},
-}
-
 
 class LLMService:
     def __init__(self):
@@ -153,127 +128,11 @@ Operator command: {command}"""
         text = response.choices[0].message.content
         return json.loads(text)
 
-    def _mock_status_response(self, command: str, context: dict) -> dict:
-        """Build a natural language status answer from in-memory state context (§6.9 mock)."""
-        cmd_lower = command.lower()
-        drones = context.get("drones", [])
-        targets = context.get("targets", [])
-        swarms = context.get("swarms", [])
-
-        # Named drone lookup — check if the command names a specific drone
-        for drone in drones:
-            name = drone.get("name", "")
-            if name.lower() in cmd_lower:
-                battery = round(drone.get("battery", 0))
-                status = drone.get("status", "unknown")
-                pos = drone.get("position") or {}
-                lat = round(pos.get("lat", 0), 3)
-                lon = round(pos.get("lon", 0), 3)
-                alt = round(pos.get("alt", 0))
-                max_range = drone.get("max_range_km", 0)
-                model = (drone.get("model") or drone.get("type") or "drone").replace("_", " ")
-                status_text = (
-                    f"{name} ({model}) is currently {status}. "
-                    f"Position: {lat}°N {lon}°E, altitude {alt}m. "
-                    f"Battery: {battery}%. Max range: {max_range}km."
-                )
-                return {
-                    "interpretation": f"[MOCK] Status query for {name}",
-                    "action": {"type": "request_status", "status_text": status_text},
-                    "explanation": f"[MOCK] Returning status for {name}.",
-                }
-
-        # Fleet counts and battlefield summary
-        active_targets = [t for t in targets if t.get("status") == "active"]
-        target_by_type: dict[str, int] = {}
-        for t in active_targets:
-            tt = t.get("type", "unknown")
-            target_by_type[tt] = target_by_type.get(tt, 0) + 1
-
-        by_status: dict[str, int] = {}
-        for d in drones:
-            s = d.get("status", "unknown")
-            by_status[s] = by_status.get(s, 0) + 1
-
-        engaging  = by_status.get("engaging", 0)
-        patrolling = by_status.get("patrolling", 0)
-        idle      = by_status.get("idle", 0)
-
-        type_parts = [f"{v} {k.replace('_', ' ')}{'s' if v > 1 else ''}" for k, v in target_by_type.items()]
-        target_summary = ", ".join(type_parts) if type_parts else "none"
-        active_swarms = [s for s in swarms if s.get("status") != "idle"]
-
-        status_text = (
-            f"Battlefield status: {len(drones)} total friendly drones "
-            f"({engaging} engaging, {patrolling} patrolling, {idle} idle). "
-            f"Active enemy contacts: {len(active_targets)} ({target_summary}). "
-            f"{len(active_swarms)}/{len(swarms)} swarms active."
-        )
-        return {
-            "interpretation": "[MOCK] General status report requested",
-            "action": {"type": "request_status", "status_text": status_text},
-            "explanation": "[MOCK] Returning general battlefield status.",
-        }
-
     def _mock_response(self, command: str, context: dict) -> dict:
         """Fallback mock response when OpenAI key is not configured."""
         cmd_lower = command.lower()
         swarms = context.get("swarms", [])
         targets = context.get("targets", [])
-
-        # ── Status queries (Feature 14) ──────────────────────────────────────
-        status_keywords = ["status", "what is", "how many", "battery", "where is",
-                           "report", "count", "tell me", "how are", "how much", "remaining"]
-        if any(w in cmd_lower for w in status_keywords):
-            return self._mock_status_response(command, context)
-
-        # ── UI commands ──────────────────────────────────────────────────────
-        ui_keywords = ["show", "zoom", "focus", "map", "view", "fly to", "navigate", "go to", "look at"]
-        if any(w in cmd_lower for w in ui_keywords):
-            # Check if a specific drone name is mentioned
-            drones = context.get("drones", [])
-            matched_drone = None
-            for d in drones:
-                name = d.get("name", "")
-                if name.lower() in cmd_lower:
-                    matched_drone = d
-                    break
-
-            if matched_drone and matched_drone.get("position"):
-                pos = matched_drone["position"]
-                return {
-                    "interpretation": f"[MOCK] Fly to drone {matched_drone['name']}",
-                    "action": {
-                        "type": "ui_command",
-                        "ui_subtype": "fly_to_drone",
-                        "drone_id": matched_drone["id"],
-                        "destination": {
-                            "lat": pos["lat"],
-                            "lon": pos["lon"],
-                            "altitude_km": max(pos.get("alt", 0) / 1000 + 0.05, 0.05),
-                        },
-                    },
-                    "explanation": f"[MOCK] Flying map camera to drone {matched_drone['name']}.",
-                }
-
-            # Fall back to place-name lookup
-            dest = None
-            for place, coords in _PLACE_COORDS.items():
-                if place in cmd_lower:
-                    dest = {"name": place.title(), **coords}
-                    break
-            if dest is None:
-                dest = {"name": "Taiwan", **_PLACE_COORDS["taiwan"]}
-            subtype = "zoom_in" if "zoom in" in cmd_lower else "zoom_out" if "zoom out" in cmd_lower else "fly_to"
-            return {
-                "interpretation": f"[MOCK] UI navigation request: '{command}'",
-                "action": {
-                    "type": "ui_command",
-                    "ui_subtype": subtype,
-                    "destination": dest,
-                },
-                "explanation": f"[MOCK] Flying map camera to {dest['name']}.",
-            }
 
         # ── Tactical commands ─────────────────────────────────────────────────
         action_type = "none"

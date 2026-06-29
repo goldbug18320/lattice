@@ -8,14 +8,14 @@ Features and capabilities:
 4) Define a set of APIs to control a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
 5) the platform use LLM to assign tasks to a single drone or a swarm of drones. In case of a swarm of drones, it is expected the drones are AI enabled which can coordinate with each other to locate and attach targets by themselves. The platform does not assign tasks to each drone in the swarm. This helps the success rate in GPS denial battle ground.
 6) 3D UI with with real world terrain information (such as Taiwan) to show the locations of our drones and enemy drones, ships, tanks, missile launchers.
-7) platform accepts natural language commands via text input.
+7) 
 8) LLM determine the appropriate drones to use, based on the payload, range. LLM also determine the swarm size appropriate for the enemy targets.
-9) LLM follow operator's requests on UI, such as "show Taiwan on map", etc.
+9)
 10) All deployed drones should be constantly moving until their max range is reached. 
 11) All deployed drones should have their location, speed, battery status live feed to the Lattice.
 12) 
 13) LLM should determine classify the enemy assets to a) high value target, such as ship, missile launchers. b) medium value target, such as tanks. c) low value targets. And ask human for permission to attack enemy targets according to value classification.
-14) LLM should respond with natural language, such as "what is the current status of MQ9-01", instead of just translating inquiry into commands.
+14) 
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 16) idling drones should not show up on on the swarm and drone status panel.
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations to a configuration file.
@@ -44,8 +44,9 @@ the tracking drone on the "Swarm and drone status" panel should show target type
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
 2) No default deployments of friendly and enemy assets by the system.
-3) all drone status should always be idle in the initial configuration file. Other status (e.g. tracking, engaging, searching, returning should be kept in memory -- i.e. lost when system reset).
-  
+3) all drone status should always be idle in the initial configuration file. drone status should NOT be serialized to the initial configuration file.
+4) enemy target status engaged, active should NOT be serialized to the initial configuration file, but other statuses such as active, destroyed, lost are written to the configuration file. 
+
 Friendly assets:
 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
 MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.

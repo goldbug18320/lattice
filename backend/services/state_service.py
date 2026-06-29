@@ -156,12 +156,13 @@ class StateService:
                 entry["home_position"] = {"lat": d.home_position.lat, "lon": d.home_position.lon, "alt": d.home_position.alt}
             drones_data.append(entry)
 
+        _PERSIST_STATUSES = {"active", "destroyed", "lost"}
         targets_data = []
         for t in self._targets.values():
             entry = {
                 "id": t.id,
                 "type": t.type.value,
-                "status": t.status.value,
+                "status": t.status.value if t.status.value in _PERSIST_STATUSES else "active",
                 "heading": t.heading,
                 "speed": t.speed,
                 "confidence": t.confidence,

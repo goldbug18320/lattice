@@ -5,7 +5,7 @@
 
 ## 1. Overview
 
-**Lattice** is an AI-enabled command and control (C2) platform built for a **war game simulator**. It coordinates reconnaissance and combat drone swarms over real-world terrain covering **Taiwan and surrounding waters**. The platform ingests live intelligence feeds from reconnaissance drones, visualizes the battlefield in 3D, and enables operators to issue tactical commands via natural language. An integrated LLM translates operator intent into structured mission objectives — selecting the appropriate drone type, payload, and swarm size based on the threat — and dispatches them to AI-enabled swarms, which self-coordinate to execute missions including in GPS-denied environments. The LLM also handles **UI control commands** (e.g., "show Taiwan on map", "zoom to Fujian") to give the operator a single, unified natural language interface for both combat operations and map navigation.
+**Lattice** is an AI-enabled command and control (C2) platform built for a **war game simulator**. It coordinates reconnaissance and combat drone swarms over real-world terrain covering **Taiwan and surrounding waters**. The platform ingests live intelligence feeds from reconnaissance drones, visualizes the battlefield in 3D, and enables operators to issue tactical commands via panel controls. An integrated LLM selects the appropriate drone type, swarm size, and classifies targets when the operator clicks ENGAGE or TRACK — dispatching missions to AI-enabled swarms, which self-coordinate to execute them including in GPS-denied environments.
 
 ---
 
@@ -14,11 +14,8 @@
 ### Goals
 - Real-time ingestion of reconnaissance feeds (enemy positions, types, confidence)
 - 3D terrain visualization of all friendly and enemy assets over real-world terrain (Taiwan and surrounding sea)
-- Natural language operator interface powered by an LLM
 - **LLM-driven drone selection**: LLM automatically selects drone type (FPV vs. Altius-600M) and swarm size based on target type, required payload, and range
-- **LLM-driven UI control**: operator can navigate and control the 3D map view via natural language (e.g., "show Taiwan on map", "zoom to Fujian", "focus on target alpha")
 - **LLM target classification + human approval (HITL) (Feature 13)**: LLM classifies every attack target by threat value (high / medium / low) and generates a pending approval request; the operator must explicitly approve before any attack is executed — no autonomous strikes without human confirmation
-- **LLM natural language status responses (Feature 14)**: For status queries (e.g., "what is the status of MQ9-01?", "how many drones are engaging?"), the LLM produces a conversational natural language answer instead of a structured action — the platform returns the human-readable response directly in the command log
 - **Engage → auto-select combat swarm (Feature 15)**: When the operator clicks the ENGAGE button on a target in the Target List panel, the assigned combat swarm is automatically selected and highlighted in the Swarm & Drone Status panel, and swarms are sorted by activity (engaging first) — giving immediate visual confirmation of which swarm was tasked
 - **Hide idle drones from Swarm & Drone Status panel (Feature 16)**: Idle individual drones are suppressed to reduce clutter — swarm cards always show (so the operator can see all swarms), but the expanded drone list within a selected swarm only shows active (non-idle) drones with a summary count of idle ones; idle recon drones are also hidden from the RECONNAISSANCE section
 - **Drag-and-drop asset deployment (Feature 17)**: Both friendly and enemy assets can be dragged to new positions on the 3D map; new assets can be dragged from an Asset Palette onto the map to deploy them; every position change is immediately persisted to `assets_config.json` so the scenario layout survives restarts
@@ -58,7 +55,7 @@
 │  │   3D Map)    │    │  ┌─────────┐  ┌──────────┐  ┌────────┐ │  │
 │  │              │    │  │  Recon  │  │  Swarm   │  │  NLP   │ │  │
 │  │  Command     │    │  │   API   │  │  Control │  │  API   │ │  │
-│  │  Panel (NLP) │    │  │         │  │   API    │  │(OpenAI)│ │  │
+│  │  Panel       │    │  │         │  │   API    │  │(OpenAI)│ │  │
 │  │              │    │  └────┬────┘  └────┬─────┘  └───┬────┘ │  │
 │  │  Swarm       │    │       │             │             │      │  │
 │  │  Status      │    │  ┌────▼─────────────▼─────────────▼────┐│  │
@@ -404,41 +401,26 @@ Retrieve the command execution log.
 ### 5.3 NLP Command API — `/api/nlp`
 
 #### `POST /api/nlp/command`
-Process a natural language operator command using the LLM.
+Internal endpoint called by the ENGAGE and TRACK button handlers. Sends a structured command string to the LLM, which selects the appropriate drone/swarm and routes the result through the HITL approval flow.
 
 **Request Body:**
 ```json
-{ "command": "Send Alpha Swarm to destroy all enemy tanks in the northern sector" }
+{ "command": "engage and attack target with id <target-uuid>" }
 ```
 
 **Response:**
 ```json
 {
-  "command": "Send Alpha Swarm to destroy all enemy tanks in the northern sector",
-  "interpretation": "Operator wants Alpha Swarm to attack all active tank targets",
-  "explanation": "Assigned Alpha Swarm (attack) against 2 active tank targets with priority 9",
+  "command": "engage and attack target with id <target-uuid>",
+  "interpretation": "Single-target engage — routing through HITL approval",
   "action": {
-    "type": "assign_swarm",
-    "swarm_id": "<alpha-swarm-uuid>",
-    "command_type": "attack",
-    "target_ids": ["<tank-1-uuid>", "<tank-2-uuid>"],
-    "objective": "Destroy enemy tanks in northern sector",
-    "priority": 9
+    "type": "request_approval",
+    "approval_prompt": "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away).",
+    "proposed_action": { "type": "assign_swarm", "swarm_id": "...", "command_type": "attack", ... }
   },
-  "execution_result": {
-    "success": true,
-    "drones_tasked": 5
-  }
+  "execution_result": { "approval_id": "...", "status": "pending" }
 }
 ```
-
----
-
-#### `GET /api/nlp/history`
-Retrieve NLP command history.
-
-**Query Parameter:** `limit` (default: 50)  
-**Response:** `NLPLogEntry[]`
 
 ---
 
@@ -531,16 +513,13 @@ Real-time battlefield state broadcast. Pushes the full state JSON every 1 second
 ## 6. LLM Integration
 
 ### 6.1 Role
-The LLM acts as a **unified tactical and UI intent translator**. It receives:
-- The operator's natural language command
+The LLM acts as a **tactical decision engine** invoked by button actions (ENGAGE, TRACK). It receives:
+- A structured command string generated by the button handler (e.g., `"engage and attack target with id <id>"`)
 - A snapshot of the current battlefield state (swarms, drones by model, targets with threat classification)
-- Current camera/view context (current map center, zoom level)
 
-And returns a structured JSON action that covers four categories:
+And returns a structured JSON action that covers two categories:
 1. **Tactical commands** — which drone model to use, how large a swarm, and what mission to execute
-2. **UI commands** — camera navigation, map focus, and filter/display changes on the 3D map
-3. **Attack approval requests (HITL)** — classifies targets by threat value and holds the proposed attack for operator confirmation before any execution
-4. **Natural language status responses** — answers status queries in plain English (e.g., drone battery, swarm status, enemy counts) without issuing any command
+2. **Attack approval requests (HITL)** — classifies targets by threat value and holds the proposed attack for operator confirmation before any execution
 
 ### 6.2 Drone Selection Rules (LLM Guidance)
 The LLM system prompt instructs the model to apply these rules before assigning assets:
@@ -564,8 +543,6 @@ The LLM system prompt instructs the model to apply these rules before assigning 
 | `request_approval` | **HITL** | Attack involves classified targets — LLM returns proposed action + threat summary; platform stores as pending approval and waits for operator confirmation before executing |
 | `no_swarm_in_range` | **HITL** | Returned only for single-target ENGAGE (Feature 22) when no combat swarm can physically reach the target; carries an `explanation` string the UI shows inline; no approval is created |
 | `no_recon_in_range` | **HITL** | Returned only for single-target TRACK (Feature 24) when no reconnaissance drone can physically reach the target; carries an `explanation` string the UI shows inline; no approval is created |
-| `request_status` | **Info / NL** | No API action; LLM provides a **natural language** status answer (e.g., "MQ9-01 is patrolling at 6,000m altitude, battery 87%, covering the Taipei area") — displayed directly in the command log without executing any command |
-| `ui_command` | UI | Pan, zoom, or recenter the 3D map camera; toggle UI layers |
 | `none` | — | Command could not be interpreted |
 
 > **Rule:** The LLM MUST return `request_approval` (not `assign_swarm`) whenever the command involves attacking active enemy targets. Non-attack commands (locate, patrol, return) execute immediately without approval. The `track` command routes through HITL approval (Feature 24) — see Rule below.
@@ -574,24 +551,12 @@ The LLM system prompt instructs the model to apply these rules before assigning 
 
 > **Rule (Feature 24):** When the track command originates from a single-target TRACK button click (i.e., the command text references a specific target ID), the LLM MUST: (1) select only a reconnaissance drone (MQ-9 or Scout) that can physically reach the target (haversine distance from drone position to target ≤ drone `max_range_km`); (2) return `action.type = "request_approval"` with `assign_drone` as the proposed action and the selected drone name in `approval_prompt`; (3) if no recon drone is in range, return `action.type = "no_recon_in_range"` with an `explanation` — do NOT fall back to an out-of-range drone. Only the single selected target is included. Once approved, the tasked recon drone is considered committed and must be excluded from future track assignments until it returns to idle.
 
-> **Rule (Feature 14):** For any query about current state (battery, status, location, counts, comparisons), the LLM MUST return `request_status` with a `status_text` field containing the full natural language answer. The platform echoes this text to the command log without executing any swarm or drone command.
-
-#### UI Command Sub-types (`ui_command`)
-| Sub-type | Example trigger | Description |
-|---|---|---|
-| `fly_to` | "show Taiwan on map" | Fly camera to a named place or coordinates |
-| `fly_to_target` | "focus on target X" | Fly camera to a specific target entity |
-| `fly_to_drone` | "show drone R-01" | Fly camera to a specific friendly drone |
-| `zoom_in` / `zoom_out` | "zoom in" | Adjust camera altitude |
-| `set_view_mode` | "bird's eye view" | Switch between tactical / ground / globe views |
-| `toggle_layer` | "hide friendly drones" | Show/hide entity layers (friendly, enemy, swarms) |
-
 ### 6.5 LLM Response Schema
 ```json
 {
   "interpretation": "plain English explanation of what was understood",
   "action": {
-    "type": "assign_swarm | assign_drone | mark_target_destroyed | request_approval | request_status | ui_command | none",
+    "type": "assign_swarm | assign_drone | mark_target_destroyed | request_approval | none",
 
     // --- Tactical fields (assign_swarm / assign_drone) ---
     "swarm_id": "<uuid>",
@@ -604,9 +569,6 @@ The LLM system prompt instructs the model to apply these rules before assigning 
     "priority": 1,
     "notes": "reason for drone model and swarm size selection",
 
-    // --- Natural language status response (request_status — Feature 14) ---
-    "status_text": "MQ9-01 is currently patrolling over Taipei at 6,000m altitude. Battery at 87%. Detected 3 enemy targets within 20km radius.",
-
     // --- HITL approval fields (request_approval) ---
     // (also includes all Tactical fields above for the proposed attack)
     "classified_targets": [
@@ -618,31 +580,14 @@ The LLM system prompt instructs the model to apply these rules before assigning 
       }
     ],
     "threat_summary": { "high": 2, "medium": 1, "low": 3 },
-    "approval_prompt": "Request to attack 2 high-value ships and 1 medium-value tank. Approve?",
-
-    // --- UI command fields (ui_command) ---
-    "ui_subtype": "fly_to | fly_to_target | fly_to_drone | zoom_in | zoom_out | set_view_mode | toggle_layer",
-    "destination": {
-      "name": "Taiwan",
-      "lat": 23.8,
-      "lon": 121.0,
-      "altitude_km": 300
-    },
-    "target_id": "<uuid>",
-    "drone_id": "<uuid>",
-    "layer": "friendly | enemy | swarms | all",
-    "visible": true,
-    "view_mode": "tactical | ground | globe"
+    "approval_prompt": "Request to attack 2 high-value ships and 1 medium-value tank. Approve?"
   },
   "explanation": "what action was taken or why no action was possible"
 }
 ```
 
-### 6.6 UI Command Handling (Frontend)
-When the NLP API returns `action.type == "ui_command"`, the frontend interprets the action client-side and calls the CesiumJS `camera.flyTo()` / `camera.zoomIn()` / entity visibility APIs directly. **No additional backend endpoint is needed** — the LLM response itself carries all information the frontend needs. The NLP API response includes the full action JSON which the frontend routes to either the swarm command executor or the map controller based on `action.type`.
-
-### 6.7 Fallback (No API Key)
-When `OPENAI_API_KEY` is not set, a mock rule-based parser handles commands using keyword matching (`attack`, `track`, `locate`, `return`, etc.) and defaults to FPV swarms for light targets, Altius-600M swarms for heavy targets. UI commands like "show Taiwan" resolve to hardcoded coordinate lookups for common place names. **Attack commands in mock mode go through the same `request_approval` flow** — the mock classifies targets using the static type→value table and generates a pending approval. **Status queries in mock mode** (keywords: `status`, `what is`, `how many`, `battery`, `where is`, etc.) return `request_status` with a synthesised `status_text` answer built directly from the in-memory state.
+### 6.6 Fallback (No API Key)
+When `OPENAI_API_KEY` is not set, a mock rule-based parser handles commands using keyword matching (`attack`, `track`, `locate`, `return`, etc.) and defaults to FPV swarms for light targets, Altius-600M swarms for heavy targets. **Attack commands in mock mode go through the same `request_approval` flow** — the mock classifies targets using the static type→value table and generates a pending approval.
 
 ---
 
@@ -706,38 +651,6 @@ Pending approvals expire after **5 minutes** if not acted on. Expired requests a
 
 ---
 
-### 6.9 Natural Language Status Responses (Feature 14)
-
-The LLM (and mock fallback) can answer operator **status queries** in plain conversational English. When the LLM determines the operator is asking for information rather than issuing a command, it returns `action.type = "request_status"` with a `status_text` field containing the full natural language answer.
-
-#### Trigger Phrases (examples)
-| Query type | Example operator inputs |
-|---|---|
-| Drone status | "What is the status of MQ9-01?", "Where is MQ9-02 right now?", "How is SCOUT-01 doing?" |
-| Battery / range | "What is the battery level of ALT-Alpha?", "How much range does FPV-Bravo have left?" |
-| Fleet counts | "How many drones are currently engaging?", "How many scouts are patrolling?" |
-| Enemy intel | "How many enemy ships have we detected?", "What targets are currently active?" |
-| Tactical summary | "Give me a status report", "What's the current battlefield situation?" |
-
-#### `status_text` Content Rules
-- Answer must be **specific and grounded** in the current battlefield state provided in context.
-- If a drone/swarm is mentioned by name, look up its actual status, position, battery, and task from context.
-- Summarise counts (e.g., "23 active enemy targets: 5 ships, 4 tanks, 3 missile launchers, 11 drones") rather than listing IDs.
-- Use natural military communication style ("MQ9-01 is airborne over Taipei at 6,000m, battery 87%, no contacts within 20km").
-- Keep responses concise (1–3 sentences for single-entity queries; 3–6 sentences for fleet summaries).
-
-#### Mock Fallback for Status Queries
-When no API key is set, the mock parser detects status keywords (`status`, `how many`, `what is`, `where is`, `battery`, `report`, `count`, `tell me`, `how are`) and synthesises a `status_text` answer by reading from the state context:
-- Named drone queries → look up the drone by name in context, report status/battery/position.
-- Fleet count queries → count drones by status or model from context.
-- Enemy queries → count targets by type and status from context.
-- General report → combine drone, swarm, and target summary counts.
-
-#### UI Handling
-The Command Panel renders `request_status` responses as a **🤖 AI** log entry containing `action.status_text`. No swarm or drone command is executed. The response is also stored in the NLP history log with `action_type = "request_status"`.
-
----
-
 ## 7. Swarm Command Design (GPS-Denial Resilience)
 
 The platform deliberately operates at the **swarm objective level**, not individual drone waypoints:
@@ -767,6 +680,8 @@ The platform loads all friendly and enemy assets **exclusively from `assets_conf
 > **All asset counts and properties (payload, range, speed, detection radius, swarm sizes, initial positions) are configurable — not hard-coded.** The platform reads all asset definitions from `assets_config.json` before seeding the State Service. If the file contains no assets, no drones or targets are deployed.
 
 > **Drone status is always `idle` in `assets_config.json`.** Runtime statuses (`tracking`, `engaging`, `searching`, `returning`, `patrolling`) exist only in the in-memory State Service and are **never written back to the config file**. A system restart always brings all drones up in `idle` state, regardless of what they were doing before the reset.
+
+> **Enemy target status is partially persisted to `assets_config.json`.** Mid-operation statuses (`engaged`, `tracked`) are never written to the config file — targets with these statuses are reloaded as `active` on startup. The statuses `active`, `destroyed`, and `lost` **are** persisted and survive a restart unchanged.
 
 ### 8.1 Friendly — MQ-9 Reconnaissance Drones
 
@@ -1017,9 +932,7 @@ After each movement tick, the simulator checks all airborne recon drones against
 │  ⚠ PENDING APPROVALS  [attack 5 high-value ships] [✓][✗]│  ← Approval bar
 ├─────────────────────────────────────────────────────────┤
 │              OPERATOR COMMAND INTERFACE                  │  ← Footer
-│  [Quick Actions]  [Direct Swarm Controls]               │
-│  [Command log]                                          │
-│  [NLP text input _______________________] [▶ SEND]      │
+│  [Direct Swarm Controls]                                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -1056,16 +969,7 @@ After each movement tick, the simulator checks all airborne recon drones against
 
 ### 9.3 Command Panel
 
-- **Quick Actions:** Pre-set NLP command buttons (Scout, Attack All, Track, RTB, Status)
-- **Direct Swarm Control:** Per-swarm buttons for `🔍 locate`, `👁 track`, `⚡ attack`, `↩ return`
-- **NLP Command Log:** Scrolling log of operator commands and LLM responses
-- **NLP Input:** Free-text input field; submits on Enter or button click
-  - Accepts both **tactical commands** ("attack all ships with altius swarm"), **UI/map commands** ("show Taiwan on map"), and **status queries** ("what is the status of MQ9-01?")
-  - LLM response routing:
-    - `ui_command` → CesiumJS camera/layer controller
-    - `request_approval` → approval bar (HITL) + ⚠ log entry
-    - `request_status` → 🤖 conversational answer in log, no command executed (Feature 14)
-    - all others → swarm/drone command executor
+- **Direct Swarm Control:** Per-swarm buttons for `🔍 locate`, `👁 track`, `⚡ attack`, `↩ return`; clicking attack routes through the HITL approval flow
 
 ### 9.3.1 Approval Bar (HITL — Feature 13)
 
@@ -1172,7 +1076,7 @@ lattice/
             ├── Map3D/
             │   └── index.jsx    ← CesiumJS viewer, entity management
             ├── CommandPanel/
-            │   └── index.jsx    ← NLP input, quick actions, command log
+            │   └── index.jsx    ← Direct swarm controls
             ├── ApprovalBar/
             │   └── index.jsx    ← HITL approval bar (Feature 13)
             ├── SwarmStatus/
@@ -1204,6 +1108,8 @@ The file is the **single source of truth** for the scenario layout. It is writte
 - `POST /api/assets/save-config` is called explicitly
 
 **Drone status is always persisted as `idle`** in this file — runtime statuses (`tracking`, `engaging`, `searching`, `returning`, `patrolling`) are held exclusively in the in-memory State Service and are never written to `assets_config.json`. A restart resets all drones to `idle`.
+
+**Enemy target status is partially written to this file** — mid-operation statuses (`engaged`, `tracked`) are never persisted; targets with these statuses are reloaded as `active` on restart. The statuses `active`, `destroyed`, and `lost` are persisted and survive a restart unchanged.
 
 Modifying this file and restarting the backend changes the war game scenario without any code changes.
 
@@ -1259,13 +1165,11 @@ npm run dev                   # starts at http://localhost:5173
 | War game simulator framing | Platform is designed for simulation/training scenarios; all assets and terrain are virtual representations |
 | **No hardcoded default deployments** | System starts with only what is in `assets_config.json`; an absent or empty config = empty battlefield; the default `assets_config.json` ships with the project war game scenario so it works out of the box without baking state into code |
 | **Drone status always `idle` in config; runtime state is ephemeral** | `assets_config.json` always stores drone status as `idle` — the backend never writes back runtime statuses (tracking, engaging, searching, returning) to the file; those statuses live only in the in-memory State Service and are lost on restart; this keeps the config file clean and ensures every restart begins from a predictable idle baseline |
+| **Enemy target mid-operation status not persisted; active/terminal status is** | Mid-operation statuses (`engaged`, `tracked`) are never written to `assets_config.json` — those targets reload as `active` on restart; `active`, `destroyed`, and `lost` statuses are persisted and survive a restart unchanged |
 | **Drag-and-drop asset deployment (Feature 17)** | Operators visually position friendly and enemy assets on the 3D map; the backend persists every drop to `assets_config.json` immediately so the layout survives restarts; the Asset Palette enables adding new asset instances without editing JSON |
 | Swarm-level (not drone-level) commands | Enables GPS-denial resilience; drones self-coordinate using on-board AI |
 | **LLM selects drone model + swarm size** | Removes manual resource allocation burden; LLM reasons over payload, range, and target type to pick optimal assets |
-| **Unified NLP for tactical + UI commands** | Single natural language interface for both combat ops and map navigation; operator never needs separate controls |
-| `ui_command` handled client-side only | No backend state change needed for camera moves; keeps backend API clean and stateless for map operations |
 | **Human-in-the-Loop (HITL) for attack commands** | No autonomous strikes — LLM classifies target threat value and holds proposed attack as a pending approval; operator must explicitly approve before any swarm executes an attack mission; prevents accidental or unintended kinetic action |
-| **LLM natural language status responses (Feature 14)** | Status queries ("what is the battery of MQ9-01?") return a conversational `status_text` answer built from live state context — operator gets a human-readable briefing, not raw JSON; `request_status` action type routes responses to the command log without executing any command |
 | **Blue/green for friendly, red for enemy** | Universal military UI convention; operators instantly distinguish IFF (Identification Friend or Foe) at a glance; recon drones = blue shades, combat drones = green shades, all enemy = red shades |
 | Two drone models (FPV + Altius-600M) | Covers full threat spectrum: FPV for close swarm/infantry, Altius-600M for armoured/naval/long-range targets |
 | **Three recon tiers (MQ-9, Scout, none)** | MQ-9 for high-altitude wide-area ISR with 15 km detection radius and 30+ hours endurance; Scout drones for tactical area coverage with 10 km detection radius (counts configured in `assets_config.json`); all submit feeds to same `/api/recon/feed` endpoint |

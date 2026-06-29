@@ -22,9 +22,6 @@ export const useStore = create((set, get) => ({
   wsConnected: false,
   wsStatus: 'disconnected',
 
-  // NLP
-  nlpProcessing: false,
-  lastNlpResponse: null,
   cameraCommand: null,
 
   // Asset Palette placement mode: null | { kind: 'drone'|'target', model?, type?, label, alt? }
@@ -50,8 +47,6 @@ export const useStore = create((set, get) => ({
   selectSwarm: (id) => set({ selectedSwarmId: id }),
   selectDrone: (id) => set({ selectedDroneId: id }),
 
-  setNlpProcessing: (processing) => set({ nlpProcessing: processing }),
-  setLastNlpResponse: (response) => set({ lastNlpResponse: response }),
   setCameraCommand: (cmd) => set({ cameraCommand: cmd }),
   setPlacementMode: (mode) => set({ placementMode: mode }),
 

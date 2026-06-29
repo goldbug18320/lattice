@@ -247,68 +247,6 @@ class TestMockDroneModelSelection:
         assert result["action"]["swarm_id"] == "fpv-1"
 
 
-# ─── UI Commands ──────────────────────────────────────────────────────────────
-
-class TestMockUICommands:
-    def test_show_map_returns_ui_command(self):
-        svc = LLMService()
-        result = _run(svc.process_command("show Taiwan on map", _context()))
-        assert result["action"]["type"] == "ui_command"
-
-    def test_show_map_has_ui_subtype(self):
-        svc = LLMService()
-        result = _run(svc.process_command("show Taiwan on map", _context()))
-        assert result["action"]["ui_subtype"] == "fly_to"
-
-    def test_show_map_has_destination(self):
-        svc = LLMService()
-        result = _run(svc.process_command("show Taiwan on map", _context()))
-        dest = result["action"]["destination"]
-        assert "lat" in dest
-        assert "lon" in dest
-
-    def test_taiwan_destination_coords(self):
-        svc = LLMService()
-        result = _run(svc.process_command("show Taiwan on map", _context()))
-        dest = result["action"]["destination"]
-        assert abs(dest["lat"] - 23.8) < 1.0
-        assert abs(dest["lon"] - 121.0) < 1.0
-
-    def test_taipei_destination_resolved(self):
-        svc = LLMService()
-        result = _run(svc.process_command("zoom to Taipei", _context()))
-        assert result["action"]["type"] == "ui_command"
-        assert "taipei" in result["action"]["destination"]["name"].lower()
-
-    def test_zoom_in_keyword(self):
-        svc = LLMService()
-        result = _run(svc.process_command("zoom in", _context()))
-        assert result["action"]["type"] == "ui_command"
-        assert result["action"]["ui_subtype"] == "zoom_in"
-
-    def test_zoom_out_keyword(self):
-        svc = LLMService()
-        result = _run(svc.process_command("zoom out", _context()))
-        assert result["action"]["type"] == "ui_command"
-        assert result["action"]["ui_subtype"] == "zoom_out"
-
-    def test_focus_keyword(self):
-        svc = LLMService()
-        result = _run(svc.process_command("focus on Taiwan", _context()))
-        assert result["action"]["type"] == "ui_command"
-
-    def test_navigate_keyword(self):
-        svc = LLMService()
-        result = _run(svc.process_command("navigate to Fujian", _context()))
-        assert result["action"]["type"] == "ui_command"
-
-    def test_fujian_destination_resolved(self):
-        svc = LLMService()
-        result = _run(svc.process_command("fly to Fujian", _context()))
-        dest = result["action"]["destination"]
-        assert abs(dest["lat"] - 25.9) < 1.0
-
-
 # ─── Feature 24: TRACK HITL with Recon Drone ─────────────────────────────────
 
 def _recon_drone(did="d-mq9", name="MQ9-01", model="mq9_recon",

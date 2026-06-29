@@ -40,7 +40,6 @@ export const swarmApi = {
 // ─── NLP ─────────────────────────────────────────────────────────────────────
 export const nlpApi = {
   command: (text) => request('POST', '/nlp/command', { command: text }),
-  history: (limit = 50) => request('GET', `/nlp/history?limit=${limit}`),
 }
 
 // ─── Asset Management (Feature 17) ───────────────────────────────────────────

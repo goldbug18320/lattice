@@ -228,9 +228,3 @@ async def deny_attack(approval_id: str):
     return {"denied": True, "approval_id": approval_id}
 
 
-@router.get("/history", summary="Get NLP command history")
-async def get_nlp_history(limit: int = 50):
-    log = state_service.get_command_log(200)
-    nlp_types = {"nlp_command", "hitl_approved", "hitl_denied"}
-    nlp_entries = [entry for entry in log if entry.get("type") in nlp_types]
-    return nlp_entries[-limit:]

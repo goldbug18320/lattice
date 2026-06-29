@@ -115,60 +115,6 @@ class TestNLPCommand:
         assert resp.json()["execution_result"] is None
 
 
-# ─── NLP command is logged ────────────────────────────────────────────────────
-
-class TestNLPCommandLogging:
-    def test_command_appears_in_history(self, client):
-        client.post("/api/nlp/command", json={"command": "attack all targets"})
-        history = client.get("/api/nlp/history").json()
-        assert len(history) == 1
-        assert history[0]["type"] == "nlp_command"
-        assert history[0]["raw_command"] == "attack all targets"
-
-    def test_multiple_commands_all_logged(self, client):
-        for cmd in ["attack", "search the area", "return to base"]:
-            client.post("/api/nlp/command", json={"command": cmd})
-        history = client.get("/api/nlp/history").json()
-        assert len(history) == 3
-
-    def test_log_entry_has_interpretation(self, client):
-        client.post("/api/nlp/command", json={"command": "locate enemies"})
-        entry = client.get("/api/nlp/history").json()[0]
-        assert "interpretation" in entry
-        assert entry["interpretation"] is not None
-
-    def test_log_entry_has_timestamp(self, client):
-        client.post("/api/nlp/command", json={"command": "search area"})
-        entry = client.get("/api/nlp/history").json()[0]
-        assert "timestamp" in entry
-
-
-# ─── GET /api/nlp/history ─────────────────────────────────────────────────────
-
-class TestNLPHistory:
-    def test_empty_initially(self, client):
-        assert client.get("/api/nlp/history").json() == []
-
-    def test_history_contains_only_nlp_entries(self, client, alpha_swarm_id):
-        # Issue a direct swarm command (not NLP)
-        client.post(f"/api/swarm/swarms/{alpha_swarm_id}/command", json={
-            "command_type": "locate",
-        })
-        # Issue an NLP command
-        client.post("/api/nlp/command", json={"command": "track targets"})
-
-        history = client.get("/api/nlp/history").json()
-        allowed_types = {"nlp_command", "hitl_approved", "hitl_denied"}
-        assert all(e["type"] in allowed_types for e in history)
-        assert len(history) == 1
-
-    def test_limit_parameter(self, client):
-        for i in range(10):
-            client.post("/api/nlp/command", json={"command": f"attack target {i}"})
-        history = client.get("/api/nlp/history?limit=3").json()
-        assert len(history) == 3
-
-
 # ─── HITL Attack Approval (Feature 13) ───────────────────────────────────────
 
 class TestHITLApproval:
@@ -384,18 +330,3 @@ class TestHITLApproval:
         resp = client.post("/api/nlp/deny/does-not-exist")
         assert resp.status_code == 404
 
-    def test_deny_is_logged(self, client):
-        client.post("/api/nlp/command", json={"command": "attack all targets"})
-        approval_id = client.get("/api/nlp/pending").json()[0]["id"]
-        client.post(f"/api/nlp/deny/{approval_id}")
-        log = client.get("/api/nlp/history").json()
-        deny_entries = [e for e in log if e.get("type") == "hitl_denied"]
-        assert len(deny_entries) == 1
-
-    def test_approve_is_logged(self, client):
-        client.post("/api/nlp/command", json={"command": "attack all targets"})
-        approval_id = client.get("/api/nlp/pending").json()[0]["id"]
-        client.post(f"/api/nlp/approve/{approval_id}")
-        log = client.get("/api/nlp/history").json()
-        approve_entries = [e for e in log if e.get("type") == "hitl_approved"]
-        assert len(approve_entries) == 1

@@ -345,7 +345,7 @@ export default function Map3D() {
     }
   }, [])
 
-  // ── Camera command handler (NLP ui_command) ─────────────────────────────────
+  // ── Camera command handler (panel click-to-fly: Features 19, 20) ────────────
   useEffect(() => {
     if (!cameraCommand) return
     const viewer = viewerRef.current
@@ -353,108 +353,21 @@ export default function Map3D() {
 
     const execute = async () => {
       const Cesium = (await import('cesium')).default || (await import('cesium'))
-      const { ui_subtype, destination, drone_id, target_id } = cameraCommand
-
-      const flyTo = (lon, lat, altM, durationSec = 2) => {
-        viewer.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(lon, lat, altM),
-          orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
-          duration: durationSec,
-        })
-      }
-
-      if (ui_subtype === 'fly_to' && destination) {
-        if (destination.altitude_km != null) {
-          // NLP command with explicit altitude — fly camera to that position
-          flyTo(destination.lon ?? TAIWAN_HOME.lon, destination.lat ?? TAIWAN_HOME.lat, destination.altitude_km * 1000)
-        } else {
-          // Panel click — center asset in the view without changing zoom or orientation
-          const lon = destination.lon ?? TAIWAN_HOME.lon
-          const lat = destination.lat ?? TAIWAN_HOME.lat
-          viewer.camera.flyToBoundingSphere(
-            new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(lon, lat, 0), 1000),
-            {
-              offset: new Cesium.HeadingPitchRange(
-                viewer.camera.heading,
-                viewer.camera.pitch,
-                viewer.camera.positionCartographic.height,
-              ),
-              duration: 2,
-            }
-          )
-        }
-
-      } else if (ui_subtype === 'fly_to_drone') {
-        // Prefer explicit destination coords (mock always provides them)
-        if (destination?.lat && destination?.lon) {
-          const droneAltM = (destination.altitude_km ?? 0) * 1000
-          // Orbit 30 km above the drone at 45° pitch — clear tactical view
-          flyTo(destination.lon, destination.lat, droneAltM + 30_000)
-        } else if (drone_id) {
-          // Fall back to entity position
-          const entity = entityMapRef.current.drones[drone_id]
-          if (entity?.position) {
-            const cart = Cesium.Cartographic.fromCartesian(
-              entity.position.getValue(Cesium.JulianDate.now())
-            )
-            flyTo(
-              Cesium.Math.toDegrees(cart.longitude),
-              Cesium.Math.toDegrees(cart.latitude),
-              cart.height + 30_000
-            )
+      const { destination } = cameraCommand
+      if (destination) {
+        const lon = destination.lon ?? TAIWAN_HOME.lon
+        const lat = destination.lat ?? TAIWAN_HOME.lat
+        viewer.camera.flyToBoundingSphere(
+          new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(lon, lat, 0), 1000),
+          {
+            offset: new Cesium.HeadingPitchRange(
+              viewer.camera.heading,
+              viewer.camera.pitch,
+              viewer.camera.positionCartographic.height,
+            ),
+            duration: 2,
           }
-        }
-
-      } else if (ui_subtype === 'fly_to_target') {
-        if (target_id) {
-          const entity = entityMapRef.current.targets[target_id]
-          if (entity?.position) {
-            const cart = Cesium.Cartographic.fromCartesian(
-              entity.position.getValue(Cesium.JulianDate.now())
-            )
-            flyTo(
-              Cesium.Math.toDegrees(cart.longitude),
-              Cesium.Math.toDegrees(cart.latitude),
-              cart.height + 20_000
-            )
-          }
-        }
-
-      } else if (ui_subtype === 'zoom_in') {
-        const pos = viewer.camera.positionCartographic
-        flyTo(
-          Cesium.Math.toDegrees(pos.longitude),
-          Cesium.Math.toDegrees(pos.latitude),
-          Math.max(pos.height * 0.4, 5_000)
         )
-
-      } else if (ui_subtype === 'zoom_out') {
-        const pos = viewer.camera.positionCartographic
-        flyTo(
-          Cesium.Math.toDegrees(pos.longitude),
-          Cesium.Math.toDegrees(pos.latitude),
-          Math.min(pos.height * 2.5, 2_000_000)
-        )
-
-      } else if (ui_subtype === 'set_view_mode') {
-        const mode = cameraCommand.view_mode
-        if (mode === 'globe') flyTo(TAIWAN_HOME.lon, TAIWAN_HOME.lat, 1_500_000)
-        else if (mode === 'tactical') flyTo(TAIWAN_HOME.lon, TAIWAN_HOME.lat, TAIWAN_HOME.altM)
-
-      } else if (ui_subtype === 'toggle_layer') {
-        const { layer, visible } = cameraCommand
-        const show = visible !== false
-        const em = entityMapRef.current
-        if (layer === 'friendly' || layer === 'all') Object.values(em.drones).forEach(e => { e.show = show })
-        if (layer === 'enemy' || layer === 'all') Object.values(em.targets).forEach(e => { e.show = show })
-        if (layer === 'swarms') {
-          const swarmDroneIds = new Set(
-            useStore.getState().swarms.flatMap(s => s.drone_ids || [])
-          )
-          Object.entries(em.drones).forEach(([id, e]) => {
-            if (swarmDroneIds.has(id)) e.show = show
-          })
-        }
       }
     }
 

@@ -468,3 +468,37 @@ class TestThreadSafety:
 
         assert errors == []
         assert len(svc.get_all_targets()) == 50
+
+
+# ─── Target status serialization ─────────────────────────────────────────────
+
+class TestTargetStatusSerialization:
+    def test_active_status_persisted(self):
+        svc = _empty_svc()
+        svc.upsert_target(_target(status=TargetStatus.ACTIVE))
+        data = svc._build_initial_state()
+        assert data["targets"][0]["status"] == "active"
+
+    def test_destroyed_status_persisted(self):
+        svc = _empty_svc()
+        svc.upsert_target(_target(status=TargetStatus.DESTROYED))
+        data = svc._build_initial_state()
+        assert data["targets"][0]["status"] == "destroyed"
+
+    def test_lost_status_persisted(self):
+        svc = _empty_svc()
+        svc.upsert_target(_target(status=TargetStatus.LOST))
+        data = svc._build_initial_state()
+        assert data["targets"][0]["status"] == "lost"
+
+    def test_engaged_status_serialized_as_active(self):
+        svc = _empty_svc()
+        svc.upsert_target(_target(status=TargetStatus.ENGAGED))
+        data = svc._build_initial_state()
+        assert data["targets"][0]["status"] == "active"
+
+    def test_tracked_status_serialized_as_active(self):
+        svc = _empty_svc()
+        svc.upsert_target(_target(status=TargetStatus.TRACKED))
+        data = svc._build_initial_state()
+        assert data["targets"][0]["status"] == "active"
