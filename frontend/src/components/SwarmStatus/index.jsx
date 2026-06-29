@@ -30,31 +30,6 @@ function remainingRange(drone) {
   return Math.max(0, max - used).toFixed(1)
 }
 
-function DetectedContacts({ droneNameOrId, targets }) {
-  const contacts = targets.filter(
-    t => t.reported_by === droneNameOrId && t.status !== 'destroyed' && t.status !== 'lost'
-  )
-  if (contacts.length === 0) {
-    return <div className="detected-empty">No contacts detected</div>
-  }
-  return (
-    <div className="detected-contacts">
-      {contacts.map(t => (
-        <div key={t.id} className="detected-item">
-          <span className="detected-icon">{TARGET_ICONS[t.type] || '?'}</span>
-          <span className="detected-type">{t.type.replace('_', ' ')}</span>
-          <span className="detected-conf">{Math.round((t.confidence ?? 0) * 100)}%</span>
-          <span className="detected-pos">
-            {t.position ? `${t.position.lat.toFixed(2)}°N ${t.position.lon.toFixed(2)}°E` : '—'}
-          </span>
-          <span className="detected-time" style={{ color: 'var(--text-dim)', fontSize: '0.65rem' }}>
-            {t.last_seen ? new Date(t.last_seen).toLocaleTimeString() : '—'}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 export default function SwarmStatus() {
   const swarms = useStore(s => s.swarms)
@@ -222,14 +197,6 @@ export default function SwarmStatus() {
                     </div>
                   )
                 })()}
-                {isReconSelected && (
-                  <div className="recon-detail">
-                    <div className="recon-detail-header">
-                      DETECTED CONTACTS ({targets.filter(t => t.reported_by === d.name || t.reported_by === d.id).length})
-                    </div>
-                    <DetectedContacts droneNameOrId={d.name} targets={targets} />
-                  </div>
-                )}
               </div>
             )
           })}

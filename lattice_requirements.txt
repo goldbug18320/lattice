@@ -40,7 +40,8 @@ Once the user approve the request, the trace button on the target remains enable
 if a target is being tracked by one drone, clicking on the track button again, another drone will be assign to track the target, and the the first drone stop tracking the target.
 the first drone's status should be changed from tracking to returning.
 the tracking drone on the "Swarm and drone status" panel should show target type and short id.
-29) Enemy target Panel: display target type and short ID under each enemy target in the panel.
+29) Enemy target panel: display target type and short ID under each enemy target in the panel.
+30) Swarm & drone status panel: for reconnaissance drones, do not display DETECTED CONTACTS.
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
