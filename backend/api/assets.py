@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from models.target import Target, TargetType, ThreatValue, TargetStatus, Position
-from models.drone import Drone, DroneType, DroneModel, DroneStatus
+from models.drone import Drone, DroneType, DroneModel, DroneStatus, Swarm, SwarmStatus
 from services.state_service import state_service
 from services.config_service import assets_config
 
@@ -86,9 +86,21 @@ async def create_drone(req: CreateDroneRequest):
         max_payload_kg=_MODEL_PAYLOADS.get(model),
         max_flight_time_hours=assets_config["mq9"]["max_flight_time_hours"] if model == DroneModel.MQ9_RECON else None,
     )
+    swarm = None
+    if dtype == DroneType.COMBAT:
+        swarm_prefix = "FPV-SWM" if model == DroneModel.FPV_COMBAT else "ALT-SWM"
+        swarm = Swarm(
+            name=_next_name(swarm_prefix),
+            drone_ids=[drone.id],
+            drone_model=model,
+            total_drone_count=1,
+            status=SwarmStatus.IDLE,
+        )
+        drone.swarm_id = swarm.id
+        state_service.create_swarm(swarm)
     state_service.register_drone(drone)
     state_service.save_config_to_file()
-    return drone
+    return {"drone": drone, "swarm": swarm}
 
 
 @router.delete("/drone/{drone_id}", summary="Remove a drone from state and config")

@@ -295,9 +295,20 @@ export default function Map3D() {
             const targetType = pm.kind === 'target' ? pm.type : null
             const needsLand  = LAND_TYPES.has(targetType)
             const needsSea   = targetType === 'ship'
-            const spawn = () => {
-              if (pm.kind === 'drone') assetsApi.createDrone(pm.model, position).catch(console.error)
-              else                      assetsApi.createTarget(pm.type, position).catch(console.error)
+            const spawn = async () => {
+              const { addDrone, addTarget, addSwarm } = useStore.getState()
+              try {
+                if (pm.kind === 'drone') {
+                  const result = await assetsApi.createDrone(pm.model, position)
+                  addDrone(result.drone)
+                  if (result.swarm) addSwarm(result.swarm)
+                } else {
+                  const target = await assetsApi.createTarget(pm.type, position)
+                  addTarget(target)
+                }
+              } catch (err) {
+                console.error(err)
+              }
             }
 
             if (needsLand || needsSea) {

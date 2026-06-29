@@ -30,8 +30,9 @@ is moving off the available drone swarm list. (i.e. one drone swarm cannot be us
 The platform will dispay a message showing which drone swarm is engaging this target. 
 
 Assets Deployment:
-17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations 
-to a configuration file.
+17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets
+to the configuration file. if a combat drone swarm is deployed, it should be displayed in "swarm & drone status" panel. If an enemy asset is deployed, 
+it should be displayed in enemy target panel.
 
 Map:
 18) use appropriate icons on the map for the combat objects. For example, use drone icon for drones. use ship icon for ships. use tank icon for tanks.

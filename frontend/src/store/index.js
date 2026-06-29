@@ -43,6 +43,10 @@ export const useStore = create((set, get) => ({
     commandLog: [entry, ...s.commandLog].slice(0, 100),
   })),
 
+  addDrone: (drone) => set((s) => ({ drones: [...s.drones, drone] })),
+  addTarget: (target) => set((s) => ({ targets: [...s.targets, target] })),
+  addSwarm: (swarm) => set((s) => ({ swarms: [...s.swarms, swarm] })),
+
   selectTarget: (id) => set({ selectedTargetId: id }),
   selectSwarm: (id) => set({ selectedSwarmId: id }),
   selectDrone: (id) => set({ selectedDroneId: id }),
