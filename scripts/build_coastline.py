@@ -3,9 +3,10 @@
 Build frontend/public/data/theater_land.json for the Lattice terrain constraint check.
 
 Downloads Natural Earth 1:10m land polygons from GitHub, clips them to the
-Taiwan / China strait theater bounding box, rounds coordinates to 4 decimal
-places (~11 m precision at Taiwan latitude), and writes the result as a compact
-JSON file consumed by Map3D's isLand() function.
+full Western-Pacific theater bounding box (covering Taiwan, China, North Korea,
+South Korea, Japan, and Philippines), rounds coordinates to 4 decimal places
+(~11 m precision at Taiwan latitude), and writes the result as a compact JSON
+file consumed by Map3D's isLand() and the backend terrain_service.
 
 Usage:
     python scripts/build_coastline.py
@@ -24,8 +25,9 @@ SRC_URL = (
     "/master/geojson/ne_10m_land.geojson"
 )
 
-# Taiwan / China strait theater bounding box  [minLon, minLat, maxLon, maxLat]
-THEATER_BBOX = (115.0, 19.0, 126.0, 27.5)
+# Full Western-Pacific theater bounding box  [minLon, minLat, maxLon, maxLat]
+# Covers: China, Taiwan, North Korea, South Korea, Japan, Philippines
+THEATER_BBOX = (100.0, 4.0, 146.0, 46.0)
 
 # Coordinate decimal places to keep (4 dp ≈ 11 m at Taiwan latitude)
 PRECISION = 4

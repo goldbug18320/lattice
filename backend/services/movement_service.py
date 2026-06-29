@@ -7,71 +7,17 @@ from models.drone import DroneModel, DroneStatus, SwarmStatus
 from models.target import Position, TargetStatus, TargetType
 from services.config_service import assets_config
 
-# ── Terrain checking (Feature 21) ─────────────────────────────────────────────
-# Simplified polygon-based land/sea check for the Taiwan Strait region.
-# No external library required — uses ray casting on two hard-coded coastline
-# polygons (Taiwan island and the Fujian/Guangdong mainland coast).
-# Accuracy: ~10–20 km, sufficient for 1 Hz simulation ticks.
+# ── Terrain checking (Feature 21 + 27) ────────────────────────────────────────
+# Delegates to terrain_service which loads real GeoJSON coastline polygons
+# covering Taiwan, China, North Korea, South Korea, Japan, and Philippines.
+from services.terrain_service import is_land as _terrain_is_land
 
 _TERRAIN_ENABLED: bool = True  # always on; can be patched False in tests to disable
 
-# Simplified Taiwan main island polygon (lon, lat), clockwise from NE tip.
-_TAIWAN_ISLAND: list[tuple[float, float]] = [
-    (121.55, 25.30),  # Sanzhi / NE tip
-    (121.90, 24.95),  # Yilan coast
-    (121.95, 24.40),  # Hualien N
-    (121.65, 23.60),  # Hualien S
-    (121.35, 22.90),  # Taitung N
-    (121.05, 22.00),  # Taitung S
-    (120.75, 21.90),  # Hengchun Peninsula S
-    (120.25, 22.10),  # Kaohsiung S coast
-    (120.00, 22.50),  # Tainan
-    (120.00, 23.10),  # Chiayi / Yunlin
-    (120.10, 23.60),  # Changhua
-    (120.25, 24.00),  # Taichung
-    (120.45, 24.45),  # Miaoli
-    (120.80, 25.00),  # Hsinchu / Taoyuan coast
-    (121.15, 25.30),  # New Taipei (Danshui)
-]
-
-# Simplified Fujian / Guangdong mainland coast polygon (lon, lat).
-# Represents China's eastern shore bordering the Taiwan Strait.
-_CHINA_COAST: list[tuple[float, float]] = [
-    (114.0, 28.0),   # far NW inland corner
-    (120.5, 28.0),   # NE sea boundary (north of strait)
-    (120.3, 26.0),   # Fujian north coast
-    (119.8, 25.5),   # near Fuzhou
-    (119.5, 25.0),
-    (119.4, 24.7),   # Putian
-    (119.2, 24.4),   # Quanzhou
-    (118.8, 24.0),   # Xiamen
-    (117.8, 23.6),   # Zhangzhou
-    (116.5, 23.1),   # Guangdong E
-    (115.0, 22.5),
-    (114.0, 22.0),   # SE Guangdong
-]
-
-
-def _point_in_polygon(lon: float, lat: float, polygon: list[tuple[float, float]]) -> bool:
-    """Ray casting point-in-polygon test (O(n) per call, n = polygon vertex count)."""
-    n = len(polygon)
-    inside = False
-    j = n - 1
-    for i in range(n):
-        xi, yi = polygon[i]
-        xj, yj = polygon[j]
-        if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
-            inside = not inside
-        j = i
-    return inside
-
 
 def _is_land(lat: float, lon: float) -> bool:
-    """Return True if (lat, lon) is over land in the Taiwan Strait simulation area."""
-    return (
-        _point_in_polygon(lon, lat, _TAIWAN_ISLAND)
-        or _point_in_polygon(lon, lat, _CHINA_COAST)
-    )
+    """Return True if (lat, lon) is over land (Feature 27)."""
+    return _terrain_is_land(lat, lon)
 
 
 _GROUND_ASSET_TYPES = frozenset({

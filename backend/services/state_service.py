@@ -8,29 +8,18 @@ from models.drone import Drone, Swarm, DroneStatus, DroneType, DroneModel, Swarm
 
 APPROVAL_TTL_MINUTES = 5
 
-# Feature 21 — terrain placement constraints
-# Rough geographic heuristic for the Taiwan theater (not GIS-precise).
+# Feature 21 + 27 — terrain placement constraints using real coastline polygons
+from services.terrain_service import is_land as _terrain_is_land
+
 _LAND_TARGET_TYPES = {'tank', 'missile_launcher', 'soldier_unit'}
 _SEA_TARGET_TYPES  = {'ship'}
 
-def _likely_sea(lat: float, lon: float) -> bool:
-    """Return True if lat/lon is probably open water in the Taiwan theater.
-    Bounds match the frontend likelySea() function: Fujian coast ends ~119.4E,
-    Taiwan west coast starts ~120.1E, so the open Strait is 119.4-120.1."""
-    if 119.4 <= lon <= 120.1 and 22.0 <= lat <= 26.5:   # Taiwan Strait
-        return True
-    if lon > 122.0:                                       # Pacific east of Taiwan
-        return True
-    if lat < 21.5 and lon > 116.0:                        # South China Sea / Bashi Channel
-        return True
-    return False
-
 def _check_terrain_constraint(ttype: str, lat: float, lon: float) -> None:
-    """Log a warning if a target's position violates the land/sea constraint."""
-    sea = _likely_sea(lat, lon)
-    if ttype in _LAND_TARGET_TYPES and sea:
+    """Log a warning if a target's position violates the land/sea constraint (Feature 27)."""
+    land = _terrain_is_land(lat, lon)
+    if ttype in _LAND_TARGET_TYPES and not land:
         print(f"[Feature 21] WARNING: {ttype} at ({lat:.3f},{lon:.3f}) appears to be in water")
-    elif ttype in _SEA_TARGET_TYPES and not sea:
+    elif ttype in _SEA_TARGET_TYPES and land:
         print(f"[Feature 21] WARNING: ship at ({lat:.3f},{lon:.3f}) appears to be on land")
 
 # City home-base coordinates (lat, lon)

@@ -79,7 +79,7 @@ async function _loadTheaterLand() {
   if (_theaterPolygons !== null) return
   _theaterPolygons = []
   try {
-    const resp = await fetch('/data/theater_land.json')
+    const resp = await fetch('/data/theater_land.json', { cache: 'no-cache' })
     if (!resp.ok) throw new Error(resp.statusText)
     const data = await resp.json()
     _theaterPolygons = data.polygons ?? []

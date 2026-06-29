@@ -10,9 +10,9 @@ from services.movement_service import (
     MovementService, _advance, _distance_km, _bearing, DT,
     MQ9_DETECTION_RADIUS_KM, SCOUT_DETECTION_RADIUS_KM, CONTACT_RADIUS_KM,
     TRACKING_STANDOFF_KM,
-    _terrain_blocks, _GROUND_ASSET_TYPES, _is_land, _point_in_polygon,
-    _TAIWAN_ISLAND, _CHINA_COAST,
+    _terrain_blocks, _GROUND_ASSET_TYPES, _is_land,
 )
+from services.terrain_service import _point_in_ring
 
 
 # ─── Unit helpers ─────────────────────────────────────────────────────────────
@@ -763,18 +763,18 @@ class TestTerrainConstraints:
         assert _is_land(24.0, 119.5) is False
 
     def test_fujian_coast_is_land(self):
-        # 25.0°N, 119.0°E is on the Fujian mainland coast
-        assert _is_land(25.0, 119.0) is True
+        # Fuzhou city (26.09°N, 119.30°E) is clearly on the Fujian mainland
+        assert _is_land(26.09, 119.30) is True
 
     def test_pacific_east_of_taiwan_is_sea(self):
         # 24°N, 123°E is the Pacific Ocean east of Taiwan
         assert _is_land(24.0, 123.0) is False
 
-    def test_point_in_polygon_basic(self):
-        # Simple square polygon (lon, lat)
-        square = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-        assert _point_in_polygon(0.5, 0.5, square) is True
-        assert _point_in_polygon(1.5, 0.5, square) is False
+    def test_point_in_ring_basic(self):
+        # Simple square ring [lon, lat] — verifies the ray-casting implementation
+        square = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]
+        assert _point_in_ring(0.5, 0.5, square) is True
+        assert _point_in_ring(1.5, 0.5, square) is False
 
     def test_terrain_blocks_ground_when_next_pos_is_water(self):
         pos = Position(lat=24.0, lon=119.5, alt=0.0)

@@ -6,37 +6,56 @@ Features and capabilities:
 2) ability to command a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
 3) Define a set of APIs to receive life feed from reconnaissance drones on enemy drones, ships, tanks, missile launchers locations.
 4) Define a set of APIs to control a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
-5) the platform use LLM to assign tasks to a single drone or a swarm of drones. In case of a swarm of drones, it is expected the drones are AI enabled which can coordinate with each other to locate and attach targets by themselves. The platform does not assign tasks to each drone in the swarm. This helps the success rate in GPS denial battle ground.
+5) the platform use LLM to assign tasks to a single drone or a swarm of drones. In case of a swarm of drones, it is expected the drones are AI enabled 
+which can coordinate with each other to locate and attach targets by themselves. The platform does not assign tasks to each drone in the swarm. 
+This helps the success rate in GPS denial battle ground.
 6) 3D UI with with real world terrain information (such as Taiwan) to show the locations of our drones and enemy drones, ships, tanks, missile launchers.
-7) 
 8) LLM determine the appropriate drones to use, based on the payload, range. LLM also determine the swarm size appropriate for the enemy targets.
-9)
 10) All deployed drones should be constantly moving until their max range is reached. 
 11) All deployed drones should have their location, speed, battery status live feed to the Lattice.
-12) 
-13) LLM should determine classify the enemy assets to a) high value target, such as ship, missile launchers. b) medium value target, such as tanks. c) low value targets. And ask human for permission to attack enemy targets according to value classification.
-14) 
+13) LLM should determine classify the enemy assets to a) high value target, such as ship, missile launchers. b) medium value target, such as tanks. 
+c) low value targets. And ask human for permission to attack enemy targets according to value classification.
+
+Engaginng:
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 16) idling drones should not show up on on the swarm and drone status panel.
-17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations to a configuration file.
+23) Engaging: when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
+the engaging drone on "the Swarm and drone status" panel should display target type and short id.
+22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. 
+Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
+Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm 
+is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
+25) the number of enemy targets being engaged should be displayed at the header bar. 
+
+Assets Deployment:
+17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations 
+to a configuration file.
+
+Map:
 18) use appropriate icons on the map for the combat objects. For example, use drone icon for drones. use ship icon for ships. use tank icon for tanks.
 19) when user click on an enemy asset in enemy targets panel, the asset should be highlighted on the map. The map should be moved to show the asset.
 20) when user click on an asset in swarm & drone status panel, the asset should be highlighted on the map. The map should be moved to show the asset.
-21) soldiers, tanks, missile launchers must be on the land. soldiers, tanks, missile launchers must stop at the sea. ships must be in the sea. ships must stop when reaching shores. drones can be on land, at sea or in the air. 
-22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
-23) Engaging: when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
-the engaging drone on "the Swarm and drone status" panel should display target type and short id.
-24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
-Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. Only the select enemy target will be tracked. 
-Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance drone list. (i.e. one drone cannot be used to track multiple enemy targets).
-25) the number of enemy targets being engaged should be displayed at the header bar. the number of enemy targets being tracked should be displayed at the header bar.
-26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
-27) the platform must use actual coastline polygons to define the land or sea. 
+21) soldiers, tanks, missile launchers must be on the land. soldiers, tanks, missile launchers must stop at the sea. ships must be in the sea. 
+ships must stop when reaching shores. drones can be on land, at sea or in the air. 
+27) the platform must use actual coastline polygons to define the coastline of China, North Korea, South Korea, Japan, Taiwan, Philipines and all the islands belongs to these countries. 
   - The platform loads the real coastline polygons on first mount via fetch('/data/theater_land.json')
   - Point-in-polygon uses the standard ray-casting algorithm, correctly handling holes (e.g. lakes inside land polygons)
-  - Covered correctly: Taiwan's actual irregular coastline, all offshore islands (Penghu, Kinmen, Matsu, Green Island,
-  Orchid Island), Fujian's indented coast including Xiamen Bay
-28) Tracking: when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
+  - Covered correctly: 
+  a) Taiwan's actual irregular coastline, all offshore islands (Penghu, Kinmen, Matsu, Green Island, Orchid Island), 
+  b) China'actual irregular coastline, and offshore islands,
+  c) North Korea's actual irregular coastline, and offshore islands, 
+  d) South Korea's actual irregular coastline, and offshore islands,
+  f) Japan's actual irregular coastline, and offshore islands, 
+  g) Philipines' actual irregular coastline, and offshore islands.
+
+Tracking:
+24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
+Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
+Only the select enemy target will be tracked. 
+Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance 
+drone list. (i.e. one drone cannot be used to track multiple enemy targets). the number of enemy targets being tracked should be displayed at the header bar.
+26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
+28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
 if a target is being tracked by one drone, clicking on the track button again, another drone will be assign to track the target, and the the first drone stop tracking the target.
 the first drone's status should be changed from tracking to returning.
 the tracking drone on the "Swarm and drone status" panel should show target type and short id.
@@ -47,14 +66,17 @@ Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
 2) No default deployments of friendly and enemy assets by the system.
 3) all drone status should always be idle in the initial configuration file. drone status should NOT be serialized to the initial configuration file.
-4) enemy target status engaged, active should NOT be serialized to the initial configuration file, but other statuses such as active, destroyed, lost are written to the configuration file. 
+4) enemy target status engaged, tracking should NOT be serialized to the initial configuration file, but other statuses such as active, destroyed, 
+lost are written to the configuration file. 
 
 Friendly assets:
 MQ9 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). Each MQ9 is capable of flying for over 30 hours continuously.
-MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. User should be able to find out what enemy assets are detected by MQ9 on the UI.
+MQ9 are capable of detecting enemy assets within 15km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each MQ9. 
+User should be able to find out what enemy assets are detected by MQ9 on the UI.
 
 reconnaissance drones with real time reconnaissance feeds (enemy positions, types, confidence). reconnaissance max range 150km, max speed 150km/hr.
-reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
+reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, 
+remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
 combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
 altius-600m drones, max payload 12kg, max range 440km.
