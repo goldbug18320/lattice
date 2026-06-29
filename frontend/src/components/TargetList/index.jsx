@@ -136,6 +136,13 @@ export default function TargetList() {
                     {badge.label}
                   </span>
                 </div>
+                <div className="target-subtitle">
+                  <span className="target-subtitle-type" style={{ color: TYPE_COLORS[type] }}>
+                    {type.replace('_', ' ').toUpperCase()}
+                  </span>
+                  <span className="target-subtitle-sep">·</span>
+                  <span className="target-subtitle-id">{target.id.slice(0, 8).toUpperCase()}</span>
+                </div>
                 <div className="target-row2">
                   <span className="target-conf">
                     Conf: {Math.round(target.confidence * 100)}%

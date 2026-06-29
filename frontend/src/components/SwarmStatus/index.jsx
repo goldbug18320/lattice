@@ -132,16 +132,19 @@ export default function SwarmStatus() {
                 </div>
               </span>
             </div>
-            {swarm.objective && (
-              <div className="swarm-objective">📋 {swarm.objective}</div>
-            )}
+            {swarm.status === 'engaging' && (swarm.target_ids || []).map(tid => {
+              const t = targets.find(t => t.id === tid)
+              if (!t) return null
+              return (
+                <div key={tid} className="recon-detail-header" style={{ color: '#9ca3af', margin: '1px 8px 2px' }}>
+                  {TARGET_ICONS[t.type] || '?'} {t.type.replace('_', ' ')} · {tid.slice(0, 8).toUpperCase()}
+                </div>
+              )
+            })}
             {isSelected && (
               <div className="drone-list">
                 {swarmDrones.filter(d => d.status !== 'idle').map(d => {
                   const isDroneSelected = d.id === selectedDroneId
-                  const engagingTargets = isDroneSelected && d.status === 'engaging'
-                    ? (swarm.target_ids || []).map(tid => targets.find(t => t.id === tid)).filter(Boolean)
-                    : []
                   return (
                     <div key={d.id}>
                       <div
@@ -164,24 +167,6 @@ export default function SwarmStatus() {
                         <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
                         <span className="drone-range">↗{remainingRange(d)} km</span>
                       </div>
-                      {isDroneSelected && d.status === 'engaging' && (
-                        <div className="recon-detail">
-                          <div className="recon-detail-header" style={{ color: STATUS_COLORS.engaging }}>
-                            ENGAGING TARGET
-                          </div>
-                          {engagingTargets.length > 0 ? engagingTargets.map(t => (
-                            <div key={t.id} className="detected-item">
-                              <span className="detected-icon">{TARGET_ICONS[t.type] || '?'}</span>
-                              <span className="detected-type">{t.type.replace('_', ' ')}</span>
-                              <span className="detected-conf" style={{ color: 'var(--text-dim)', fontSize: '0.65rem' }}>
-                                ID: {t.id}
-                              </span>
-                            </div>
-                          )) : (
-                            <div className="detected-empty">Target data unavailable</div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   )
                 })}
@@ -230,9 +215,10 @@ export default function SwarmStatus() {
                 </div>
                 {d.status === 'tracking' && d.tracking_target_id && (() => {
                   const trackedTarget = targets.find(t => t.id === d.tracking_target_id)
+                  const tType = trackedTarget ? trackedTarget.type : null
                   return (
                     <div className="recon-detail-header" style={{ color: '#9ca3af', margin: '1px 8px 2px' }}>
-                      tracking {trackedTarget ? trackedTarget.type.replace('_', ' ') : 'unknown'} target with id {d.tracking_target_id}
+                      {TARGET_ICONS[tType] || '?'} {tType ? tType.replace('_', ' ') : 'unknown'} · {d.tracking_target_id.slice(0, 8).toUpperCase()}
                     </div>
                   )
                 })()}

@@ -231,6 +231,10 @@ html, body, #root {
 .target-type-icon { font-size: 14px; flex-shrink: 0; }
 .target-coords { flex: 1; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
 .target-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; }
+.target-subtitle { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+.target-subtitle-type { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; font-weight: 600; }
+.target-subtitle-sep { color: var(--text-dim); font-size: 9px; }
+.target-subtitle-id { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary); letter-spacing: 0.5px; }
 .target-row2 { display: flex; align-items: center; gap: 8px; }
 .target-conf {
   display: flex; align-items: center; gap: 4px;
