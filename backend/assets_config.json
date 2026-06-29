@@ -73,19 +73,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 323.0311698425802,
+        "heading": 257.26370229187063,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 6.326000000051173,
-        "range_used_km": 910.1999999996557,
+        "battery": 0.1300000000516477,
+        "range_used_km": 1096.0799999994867,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 25.000495329497934,
-          "lon": 121.50110154687357,
+          "lat": 24.968794499078008,
+          "lon": 121.57714400848556,
           "alt": 0.0
         },
         "home_position": {
@@ -100,19 +100,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 87.3249880235202,
+        "heading": 236.40973152091436,
         "speed": 60.0,
         "altitude": 100.0,
-        "battery": 5.890000000051221,
-        "range_used_km": 849.215999999773,
+        "battery": 0.0,
+        "range_used_km": 1035.095999999604,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.1891840227619,
-          "lon": 119.59785323773698,
+          "lat": 23.012688933764935,
+          "lon": 120.0170097382229,
           "alt": 149.99999999270022
         },
         "home_position": {
@@ -5197,6 +5197,70 @@
         "position": {
           "lat": 24.28909214170318,
           "lon": 124.01123126743667,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "440d612d-3315-4aa7-bb11-5697f21ad32e",
+        "type": "tank",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 1.0,
+        "reported_by": "manual",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 24.44740194539901,
+          "lon": 122.98080886105312,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "dcce6d70-b05d-40e5-a9f5-d4800ed294c1",
+        "type": "tank",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 1.0,
+        "reported_by": "manual",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 22.66465181594105,
+          "lon": 121.4890143964191,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "f1fe0615-1e24-480c-8e43-c25e70169303",
+        "type": "tank",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 1.0,
+        "reported_by": "manual",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 23.249171853990607,
+          "lon": 121.40225458500358,
+          "alt": 0.0
+        }
+      },
+      {
+        "id": "aa7c1262-5ea8-4565-8a23-e1c109b0f233",
+        "type": "tank",
+        "status": "active",
+        "heading": 0.0,
+        "speed": 0.0,
+        "confidence": 1.0,
+        "reported_by": "manual",
+        "notes": null,
+        "threat_value": "medium",
+        "position": {
+          "lat": 23.28547235405606,
+          "lon": 121.41328273857359,
           "alt": 0.0
         }
       }
