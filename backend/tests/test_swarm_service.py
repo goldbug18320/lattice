@@ -266,14 +266,14 @@ class TestDroneCommand:
             mod.state_service = original
 
 
-# ─── Feature 28: tracking replacement ────────────────────────────────────────
+# ─── Feature 28: already-tracked notification (no replacement) ───────────────
 
-class TestTrackingReplacement:
-    """Feature 28: re-assigning TRACK on an already-tracked target replaces the drone."""
+class TestTrackingNotification:
+    """Feature 28: re-clicking TRACK on an already-tracked target must NOT replace
+    the existing drone — the API layer intercepts and returns already_tracked instead."""
 
     def _setup_two_recon(self):
         """Return state with two recon drones and one target; wire swarm_service to use it."""
-        from models.drone import DroneModel
         from models.target import TargetType, TargetStatus, Position
 
         svc = StateService.__new__(StateService)
@@ -304,76 +304,30 @@ class TestTrackingReplacement:
         service = SwarmService()
         return svc, service, d1.id, d2.id, target.id, mod, original
 
-    def test_previous_tracker_set_to_returning(self):
-        svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
-        try:
-            # Assign d1 to track the target
-            service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            assert svc.get_drone(d1_id).status == DroneStatus.TRACKING
-
-            # Re-assign: d2 now tracks the same target
-            service.execute_drone_command(d2_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-
-            # d1 must be released (returning), not still tracking
-            assert svc.get_drone(d1_id).status == DroneStatus.RETURNING
-        finally:
-            mod.state_service = original
-
-    def test_previous_tracker_target_id_cleared(self):
-        svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
-        try:
-            service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            service.execute_drone_command(d2_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            assert svc.get_drone(d1_id).tracking_target_id is None
-        finally:
-            mod.state_service = original
-
-    def test_previous_tracker_task_cleared(self):
-        svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
-        try:
-            service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id, objective="Shadow ship"))
-            service.execute_drone_command(d2_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            assert svc.get_drone(d1_id).current_task is None
-        finally:
-            mod.state_service = original
-
-    def test_new_drone_assigned_as_tracker(self):
-        svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
-        try:
-            service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            service.execute_drone_command(d2_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
-            assert svc.get_drone(d2_id).status == DroneStatus.TRACKING
-            assert svc.get_drone(d2_id).tracking_target_id == target_id
-        finally:
-            mod.state_service = original
-
-    def test_no_previous_tracker_assigns_cleanly(self):
-        """First-time TRACK assignment (no previous tracker) must work without error."""
+    def test_first_track_assigns_drone(self):
+        """First-time TRACK assignment must succeed and set tracking state."""
         svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
         try:
             result = service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
             assert result["success"] is True
             assert svc.get_drone(d1_id).status == DroneStatus.TRACKING
+            assert svc.get_drone(d1_id).tracking_target_id == target_id
         finally:
             mod.state_service = original
 
-    def test_replace_tracker_for_target_returns_released_id(self):
-        """StateService.replace_tracker_for_target returns the old drone's ID."""
+    def test_existing_tracker_not_replaced_when_second_track_executed(self):
+        """Feature 28: execute_drone_command no longer releases the previous tracking drone.
+        The API layer (nlp.py) prevents re-assignment via the already_tracked check,
+        so this lower-level path should leave d1 unchanged if somehow called."""
         svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
         try:
-            # Manually set d1 as tracking
-            svc._drones[d1_id].tracking_target_id = target_id
-            svc._drones[d1_id].status = DroneStatus.TRACKING
+            service.execute_drone_command(d1_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
+            assert svc.get_drone(d1_id).status == DroneStatus.TRACKING
 
-            released_id = svc.replace_tracker_for_target(target_id)
-            assert released_id == d1_id
-        finally:
-            mod.state_service = original
-
-    def test_replace_tracker_for_target_returns_none_when_no_tracker(self):
-        svc, service, d1_id, d2_id, target_id, mod, original = self._setup_two_recon()
-        try:
-            result = svc.replace_tracker_for_target(target_id)
-            assert result is None
+            # Direct lower-level call (bypassing the nlp.py already_tracked guard):
+            # d1 must remain TRACKING — no replacement occurs at this layer.
+            service.execute_drone_command(d2_id, _drone_cmd(CommandType.TRACK, target_id=target_id))
+            assert svc.get_drone(d1_id).status == DroneStatus.TRACKING
+            assert svc.get_drone(d1_id).tracking_target_id == target_id
         finally:
             mod.state_service = original

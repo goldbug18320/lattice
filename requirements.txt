@@ -26,6 +26,8 @@ Inform the user if no combat drone swarm can reach the enemy target. the selecte
 Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm 
 is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
 25) the number of enemy targets being engaged should be displayed at the header bar. 
+32) if a target is being Engaged by one drone swarm, clicking on the Engage button again, the platform will not select another combat swarm to engage the target. 
+The platform will dispay a message showing which drone swarm is engaging this target. 
 
 Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets locations 
@@ -56,11 +58,10 @@ Once the user approve the request, the trace button on the target remains enable
 drone list. (i.e. one drone cannot be used to track multiple enemy targets). the number of enemy targets being tracked should be displayed at the header bar.
 26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
 28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
-if a target is being tracked by one drone, clicking on the track button again, another drone will be assign to track the target, and the the first drone stop tracking the target.
-the first drone's status should be changed from tracking to returning.
-the tracking drone on the "Swarm and drone status" panel should show target type and short id.
+if a target is being tracked by one drone, clicking on the track button again, the platform will dispay a message showing which drone is tracking this target. 
 29) Enemy target panel: display target type and short ID under each enemy target in the panel.
 30) Swarm & drone status panel: for reconnaissance drones, do not display DETECTED CONTACTS.
+31) the tracking drone on the "Swarm and drone status" panel should show target type and short id.
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.

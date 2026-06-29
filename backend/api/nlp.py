@@ -1,4 +1,5 @@
 """Natural language command processing endpoint."""
+import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -43,6 +44,61 @@ async def process_nlp_command(req: NLPCommandRequest):
     """
     if not req.command.strip():
         raise HTTPException(status_code=400, detail="Command cannot be empty")
+
+    # Feature 32: if this is a single-target ENGAGE and the target is already engaged,
+    # return an informational response identifying the current engaging swarm — no LLM call,
+    # no approval, no new assignment.
+    eid_match = re.search(r'engage\s+and\s+attack\s+target\s+with\s+id\s+(\S+)', req.command.lower())
+    if eid_match:
+        target_id = eid_match.group(1)
+        target = state_service.get_target(target_id)
+        if target and target.status.value == "engaged":
+            engaging_swarm = next(
+                (s for s in state_service.get_all_swarms()
+                 if target_id in s.target_ids and s.status.value == "engaging"),
+                None,
+            )
+            swarm_name = engaging_swarm.name if engaging_swarm else "a combat swarm"
+            message = f"Target is already being engaged by {swarm_name}."
+            return {
+                "command": req.command,
+                "interpretation": "Target is already in engaged status.",
+                "explanation": message,
+                "action": {
+                    "type": "already_engaged",
+                    "swarm_name": swarm_name,
+                    "swarm_id": engaging_swarm.id if engaging_swarm else None,
+                    "explanation": message,
+                },
+                "execution_result": None,
+            }
+
+    # Feature 28: if this is a single-target TRACK and the target is already tracked,
+    # return an informational response identifying the current tracking drone — no LLM call,
+    # no approval, no replacement.
+    tid_match = re.search(r'track\s+target\s+with\s+id\s+(\S+)', req.command.lower())
+    if tid_match:
+        target_id = tid_match.group(1)
+        target = state_service.get_target(target_id)
+        if target and target.status.value == "tracked":
+            tracking_drone = next(
+                (d for d in state_service.get_all_drones() if d.tracking_target_id == target_id),
+                None,
+            )
+            drone_name = tracking_drone.name if tracking_drone else "a reconnaissance drone"
+            message = f"Target is already being tracked by {drone_name}."
+            return {
+                "command": req.command,
+                "interpretation": "Target is already in tracked status.",
+                "explanation": message,
+                "action": {
+                    "type": "already_tracked",
+                    "drone_name": drone_name,
+                    "drone_id": tracking_drone.id if tracking_drone else None,
+                    "explanation": message,
+                },
+                "execution_result": None,
+            }
 
     # Build battlefield context for the LLM
     all_drones = state_service.get_all_drones()

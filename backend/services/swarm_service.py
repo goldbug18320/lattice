@@ -94,9 +94,8 @@ class SwarmService:
             "status": new_status,
             "current_task": command.objective or command.command_type.value,
         })
-        # Feature 24 + 28: assign tracking target; release any drone already tracking it first
+        # Feature 24: assign tracking target to the drone
         if command.command_type == CommandType.TRACK and command.target_id:
-            state_service.replace_tracker_for_target(command.target_id)  # Feature 28: release previous
             state_service.update_drone(drone_id, {"tracking_target_id": command.target_id})
             state_service.update_target_status(command.target_id, TargetStatus.TRACKED)
         state_service.log_command({

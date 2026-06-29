@@ -41,9 +41,11 @@ export default function TargetList() {
   const selectSwarm = useStore(s => s.selectSwarm)
   const selectDrone = useStore(s => s.selectDrone)
 
-  // Inline error state for ENGAGE/TRACK buttons: { [targetId]: string | null }
+  // Inline error/info state for ENGAGE/TRACK buttons: { [targetId]: string | null }
   const [engageErrors, setEngageErrors] = useState({})
+  const [engageInfos, setEngageInfos] = useState({})
   const [trackErrors, setTrackErrors] = useState({})
+  const [trackInfos, setTrackInfos] = useState({})
 
   const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status))
 
@@ -58,10 +60,13 @@ export default function TargetList() {
   // so the operator sees which swarm will be tasked (Feature 13 + Feature 15).
   const engageTarget = async (targetId) => {
     setEngageErrors(prev => ({ ...prev, [targetId]: null }))
+    setEngageInfos(prev => ({ ...prev, [targetId]: null }))
     try {
       const result = await nlpApi.command(`engage and attack target with id ${targetId}`)
       if (result.action?.type === 'no_swarm_in_range') {
         setEngageErrors(prev => ({ ...prev, [targetId]: 'No combat swarm in range' }))
+      } else if (result.action?.type === 'already_engaged') {
+        setEngageInfos(prev => ({ ...prev, [targetId]: result.action.explanation }))
       } else if (result.action?.type === 'request_approval') {
         const proposedSwarmId = result.action?.proposed_action?.swarm_id
         if (proposedSwarmId) selectSwarm(proposedSwarmId)
@@ -71,14 +76,18 @@ export default function TargetList() {
     }
   }
 
-  // TRACK routes through HITL with a recon drone (Feature 24). On no_recon_in_range
-  // show an inline error; on approval pre-select the chosen drone in the status panel.
+  // TRACK routes through HITL with a recon drone (Feature 24). On no_recon_in_range show
+  // an inline error. On already_tracked (Feature 28) show an info message naming the current
+  // tracking drone — no new assignment. On approval pre-select the chosen drone.
   const trackTarget = async (targetId) => {
     setTrackErrors(prev => ({ ...prev, [targetId]: null }))
+    setTrackInfos(prev => ({ ...prev, [targetId]: null }))
     try {
       const result = await nlpApi.command(`track target with id ${targetId}`)
       if (result.action?.type === 'no_recon_in_range') {
         setTrackErrors(prev => ({ ...prev, [targetId]: 'No reconnaissance drone in range' }))
+      } else if (result.action?.type === 'already_tracked') {
+        setTrackInfos(prev => ({ ...prev, [targetId]: result.action.explanation }))
       } else if (result.action?.type === 'request_approval') {
         const proposedDroneId = result.action?.proposed_action?.drone_id
         if (proposedDroneId) selectDrone(proposedDroneId)
@@ -171,8 +180,14 @@ export default function TargetList() {
                     {engageErrors[target.id] && (
                       <div className="engage-error">{engageErrors[target.id]}</div>
                     )}
+                    {engageInfos[target.id] && (
+                      <div className="engage-info">{engageInfos[target.id]}</div>
+                    )}
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>
+                    )}
+                    {trackInfos[target.id] && (
+                      <div className="track-info">{trackInfos[target.id]}</div>
                     )}
                     {target.notes && <div className="target-notes">{target.notes}</div>}
                   </div>

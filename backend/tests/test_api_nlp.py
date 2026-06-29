@@ -330,3 +330,83 @@ class TestHITLApproval:
         resp = client.post("/api/nlp/deny/does-not-exist")
         assert resp.status_code == 404
 
+
+# ─── Feature 32: already-engaged notification ─────────────────────────────────
+
+class TestAlreadyEngaged:
+    """Feature 32: clicking ENGAGE on a target already in 'engaged' status must return
+    already_engaged without calling the LLM or creating a new approval."""
+
+    def _engage_target(self, client, target_id: str):
+        """Push a target through HITL approval so it reaches 'engaged' status."""
+        client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {target_id}",
+        })
+        pending = client.get("/api/nlp/pending").json()
+        if pending:
+            client.post(f"/api/nlp/approve/{pending[0]['id']}")
+
+    def _seed_target(self, client, target_type: str = "ship") -> str:
+        """Seed one active target and return its ID."""
+        client.post("/api/recon/feed", json=make_recon_feed(targets=[
+            make_target_report(type=target_type),
+        ]))
+        targets = client.get("/api/recon/targets").json()
+        return targets[0]["id"]
+
+    def test_already_engaged_returns_already_engaged_action(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        assert resp.json()["action"]["type"] == "already_engaged"
+
+    def test_already_engaged_includes_swarm_name(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        action = resp.json()["action"]
+        assert "swarm_name" in action
+        assert action["swarm_name"]  # non-empty
+
+    def test_already_engaged_includes_explanation(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        action = resp.json()["action"]
+        assert "explanation" in action
+        assert "engaged" in action["explanation"].lower() or "engaging" in action["explanation"].lower()
+
+    def test_already_engaged_does_not_create_new_approval(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        # drain any existing approvals
+        for a in client.get("/api/nlp/pending").json():
+            client.post(f"/api/nlp/deny/{a['id']}")
+
+        client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        assert client.get("/api/nlp/pending").json() == []
+
+    def test_already_engaged_execution_result_is_none(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        assert resp.json()["execution_result"] is None
+
+    def test_first_engage_on_active_target_proceeds_normally(self, client):
+        """Active (not yet engaged) target must still go through the normal HITL flow."""
+        tid = self._seed_target(client)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid}",
+        })
+        assert resp.json()["action"]["type"] == "request_approval"
+
