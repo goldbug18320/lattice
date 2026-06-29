@@ -92,7 +92,7 @@ Always respond with a JSON object:
 - Map swarm references (e.g. "ALT-Alpha") to correct swarm IDs from context.
 - Attack commands: priority 8–10. Patrol/search: priority 3–6. Track: priority 6.
 - **HITL attack rule**: When command_type is "attack", ALWAYS return request_approval (not assign_swarm). Never execute an attack directly.
-- **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the combat swarm whose representative_position is within max_range_km of the target. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no swarm qualifies, return no_swarm_in_range instead of request_approval.
+- **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the nearest idle (non-engaging) combat swarm whose representative_position is within max_range_km of the target. Engaging swarms are already committed and do NOT qualify. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no idle combat swarm can physically reach the target, return no_swarm_in_range instead of request_approval.
 - **HITL track rule (Feature 24)**: When command_type is "track" and a target ID is referenced, ALWAYS return request_approval with an assign_drone proposed_action. Select the nearest MQ-9 or Scout drone whose max_range_km ≥ haversine distance to the target. If none qualifies, return no_recon_in_range.
 """
 
@@ -201,16 +201,6 @@ Operator command: {command}"""
                         swarm_id = s["id"]
                         selected_swarm_name = s.get("name")
                         dist_str = f" ({round(dist)} km away)"
-            if swarm_id is None:
-                for s in swarms:
-                    if s.get("name", "").startswith(model_prefix):
-                        swarm_id = s["id"]
-                        selected_swarm_name = s.get("name")
-                        break
-            if swarm_id is None and swarms:
-                swarm_id = swarms[0]["id"]
-                selected_swarm_name = swarms[0].get("name")
-
             if single_target_id and not classified:
                 return {
                     "interpretation": "[MOCK] Engage command — target not found",
@@ -221,6 +211,25 @@ Operator command: {command}"""
                     },
                     "explanation": "[MOCK] Target not found.",
                 }
+            if single_target_id and swarm_id is None:
+                return {
+                    "interpretation": "[MOCK] Engage command — no combat swarm available",
+                    "action": {
+                        "type": "no_swarm_in_range",
+                        "target_id": single_target_id,
+                        "explanation": "No combat swarm in range — all swarms are currently engaged.",
+                    },
+                    "explanation": "[MOCK] No combat swarm available.",
+                }
+            if swarm_id is None:
+                for s in swarms:
+                    if s.get("name", "").startswith(model_prefix):
+                        swarm_id = s["id"]
+                        selected_swarm_name = s.get("name")
+                        break
+            if swarm_id is None and swarms:
+                swarm_id = swarms[0]["id"]
+                selected_swarm_name = swarms[0].get("name")
 
             if single_target_id:
                 tv = classified[0]["threat_value"] if classified else "unknown"
