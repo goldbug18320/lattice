@@ -574,13 +574,21 @@ export default function Map3D() {
             overflow: 'hidden',
           }}
         >
-          {ctxMenu.type === 'target' && (
-            <>
-              <button onClick={handleCtxSetSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
-              <button onClick={handleCtxSetHeading} style={CTX_BTN_STYLE}>Set Heading</button>
-              <div style={{ borderTop: '1px solid #334155' }} />
-            </>
-          )}
+          {ctxMenu.type === 'target' && (() => {
+            const t = targets.find(x => x.id === ctxMenu.id)
+            const speedKmh = t ? (t.speed * 3.6).toFixed(1) : '—'
+            const heading  = t ? `${Math.round(((t.heading % 360) + 360) % 360)}°` : '—'
+            return (
+              <>
+                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Speed</span>{speedKmh} km/h</div>
+                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Direction</span>{heading}</div>
+                <div style={{ borderTop: '1px solid #334155' }} />
+                <button onClick={handleCtxSetSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
+                <button onClick={handleCtxSetHeading} style={CTX_BTN_STYLE}>Set Heading</button>
+                <div style={{ borderTop: '1px solid #334155' }} />
+              </>
+            )
+          })()}
           <button onClick={handleCtxRemove} style={{ ...CTX_BTN_STYLE, color: '#f87171' }}>Remove</button>
         </div>
       )}
@@ -593,4 +601,14 @@ const CTX_BTN_STYLE = {
   background: 'transparent', border: 'none', color: '#cbd5e1',
   textAlign: 'left', cursor: 'pointer', fontSize: 13,
   fontFamily: 'inherit',
+}
+
+const CTX_INFO_STYLE = {
+  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+  padding: '6px 14px', fontSize: 12, color: '#94a3b8',
+  userSelect: 'none',
+}
+
+const CTX_LABEL_STYLE = {
+  color: '#64748b', marginRight: 8,
 }

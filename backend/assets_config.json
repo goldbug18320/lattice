@@ -76,19 +76,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 208.54751085378172,
+        "heading": 64.66167857614502,
         "speed": 60.0,
         "altitude": 100.0,
         "battery": 0.0,
-        "range_used_km": 55.380000000000585,
+        "range_used_km": 90.3600000000019,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.999954366321443,
-          "lon": 121.63997465895332,
+          "lat": 25.115932945801482,
+          "lon": 121.52094865896503,
           "alt": 0.0
         },
         "home_position": {
@@ -103,19 +103,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 131.61621990754603,
+        "heading": 159.6941949583421,
         "speed": 60.0,
         "altitude": 100.0,
         "battery": 0.0,
-        "range_used_km": 55.26000000000058,
+        "range_used_km": 90.2400000000019,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 24.029558324691543,
-          "lon": 120.09722893178538,
+          "lat": 23.772615278186347,
+          "lon": 120.28909832729897,
           "alt": 149.99999999270022
         },
         "home_position": {
@@ -5078,7 +5078,7 @@
         "threat_value": "high",
         "position": {
           "lat": 25.901097826086943,
-          "lon": 119.38265556736077,
+          "lon": 119.44733770933571,
           "alt": 0.0
         }
       },
@@ -5141,7 +5141,7 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.575861911308127,
+          "lat": 23.59040956172468,
           "lon": 119.61623227913148,
           "alt": 0.0
         }
@@ -5183,7 +5183,7 @@
         "type": "drone",
         "status": "active",
         "heading": 0.0,
-        "speed": 0.0,
+        "speed": 41.666666666666664,
         "confidence": 1.0,
         "reported_by": "MQ9-02",
         "notes": null,
@@ -5422,14 +5422,14 @@
         "id": "5febe67c-fdf4-4708-8f27-ff95e3dcaefb",
         "type": "tank",
         "status": "active",
-        "heading": 180.0,
+        "heading": 0.0,
         "speed": 5.555555555555555,
         "confidence": 1.0,
         "reported_by": "manual",
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.582459851296814,
+          "lat": 23.5603015089798,
           "lon": 119.65088505036854,
           "alt": 9.99999999963947
         }

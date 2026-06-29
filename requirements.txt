@@ -34,7 +34,7 @@ Assets Deployment:
 to the configuration file. if a combat drone swarm is deployed, it should be displayed in "swarm & drone status" panel. If an enemy asset is deployed, 
 it should be displayed in enemy target panel.
 33) Deployed assets are by default stationary. For enemy assets on the map, right click on the asset bring up a context menu displaying the following options:
-a) set speed, b) set heading, c) remove the object. The speed and heading of the enemy target should be persisted to the configuration file. The speed should
+a) current speed, b) current direction, c) set speed, d) set heading, e) remove the object. The speed and heading of the enemy target should be persisted to the configuration file. The speed should
 not be over the max. capability of the object. 
 
 Map:
