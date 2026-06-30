@@ -47,9 +47,8 @@ class Target(BaseModel):
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
     notes: Optional[str] = None
-    # Feature 33: drone-specific movement mode (in-memory only, not persisted to config)
-    movement_mode: Optional[str] = Field(None, description="'patrolling' | 'returning' — drone targets only")
-    home_position: Optional[Position] = Field(None, description="Spawn position used for 'returning' mode")
+    # Feature 33: destination-based movement (persisted for enemy assets)
+    destination: Optional[Position] = Field(None, description="Target destination; asset moves toward it when speed > 0")
 
 
 class PendingApproval(BaseModel):
@@ -76,7 +75,7 @@ class TargetUpdate(BaseModel):
     status: Optional[TargetStatus] = None
     threat_value: Optional[ThreatValue] = None
     notes: Optional[str] = None
-    movement_mode: Optional[str] = None  # Feature 33: 'patrolling' | 'returning' for drone targets
+    destination: Optional[Position] = None  # Feature 33: asset moves toward this position when speed > 0
 
 
 class TargetReport(BaseModel):

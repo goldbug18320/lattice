@@ -104,6 +104,9 @@ export default function Map3D() {
   const [viewerReady, setViewerReady] = useState(false)
   // Feature 33: context menu state — null when hidden, {x,y,type,id} when open
   const [ctxMenu, setCtxMenu] = useState(null)
+  // Feature 33: destination-picking mode — ref for Cesium handler, state for UI overlay
+  const destPickingRef = useRef(null)
+  const [destPickingActive, setDestPickingActive] = useState(false)
 
   const drones           = useStore(s => s.drones)
   const targets          = useStore(s => s.targets)
@@ -258,8 +261,34 @@ export default function Map3D() {
         dragRef.current = { active: false, entity: null, type: null, id: null, subtype: null, moved: false, originalPosition: null }
       }, ET.LEFT_UP)
 
-      // ── RIGHT_CLICK — context menu (Feature 33) ─────────────────────────────
+      // ── RIGHT_CLICK — destination picking OR context menu (Feature 33) ────────
       handler.setInputAction((event) => {
+        // Destination-picking mode: capture globe position for Set Destination
+        if (destPickingRef.current) {
+          const ray = viewer.camera.getPickRay(event.position)
+          const globePos = viewer.scene.globe.pick(ray, viewer.scene)
+          if (globePos) {
+            const carto = Cesium.Cartographic.fromCartesian(globePos)
+            const dest = {
+              lat: Cesium.Math.toDegrees(carto.latitude),
+              lon: Cesium.Math.toDegrees(carto.longitude),
+              alt: 0,
+            }
+            const { type, id } = destPickingRef.current
+            destPickingRef.current = null
+            setDestPickingActive(false)
+            if (type === 'target') {
+              assetsApi.updateTargetMovement(id, { destination: dest })
+                .then(() => assetsApi.saveConfig())
+                .catch(console.error)
+            } else {
+              assetsApi.updateDroneMovement(id, { destination: dest }).catch(console.error)
+            }
+          }
+          return
+        }
+
+        // Normal: open context menu on entity right-click
         const picked = viewer.scene.pick(event.position)
         if (picked?.id?._lattice_type) {
           setCtxMenu({
@@ -338,9 +367,15 @@ export default function Map3D() {
         }
       }, ET.LEFT_CLICK)
 
-      // ── ESC key — cancel placement mode ─────────────────────────────────────
+      // ── ESC key — cancel placement mode or destination picking ──────────────
       const onKeyDown = (e) => {
-        if (e.key === 'Escape') useStore.getState().setPlacementMode(null)
+        if (e.key === 'Escape') {
+          useStore.getState().setPlacementMode(null)
+          if (destPickingRef.current) {
+            destPickingRef.current = null
+            setDestPickingActive(false)
+          }
+        }
       }
       window.addEventListener('keydown', onKeyDown)
       viewer._lattice_cleanup_keydown = () => window.removeEventListener('keydown', onKeyDown)
@@ -515,7 +550,7 @@ export default function Map3D() {
 
   useEffect(() => { updateEntities() }, [updateEntities, viewerReady])
 
-  // Feature 33: context menu action handlers
+  // Feature 33: unified context menu action handlers
   function handleCtxRemove() {
     const { type, id } = ctxMenu
     setCtxMenu(null)
@@ -524,67 +559,35 @@ export default function Map3D() {
   }
 
   function handleCtxSetSpeed() {
-    const { id } = ctxMenu
+    const { type, id } = ctxMenu
     setCtxMenu(null)
-    const target = targets.find(t => t.id === id)
-    const maxKmh = _TARGET_MAX_SPEED_KMH[target?.type] ?? Infinity
+    let maxKmh
+    if (type === 'target') {
+      const t = targets.find(x => x.id === id)
+      maxKmh = _TARGET_MAX_SPEED_KMH[t?.type] ?? Infinity
+    } else {
+      const d = drones.find(x => x.id === id)
+      maxKmh = _DRONE_MAX_SPEED_KMH[d?.model] ?? 150
+    }
     const label = isFinite(maxKmh) ? `Set speed (km/h, max ${maxKmh}):` : 'Set speed (km/h):'
     const raw = window.prompt(label, '0')
     if (raw === null) return
     const kmh = parseFloat(raw)
     if (isNaN(kmh) || kmh < 0) { window.alert('Invalid speed. Enter a number ≥ 0.'); return }
-    if (isFinite(maxKmh) && kmh > maxKmh) { window.alert(`Speed exceeds max capability (${maxKmh} km/h). Value will be clamped.`) }
-    assetsApi.updateTargetMovement(id, { speed: kmh / 3.6 }).then(() => assetsApi.saveConfig()).catch(console.error)
-  }
-
-  function handleCtxSetHeading() {
-    const { id } = ctxMenu
-    setCtxMenu(null)
-    const raw = window.prompt('Set heading (0–360°):', '0')
-    if (raw === null) return
-    const deg = parseFloat(raw)
-    if (isNaN(deg)) { window.alert('Invalid heading. Enter a number between 0 and 360.'); return }
-    assetsApi.updateTargetMovement(id, { heading: ((deg % 360) + 360) % 360 }).then(() => assetsApi.saveConfig()).catch(console.error)
-  }
-
-  function handleCtxSetDroneSpeed() {
-    const { id } = ctxMenu
-    setCtxMenu(null)
-    const drone = drones.find(d => d.id === id)
-    const maxKmh = _DRONE_MAX_SPEED_KMH[drone?.model] ?? 150
-    const raw = window.prompt(`Set speed (km/h, max ${maxKmh}):`, '0')
-    if (raw === null) return
-    const kmh = parseFloat(raw)
-    if (isNaN(kmh) || kmh < 0) { window.alert('Invalid speed. Enter a number ≥ 0.'); return }
-    const clamped = Math.min(kmh, maxKmh)
-    if (kmh > maxKmh) window.alert(`Speed clamped to max capability (${maxKmh} km/h).`)
-    assetsApi.updateDroneMovement(id, { speed: clamped / 3.6 }).catch(console.error)
-  }
-
-  function handleCtxSetDroneStatus() {
-    const { id } = ctxMenu
-    setCtxMenu(null)
-    const raw = window.prompt('Set status (patrolling / returning):', 'patrolling')
-    if (raw === null) return
-    const status = raw.trim().toLowerCase()
-    if (status !== 'patrolling' && status !== 'returning') {
-      window.alert('Invalid status. Enter "patrolling" or "returning".')
-      return
+    const clamped = isFinite(maxKmh) ? Math.min(kmh, maxKmh) : kmh
+    if (kmh > clamped) window.alert(`Speed clamped to max capability (${maxKmh} km/h).`)
+    if (type === 'target') {
+      assetsApi.updateTargetMovement(id, { speed: clamped / 3.6 }).then(() => assetsApi.saveConfig()).catch(console.error)
+    } else {
+      assetsApi.updateDroneMovement(id, { speed: clamped / 3.6 }).catch(console.error)
     }
-    assetsApi.updateDroneMovement(id, { status }).catch(console.error)
   }
 
-  function handleCtxSetEnemyDroneStatus() {
-    const { id } = ctxMenu
+  function handleCtxSetDestination() {
+    const { type, id } = ctxMenu
     setCtxMenu(null)
-    const raw = window.prompt('Set status (patrolling / returning):', 'patrolling')
-    if (raw === null) return
-    const mode = raw.trim().toLowerCase()
-    if (mode !== 'patrolling' && mode !== 'returning') {
-      window.alert('Invalid status. Enter "patrolling" or "returning".')
-      return
-    }
-    assetsApi.updateTargetMovement(id, { movement_mode: mode }).catch(console.error)
+    destPickingRef.current = { type, id }
+    setDestPickingActive(true)
   }
 
   return (
@@ -596,9 +599,23 @@ export default function Map3D() {
         ref={containerRef}
         style={{
           width: '100%', height: '100%', background: '#0a0e1a',
-          cursor: placementMode ? 'crosshair' : 'default',
+          cursor: destPickingActive ? 'crosshair' : placementMode ? 'crosshair' : 'default',
         }}
       />
+
+      {/* Feature 33: destination-picking overlay */}
+      {destPickingActive && (
+        <div style={{
+          position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(15,23,42,0.92)', border: '1px solid #f59e0b',
+          borderRadius: 6, padding: '8px 18px', color: '#fbbf24',
+          fontSize: 13, fontWeight: 600, letterSpacing: '0.04em',
+          pointerEvents: 'none', zIndex: 1100,
+        }}>
+          RIGHT-CLICK ON MAP TO SET DESTINATION &nbsp;·&nbsp; ESC TO CANCEL
+        </div>
+      )}
+
       {ctxMenu && (
         <div
           onClick={e => e.stopPropagation()}
@@ -615,40 +632,18 @@ export default function Map3D() {
             overflow: 'hidden',
           }}
         >
-          {ctxMenu.type === 'target' && (() => {
-            const t = targets.find(x => x.id === ctxMenu.id)
-            const speedKmh = t ? (t.speed * 3.6).toFixed(1) : '—'
-            const isDrone  = t?.type === 'drone'
-            const info2    = isDrone
-              ? t?.movement_mode ?? 'stationary'
-              : t ? `${Math.round(((t.heading % 360) + 360) % 360)}°` : '—'
+          {(() => {
+            const isTarget = ctxMenu.type === 'target'
+            const asset    = isTarget ? targets.find(x => x.id === ctxMenu.id) : drones.find(x => x.id === ctxMenu.id)
+            const speedKmh = asset ? (asset.speed * 3.6).toFixed(1) : '—'
+            const heading  = asset ? `${Math.round(((asset.heading % 360) + 360) % 360)}°` : '—'
             return (
               <>
                 <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Speed</span>{speedKmh} km/h</div>
-                <div style={CTX_INFO_STYLE}>
-                  <span style={CTX_LABEL_STYLE}>{isDrone ? 'Status' : 'Direction'}</span>{info2}
-                </div>
+                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Direction</span>{heading}</div>
                 <div style={{ borderTop: '1px solid #334155' }} />
-                <button onClick={handleCtxSetSpeed} style={CTX_BTN_STYLE}>Set Speed</button>
-                {isDrone
-                  ? <button onClick={handleCtxSetEnemyDroneStatus} style={CTX_BTN_STYLE}>Set Status</button>
-                  : <button onClick={handleCtxSetHeading}          style={CTX_BTN_STYLE}>Set Heading</button>
-                }
-                <div style={{ borderTop: '1px solid #334155' }} />
-              </>
-            )
-          })()}
-          {ctxMenu.type === 'drone' && (() => {
-            const d = drones.find(x => x.id === ctxMenu.id)
-            const speedKmh = d ? (d.speed * 3.6).toFixed(1) : '—'
-            const status   = d?.status ?? '—'
-            return (
-              <>
-                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Speed</span>{speedKmh} km/h</div>
-                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Status</span>{status}</div>
-                <div style={{ borderTop: '1px solid #334155' }} />
-                <button onClick={handleCtxSetDroneSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
-                <button onClick={handleCtxSetDroneStatus} style={CTX_BTN_STYLE}>Set Status</button>
+                <button onClick={handleCtxSetSpeed}       style={CTX_BTN_STYLE}>Set Speed</button>
+                <button onClick={handleCtxSetDestination} style={CTX_BTN_STYLE}>Set Destination</button>
                 <div style={{ borderTop: '1px solid #334155' }} />
               </>
             )

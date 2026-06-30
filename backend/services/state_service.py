@@ -151,6 +151,7 @@ class StateService:
             if pos:
                 _check_terrain_constraint(t_data.get("type", ""), pos["lat"], pos["lon"])
             parsed_pos = Position(**pos) if pos else Position(lat=0.0, lon=0.0)
+            dest_raw = t_data.get("destination")
             target = Target(
                 id=t_data["id"],
                 type=TargetType(t_data["type"]),
@@ -162,7 +163,7 @@ class StateService:
                 reported_by=t_data.get("reported_by", ""),
                 notes=t_data.get("notes"),
                 position=parsed_pos,
-                home_position=parsed_pos,
+                destination=Position(**dest_raw) if dest_raw else None,
             )
             self._targets[target.id] = target
 
@@ -217,6 +218,8 @@ class StateService:
             }
             if t.position:
                 entry["position"] = {"lat": t.position.lat, "lon": t.position.lon, "alt": t.position.alt}
+            if t.destination:
+                entry["destination"] = {"lat": t.destination.lat, "lon": t.destination.lon, "alt": t.destination.alt}
             targets_data.append(entry)
 
         return {"drones": drones_data, "targets": targets_data}
@@ -488,10 +491,13 @@ class StateService:
                 return None
             drone = self._drones[drone_id]
             for key, value in updates.items():
-                if value is not None and hasattr(drone, key):
-                    if key in ("position", "home_position") and isinstance(value, dict):
-                        value = Position(**value)
-                    setattr(drone, key, value)
+                if not hasattr(drone, key):
+                    continue
+                if value is None and key != "destination":
+                    continue
+                if key in ("position", "home_position", "destination") and isinstance(value, dict):
+                    value = Position(**value)
+                setattr(drone, key, value)
             drone.last_update = datetime.utcnow()
         return drone
 

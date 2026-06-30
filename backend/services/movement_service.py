@@ -108,6 +108,24 @@ class MovementService:
         for drone in state_service.get_all_drones():
             if drone.position is None:
                 continue
+
+            # Feature 33: destination-based movement for idle drones
+            if drone.status == DroneStatus.IDLE and drone.destination is not None:
+                speed_ms = _MODEL_SPEED.get(drone.model, 42.0)
+                dist = _distance_km(drone.position, drone.destination)
+                if dist <= _ARRIVE_THRESHOLD_KM:
+                    state_service.update_drone(drone.id, {"destination": None, "speed": 0.0})
+                else:
+                    hdg = _bearing(drone.position, drone.destination)
+                    new_pos = _advance(drone.position, hdg, speed_ms, DT)
+                    state_service.update_drone(drone.id, {
+                        "position": new_pos,
+                        "heading": hdg,
+                        "speed": speed_ms,
+                        "range_used_km": drone.range_used_km + speed_ms * DT / 1000,
+                    })
+                continue
+
             if drone.status in (DroneStatus.IDLE, DroneStatus.OFFLINE):
                 continue
 
@@ -242,26 +260,20 @@ class MovementService:
             if target.position is None:
                 continue
 
-            # Feature 33: drone-specific movement modes set via right-click context menu
-            if target.type == TargetType.DRONE and target.movement_mode:
-                if target.movement_mode == 'returning' and target.home_position is not None and target.speed > 0:
-                    dist = _distance_km(target.position, target.home_position)
-                    if dist <= _ARRIVE_THRESHOLD_KM:
-                        target.position = target.home_position
-                        target.movement_mode = None
-                        target.speed = 0.0
-                    else:
-                        hdg = _bearing(target.position, target.home_position)
-                        target.heading = hdg
-                        new_pos = _advance(target.position, hdg, target.speed, DT)
-                        if not _terrain_blocks(target.type, new_pos):
-                            target.position = new_pos
-                elif target.movement_mode == 'patrolling' and target.speed > 0:
-                    new_pos = _advance(target.position, target.heading, target.speed, DT)
+            # Feature 33: destination-based movement — all asset types
+            if target.destination is not None and target.speed > 0:
+                dist = _distance_km(target.position, target.destination)
+                if dist <= _ARRIVE_THRESHOLD_KM:
+                    target.position = target.destination
+                    target.destination = None
+                    target.speed = 0.0
+                else:
+                    hdg = _bearing(target.position, target.destination)
+                    target.heading = hdg
+                    new_pos = _advance(target.position, hdg, target.speed, DT)
                     if not _terrain_blocks(target.type, new_pos):
                         target.position = new_pos
-                    target.heading = (target.heading + 1.0) % 360
-                continue  # skip default movement logic for drones with an explicit mode
+                continue
 
             if target.speed <= 0:
                 continue

@@ -66,6 +66,7 @@ class Drone(BaseModel):
     current_task: Optional[str] = None
     swarm_id: Optional[str] = None
     tracking_target_id: Optional[str] = None  # Feature 24: target being tracked by a standalone recon drone
+    destination: Optional[Position] = None    # Feature 33: idle drone moves toward this when set
     last_update: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -78,6 +79,7 @@ class DroneUpdate(BaseModel):
     status: Optional[DroneStatus] = None
     battery: Optional[float] = None
     current_task: Optional[str] = None
+    destination: Optional[Position] = None  # Feature 33: set destination for idle drones
 
 
 class TelemetryReport(BaseModel):
