@@ -51,7 +51,11 @@ export default function SwarmStatus() {
   )
 
   const activeReconDrones = reconDrones.filter(d => d.status !== 'idle')
-  const idleReconCount = reconDrones.length - activeReconDrones.length
+
+  const activeSwarms = sortedSwarms.filter(swarm => {
+    const swarmDrones = (swarm.drone_ids || []).map(id => droneMap[id]).filter(Boolean)
+    return swarmDrones.some(d => d.status !== 'idle')
+  })
 
   return (
     <div className="panel swarm-panel">
@@ -63,10 +67,10 @@ export default function SwarmStatus() {
       <div className="swarm-scroll">
 
       {/* Combat Swarms */}
-      {swarms.length > 0 && (
+      {activeSwarms.length > 0 && (
         <div className="section-label">COMBAT SWARMS</div>
       )}
-      {sortedSwarms.map(swarm => {
+      {activeSwarms.map(swarm => {
         const swarmDrones = (swarm.drone_ids || []).map(id => droneMap[id]).filter(Boolean)
         const avgBattery = swarmDrones.length
           ? Math.round(swarmDrones.reduce((s, d) => s + (d.battery || 0), 0) / swarmDrones.length)
@@ -145,11 +149,6 @@ export default function SwarmStatus() {
                     </div>
                   )
                 })}
-                {swarmDrones.filter(d => d.status === 'idle').length > 0 && (
-                  <div className="drone-item" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
-                    {swarmDrones.filter(d => d.status === 'idle').length} drones idle
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -157,14 +156,9 @@ export default function SwarmStatus() {
       })}
 
       {/* Recon Drones */}
-      {reconDrones.length > 0 && (
+      {activeReconDrones.length > 0 && (
         <div className="section-group">
-          <div className="section-label">
-            RECONNAISSANCE
-            {idleReconCount > 0 && (
-              <span className="idle-count"> ({idleReconCount} idle)</span>
-            )}
-          </div>
+          <div className="section-label">RECONNAISSANCE</div>
           {activeReconDrones.map(d => {
             const isReconSelected = d.id === selectedDroneId
             return (

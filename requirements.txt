@@ -18,7 +18,6 @@ c) low value targets. And ask human for permission to attack enemy targets accor
 
 Engaginng:
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
-16) idling drones should not show up on on the swarm and drone status panel.
 23) Engaging: when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
 the engaging drone on "the Swarm and drone status" panel should display target type and short id.
 22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. 
@@ -68,8 +67,11 @@ drone list. (i.e. one drone cannot be used to track multiple enemy targets). the
 28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
 if a target is being tracked by one drone, clicking on the track button again, the platform will dispay a message showing which drone is tracking this target. 
 29) Enemy target panel: display target type and short ID under each enemy target in the panel.
-30) Swarm & drone status panel: for reconnaissance drones, do not display DETECTED CONTACTS.
+
+Swarm & drone status panel
+30) for reconnaissance drones, do not display DETECTED CONTACTS.
 31) the tracking drone on the "Swarm and drone status" panel should show target type and short id.
+34) idle combat drones and reconnaissance drone are not shown on the panel.
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
