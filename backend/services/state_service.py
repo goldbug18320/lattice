@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from datetime import datetime, timedelta
 import threading
+import uuid
 from models.target import Target, TargetStatus, PendingApproval
 from models.drone import Drone, Swarm, DroneStatus, DroneType, DroneModel, SwarmStatus
 
@@ -63,27 +64,57 @@ class StateService:
         """Restore drones, targets, and swarms from a saved initial_state snapshot."""
         from models.target import Position, TargetType, TargetStatus, ThreatValue
 
-        for s_data in initial_state.get("swarms", []):
-            swarm = Swarm(
-                id=s_data["id"],
-                name=s_data["name"],
-                drone_model=DroneModel(s_data["drone_model"]) if s_data.get("drone_model") else None,
-                total_drone_count=s_data.get("total_drone_count", 0),
-                drone_ids=list(s_data.get("drone_ids", [])),
-                status=SwarmStatus(s_data.get("status", "idle")),
-                objective=s_data.get("objective"),
-                target_ids=list(s_data.get("target_ids", [])),
-            )
-            self._swarms[swarm.id] = swarm
-
+        # ── Drones ──────────────────────────────────────────────────────────────
         for d_data in initial_state.get("drones", []):
             pos  = d_data.get("position")
             home = d_data.get("home_position")
+            dtype = d_data.get("type")
+
+            if dtype == "combat_swarm":
+                # Feature 36: single entry represents the whole swarm.
+                # The entry id is shared by both the Swarm object and its representative Drone.
+                eid   = d_data["id"]
+                model = DroneModel(d_data["model"]) if d_data.get("model") else None
+                swarm = Swarm(
+                    id=eid,
+                    name=d_data["name"],
+                    drone_model=model,
+                    total_drone_count=d_data.get("total_drone_count", 1),
+                    status=SwarmStatus.IDLE,
+                    drone_ids=[eid],
+                )
+                drone = Drone(
+                    id=eid,
+                    name=d_data["name"],
+                    model=model,
+                    type=DroneType.COMBAT_SWARM,
+                    status=DroneStatus.IDLE,
+                    heading=d_data.get("heading", 0.0),
+                    speed=d_data.get("speed", 0.0),
+                    altitude=d_data.get("altitude", 100.0),
+                    battery=d_data.get("battery", 100.0),
+                    range_used_km=d_data.get("range_used_km", 0.0),
+                    max_range_km=d_data.get("max_range_km", 15.0),
+                    max_payload_kg=d_data.get("max_payload_kg"),
+                    max_flight_time_hours=d_data.get("max_flight_time_hours"),
+                    swarm_id=eid,
+                    current_task=None,
+                    position=Position(**pos) if pos else None,
+                    home_position=Position(**home) if home else None,
+                )
+                self._swarms[swarm.id] = swarm
+                self._drones[drone.id] = drone
+                continue
+
+            if dtype == "swarm_member":
+                # Old format — skip individual member drones; swarm objects are in the swarms array below.
+                continue
+
             drone = Drone(
                 id=d_data["id"],
                 name=d_data["name"],
                 model=DroneModel(d_data["model"]) if d_data.get("model") else None,
-                type=DroneType(d_data["type"]),
+                type=DroneType(dtype),
                 status=DroneStatus(d_data.get("status", "idle")),
                 heading=d_data.get("heading", 0.0),
                 speed=d_data.get("speed", 0.0),
@@ -100,6 +131,21 @@ class StateService:
             )
             self._drones[drone.id] = drone
 
+        # Old format backward compat: load swarms from a separate swarms array if present.
+        for s_data in initial_state.get("swarms", []):
+            if s_data["id"] in self._swarms:
+                continue
+            swarm = Swarm(
+                id=s_data["id"],
+                name=s_data["name"],
+                drone_model=DroneModel(s_data["drone_model"]) if s_data.get("drone_model") else None,
+                total_drone_count=s_data.get("total_drone_count", 0),
+                drone_ids=list(s_data.get("drone_ids", [])),
+                status=SwarmStatus.IDLE,
+            )
+            self._swarms[swarm.id] = swarm
+
+        # ── Targets ──────────────────────────────────────────────────────────────
         for t_data in initial_state.get("targets", []):
             pos = t_data.get("position")
             if pos:
@@ -116,12 +162,16 @@ class StateService:
                 reported_by=t_data.get("reported_by", ""),
                 notes=t_data.get("notes"),
                 position=parsed_pos,
-                home_position=parsed_pos,  # Feature 33: spawn position used for drone 'returning' mode
+                home_position=parsed_pos,
             )
             self._targets[target.id] = target
 
     def _build_initial_state(self) -> dict:
-        """Serialize current in-memory state for persistence to assets_config.json."""
+        """Serialize current in-memory state for persistence to assets_config.json.
+
+        Feature 36: combat swarms are stored as a single 'combat_swarm' entry in the
+        drones list — no separate swarms array, no individual swarm_member drones.
+        """
         drones_data = []
         for d in self._drones.values():
             entry: dict = {
@@ -138,9 +188,13 @@ class StateService:
                 "max_range_km": d.max_range_km,
                 "max_payload_kg": d.max_payload_kg,
                 "max_flight_time_hours": d.max_flight_time_hours,
-                "swarm_id": d.swarm_id,
                 "current_task": None,
             }
+            if d.type == DroneType.COMBAT_SWARM:
+                swarm = self._swarms.get(d.swarm_id)
+                entry["total_drone_count"] = swarm.total_drone_count if swarm else 1
+            else:
+                entry["swarm_id"] = d.swarm_id
             if d.position:
                 entry["position"] = {"lat": d.position.lat, "lon": d.position.lon, "alt": d.position.alt}
             if d.home_position:
@@ -165,20 +219,7 @@ class StateService:
                 entry["position"] = {"lat": t.position.lat, "lon": t.position.lon, "alt": t.position.alt}
             targets_data.append(entry)
 
-        swarms_data = []
-        for s in self._swarms.values():
-            swarms_data.append({
-                "id": s.id,
-                "name": s.name,
-                "drone_model": s.drone_model.value if s.drone_model else None,
-                "total_drone_count": s.total_drone_count,
-                "drone_ids": list(s.drone_ids),
-                "status": "idle",
-                "objective": None,
-                "target_ids": [],
-            })
-
-        return {"drones": drones_data, "targets": targets_data, "swarms": swarms_data}
+        return {"drones": drones_data, "targets": targets_data}
 
     def save_config_to_file(self) -> bool:
         """Flush current asset positions to assets_config.json under 'initial_state'."""
@@ -249,7 +290,7 @@ class StateService:
             self._drones[d.id] = d
 
         # ── FPV Combat Swarms ──────────────────────────────────────────────────
-        # swarm_count swarms, each representing swarm_size drones; 60% Taipei
+        # Feature 36: one combat_swarm entry per swarm (representative drone shares swarm id)
         fpv_swarm_names = [
             "FPV-Alpha", "FPV-Bravo", "FPV-Charlie", "FPV-Delta", "FPV-Echo",
             "FPV-Foxtrot", "FPV-Golf", "FPV-Hotel", "FPV-India", "FPV-Juliet",
@@ -257,25 +298,26 @@ class StateService:
         total_fpv_swarms = cfg_fpv["swarm_count"]
         for s_idx in range(total_fpv_swarms):
             base_lat, base_lon = _city_base(s_idx, total_fpv_swarms, taipei_pct)
+            sid = str(uuid.uuid4())
             swarm = Swarm(
+                id=sid,
                 name=fpv_swarm_names[s_idx],
                 drone_model=DroneModel.FPV_COMBAT,
                 total_drone_count=cfg_fpv["swarm_size"],
+                drone_ids=[sid],
             )
-            for i in range(5):
-                pos = Position(lat=base_lat + i * 0.002, lon=base_lon, alt=150.0)
-                d = Drone(
-                    name=f"{fpv_swarm_names[s_idx]}-{i+1:03d}",
-                    type=DroneType.SWARM_MEMBER,
-                    model=DroneModel.FPV_COMBAT,
-                    position=pos,
-                    home_position=Position(lat=base_lat + i * 0.002, lon=base_lon, alt=0.0),
-                    swarm_id=swarm.id,
-                    max_payload_kg=cfg_fpv["max_payload_kg"],
-                    max_range_km=cfg_fpv["max_range_km"],
-                )
-                self._drones[d.id] = d
-                swarm.drone_ids.append(d.id)
+            d = Drone(
+                id=sid,
+                name=fpv_swarm_names[s_idx],
+                type=DroneType.COMBAT_SWARM,
+                model=DroneModel.FPV_COMBAT,
+                position=Position(lat=base_lat, lon=base_lon, alt=150.0),
+                home_position=Position(lat=base_lat, lon=base_lon, alt=0.0),
+                swarm_id=sid,
+                max_payload_kg=cfg_fpv["max_payload_kg"],
+                max_range_km=cfg_fpv["max_range_km"],
+            )
+            self._drones[d.id] = d
             self._swarms[swarm.id] = swarm
 
         # ── Altius-600M Combat Swarms ──────────────────────────────────────────
@@ -290,26 +332,27 @@ class StateService:
         ]
         for s_idx in range(total_alt_swarms):
             base_lat, base_lon = alt_base_cities[s_idx % len(alt_base_cities)]
+            sid = str(uuid.uuid4())
             swarm = Swarm(
+                id=sid,
                 name=alt_swarm_names[s_idx],
                 drone_model=DroneModel.ALTIUS_600M,
                 total_drone_count=cfg_alt["swarm_size"],
+                drone_ids=[sid],
             )
-            for i in range(5):
-                pos = Position(lat=base_lat + i * 0.002, lon=base_lon, alt=200.0)
-                d = Drone(
-                    name=f"{alt_swarm_names[s_idx]}-{i+1:03d}",
-                    type=DroneType.SWARM_MEMBER,
-                    model=DroneModel.ALTIUS_600M,
-                    position=pos,
-                    home_position=Position(lat=base_lat + i * 0.002, lon=base_lon, alt=0.0),
-                    swarm_id=swarm.id,
-                    max_payload_kg=cfg_alt["max_payload_kg"],
-                    max_range_km=cfg_alt["max_range_km"],
-                    max_flight_time_hours=4.0,
-                )
-                self._drones[d.id] = d
-                swarm.drone_ids.append(d.id)
+            d = Drone(
+                id=sid,
+                name=alt_swarm_names[s_idx],
+                type=DroneType.COMBAT_SWARM,
+                model=DroneModel.ALTIUS_600M,
+                position=Position(lat=base_lat, lon=base_lon, alt=200.0),
+                home_position=Position(lat=base_lat, lon=base_lon, alt=0.0),
+                swarm_id=sid,
+                max_payload_kg=cfg_alt["max_payload_kg"],
+                max_range_km=cfg_alt["max_range_km"],
+                max_flight_time_hours=4.0,
+            )
+            self._drones[d.id] = d
             self._swarms[swarm.id] = swarm
 
         # ── Scout Recon Drones (city home bases) ──────────────────────────────
@@ -463,9 +506,12 @@ class StateService:
             if drone_id not in self._drones:
                 return False
             del self._drones[drone_id]
-            for swarm in self._swarms.values():
+            for sid in list(self._swarms.keys()):
+                swarm = self._swarms[sid]
                 if drone_id in swarm.drone_ids:
                     swarm.drone_ids.remove(drone_id)
+                    if not swarm.drone_ids:  # Feature 36: remove swarm when its representative drone is removed
+                        del self._swarms[sid]
             return True
 
     # ─── Swarms ─────────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ from .target import Position
 class DroneType(str, Enum):
     RECON = "recon"
     COMBAT = "combat"
-    SWARM_MEMBER = "swarm_member"
+    COMBAT_SWARM = "combat_swarm"
 
 
 class DroneModel(str, Enum):

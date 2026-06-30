@@ -18,11 +18,6 @@ const TARGET_ICONS = {
   soldier_unit: '◉',
 }
 
-const DRONE_ICONS = {
-  recon: '👁',
-  combat: '⚡',
-  swarm_member: '◈',
-}
 
 function remainingRange(drone) {
   const max = drone.max_range_km ?? 0
@@ -100,7 +95,7 @@ export default function SwarmStatus() {
               </div>
             </div>
             <div className="swarm-meta">
-              <span>{swarmDrones.length} drones</span>
+              <span>{swarm.total_drone_count ?? swarmDrones.length} drones</span>
               <span className="battery-indicator">
                 🔋 {avgBattery}%
                 <div className="battery-bar">
@@ -120,37 +115,6 @@ export default function SwarmStatus() {
                 </div>
               )
             })}
-            {isSelected && (
-              <div className="drone-list">
-                {swarmDrones.filter(d => d.status !== 'idle').map(d => {
-                  const isDroneSelected = d.id === selectedDroneId
-                  return (
-                    <div key={d.id}>
-                      <div
-                        className={`drone-item ${isDroneSelected ? 'selected' : ''}`}
-                        style={{ cursor: 'pointer' }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const next = isDroneSelected ? null : d.id
-                          selectDrone(next)
-                          if (next && d.position) {
-                            setCameraCommand({ ui_subtype: 'fly_to', destination: { lat: d.position.lat, lon: d.position.lon } })
-                          }
-                        }}
-                      >
-                        <span className="drone-icon">{DRONE_ICONS[d.type] || '◈'}</span>
-                        <span className="drone-name">{d.name}</span>
-                        <span className="drone-status" style={{ color: STATUS_COLORS[d.status] || '#6b7280' }}>
-                          {d.status}
-                        </span>
-                        <span className="drone-battery">🔋{Math.round(d.battery || 0)}%</span>
-                        <span className="drone-range">↗{remainingRange(d)} km</span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
           </div>
         )
       })}

@@ -34,6 +34,8 @@
 - **Enemy target type and short ID in Target Panel (Feature 29)**: Each enemy target card in the Enemy Targets panel always displays the target type and short ID as a subtitle line directly beneath the target's primary label — visible at all times without requiring the operator to click or expand the entry, giving immediate at-a-glance identity for every listed threat
 - **Hide DETECTED CONTACTS for recon drones in Swarm & Drone Status panel (Feature 30)**: Reconnaissance drone rows (MQ-9 and Scout) in the Swarm & Drone Status panel do not display a DETECTED CONTACTS sub-panel — the contacts list is suppressed entirely for recon drones; detection data is surfaced through the Enemy Targets panel instead, keeping the Swarm & Drone Status panel focused on mission and movement state
 - **Idle combat and recon drone suppression (Feature 34)**: Both idle combat drones and idle reconnaissance drones are never shown on the Swarm & Drone Status panel — this rule applies continuously at all times (not only during active engagements); a swarm card is only rendered when at least one of its member drones is non-idle; idle recon drone rows are fully hidden from the RECONNAISSANCE section; no idle-drone count summary is displayed
+- **Swarm displayed as single unit, no member sub-panel (Feature 35)**: In the Swarm & Drone Status panel, each swarm is rendered as a single card — like a single drone row — with no expandable sub-panel listing individual member drones; swarm-level status, assigned target type, short ID, and mission details are shown directly on the swarm card; per-drone telemetry within a swarm is not exposed in the panel
+- **Combat swarm stored as single config entry with type `combat_swarm` (Feature 36)**: In `assets_config.json`, a combat swarm is persisted as one drone-shaped entry with `"type": "combat_swarm"` — carrying the swarm's collective position, battery, range, speed, heading, and capability fields; there are no separate swarm-group objects and no individual `swarm_member` drone entries in the config file; on load the backend reconstructs an in-memory `Swarm` object and a single representative drone from this entry
 - **Already-engaging notification (Feature 32)**: When the operator clicks the ENGAGE button on a target that is already in `engaged` status, the platform displays an informational message identifying which combat swarm is currently engaging that target — no new HITL approval flow is started, no additional swarm is assigned, and the existing engagement is undisturbed
 - Swarm-level (not drone-level) task assignment to support autonomous AI swarm coordination
 - **Drone movement simulation (Feature 10)**: all deployed (non-idle) drones continuously update their position on the server at 1-second intervals; drones return when max range is consumed
@@ -122,7 +124,7 @@
 | `id` | UUID | Unique identifier |
 | `name` | string | Human-readable name (e.g. `FPV-42`, `MQ9-02`, `SCOUT-01`) |
 | `model` | enum | `mq9_recon` \| `scout_recon` \| `fpv_combat` \| `altius_600m` |
-| `type` | enum | `recon` \| `combat` \| `swarm_member` (derived from model) |
+| `type` | enum | `recon` \| `combat` \| `combat_swarm` (derived from model; `combat_swarm` is used for swarms loaded from config as a single entry — see Feature 36) |
 | `position` | Position? | Last known position |
 | `heading` | float | Current heading in degrees |
 | `speed` | float | Current speed in m/s |
@@ -1021,6 +1023,7 @@ Approved actions execute immediately; denied actions are logged and discarded. T
 - Expandable per-swarm to show individual drone status, battery, **remaining range** (`max_range_km − range_used_km`), and current task
 - **Feature 16 — hide idle drones**: The expanded drone list within a swarm only shows non-idle drones; a summary line shows the idle count (e.g., "3 drones idle")
 - **Feature 34 — idle combat and recon drones never shown**: A swarm card is only rendered when at least one member drone is non-idle — swarms where every drone is idle are fully hidden from the panel; idle reconnaissance drone rows are completely suppressed from the RECONNAISSANCE section; no idle-drone count summary is displayed; this applies at all times, not just during engagements
+- **Feature 35 — swarm displayed as single unit, no member sub-panel**: Each swarm is rendered as a single card with no expandable member drone list — the swarm card shows collective status, assigned target type and short ID, and mission objective directly on the card face; individual member drone telemetry (battery, speed, remaining range per drone) is not exposed in the panel; this supersedes the expandable sub-panel behavior described under Features 16 and 34
 - **Engage auto-select (Feature 15)**: When the operator clicks the ENGAGE button in the Target List panel, the assigned combat swarm is immediately selected in this panel (expanding its drone list) and floats to the top of the sorted list
 - **Engaging drone → always show target (Feature 23)**: When a swarm is in `engaging` status, the target type and short ID is shown directly on the swarm card — always visible without requiring the operator to expand the card, consistent with how tracking drones display their target in the RECONNAISSANCE section
 - **Click-to-highlight on map (Feature 20)**: clicking a swarm card or individual drone entry selects that asset — the corresponding entity (or all drones in the swarm) is highlighted on the 3D map (yellow outline, enlarged point) and the camera flies to center on it; a second click deselects
@@ -1167,6 +1170,36 @@ Modifying this file and restarting the backend changes the war game scenario wit
 
 Default values in `assets_config.json` match the war game scenario defined in §8.
 
+### Combat Swarm Config Entry (Feature 36)
+
+**(Feature 36)** Each combat swarm is persisted in `assets_config.json` as a **single drone-shaped entry** with `"type": "combat_swarm"`. There are no separate swarm-group objects and no individual `swarm_member` drone entries. The entry carries the swarm's collective state — position, battery, range budget, heading, speed, and capability fields — exactly like a single drone record.
+
+**Example `combat_swarm` entry:**
+```json
+{
+  "id": "a86c296b-a7aa-40a5-a059-dbf2bb082f12",
+  "name": "ALT-Charlie",
+  "model": "altius_600m",
+  "type": "combat_swarm",
+  "status": "idle",
+  "heading": 152.99,
+  "speed": 25.0,
+  "altitude": 100.0,
+  "battery": 72.09,
+  "range_used_km": 267.63,
+  "max_range_km": 160.0,
+  "max_payload_kg": 12.0,
+  "max_flight_time_hours": 4.0,
+  "current_task": null,
+  "position": { "lat": 24.104, "lon": 119.593, "alt": 200.0 },
+  "home_position": { "lat": 23.0, "lon": 120.21, "alt": 0.0 }
+}
+```
+
+**Load behaviour:** On startup the backend reads each `combat_swarm` entry, creates an in-memory `Swarm` object (name, model, status, target_ids), and associates it with a single representative drone record derived from the entry's fields. No `swarm_member` sub-drones are created.
+
+**Save behaviour:** When a swarm's position, battery, or range changes, the backend writes back a single `combat_swarm` entry — never a swarm-group + member list. `status` is always written as `"idle"` (runtime statuses live only in the in-memory State Service).
+
 ### Frontend Dev Server Proxy (`vite.config.js`)
 
 | Path | Proxied To |
@@ -1230,7 +1263,9 @@ npm run dev                   # starts at http://localhost:5173
 | **Enemy target type and short ID always visible in Target Panel (Feature 29)** | Each target card in the Enemy Targets panel renders the target type and short ID as a permanent subtitle — no click required; operators can immediately distinguish asset type and identity across all listed threats without reading coordinates or opening an expand view |
 | **Suppress DETECTED CONTACTS for recon drones in Swarm & Drone Status panel (Feature 30)** | Reconnaissance drone rows (MQ-9 and Scout) do not show a DETECTED CONTACTS sub-panel — clicking a recon drone row expands movement/status details only; detection data is accessed via the Enemy Targets panel, separating ISR output from drone status and keeping the panel uncluttered |
 | **Idle combat and recon drone suppression in Swarm & Drone Status panel (Feature 34)** | Idle drones of both types (combat and recon) are never rendered on the panel — a swarm card is only shown if at least one member drone is non-idle, and idle recon drone rows are fully hidden; this is a stricter rule than Feature 16 (which suppressed individual idle drones within an expanded swarm view but always kept the swarm card visible) — Feature 34 removes the swarm card entirely when all drones are idle, preventing panel clutter from inactive swarms |
+| **Swarm displayed as single unit, no member sub-panel (Feature 35)** | Swarms are AI-coordinated units that self-assign internal roles; exposing per-drone detail in the panel adds noise without operator value — the swarm card shows collective status, assigned target, and mission objective; operators do not need to track individual swarm members because the on-drone AI handles coordination; this replaces the expandable sub-panel behavior from Features 16 and 34 |
 | **Stationary-by-default with split context menu for drones vs. non-drones (Feature 33)** | All deployed assets spawn stationary — no movement on placement. The right-click context menu is split into two variants: non-drone assets (ships, tanks, soldiers, missile launchers) get Current Speed / Current Direction / Set Speed / Set Heading / Remove — speed and heading persisted to `assets_config.json` for enemy assets; drone assets (all friendly and enemy drones) get Current Speed / Current Status / Set Speed / Set Status / Remove — Set Status lets the operator switch a drone to `patrolling` (orbit by incrementing heading +1°/tick) or `returning` (fly home), applied in-memory only and not persisted; "Set Heading" is intentionally absent from the drone menu because drone heading is driven by status/mission, not manual bearing; entered speed is always clamped to the asset's `max_speed_kmh` |
+| **Combat swarm stored as single `combat_swarm` entry in config (Feature 36)** | Each combat swarm is persisted as one drone-shaped JSON object with `"type": "combat_swarm"` — no separate swarm-group record, no individual `swarm_member` sub-drones; this keeps the config flat and consistent with how single drones (recon, enemy) are stored; on load the backend reconstructs an in-memory `Swarm` + representative drone from the single entry; on save only that one entry is written back; eliminates the `swarm_member` DroneType value from the config schema |
 | In-memory state (no database) | Simplicity for v1; easily replaced with Redis or PostgreSQL |
 | WebSocket broadcast (not on-change) | 1-second polling avoids complex change-tracking; sufficient for tactical update rate |
 | LLM JSON mode + low temperature | Deterministic structured output; safe for tactical command execution |

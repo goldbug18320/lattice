@@ -110,7 +110,7 @@ def _make_state(drones, targets=None, swarms=None):
 def _make_drone(**kwargs):
     defaults = dict(
         name="Test-Drone",
-        type=DroneType.SWARM_MEMBER,
+        type=DroneType.COMBAT_SWARM,
         model=DroneModel.FPV_COMBAT,
         position=Position(lat=25.0, lon=121.0, alt=150.0),
         home_position=Position(lat=25.0, lon=121.0, alt=0.0),

@@ -29,7 +29,7 @@ def _make_state_with_swarm(n_drones: int = 3):
     for i in range(n_drones):
         d = Drone(
             name=f"D-{i+1}",
-            type=DroneType.SWARM_MEMBER,
+            type=DroneType.COMBAT_SWARM,
             swarm_id=swarm.id,
         )
         svc._drones[d.id] = d

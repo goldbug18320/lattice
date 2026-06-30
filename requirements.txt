@@ -8,7 +8,6 @@ Features and capabilities:
 4) Define a set of APIs to control a swarm of drones to locate, track and attack enemy drones, ships, tanks, missile lauchers.
 5) the platform use LLM to assign tasks to a single drone or a swarm of drones. In case of a swarm of drones, it is expected the drones are AI enabled 
 which can coordinate with each other to locate and attach targets by themselves. The platform does not assign tasks to each drone in the swarm. 
-This helps the success rate in GPS denial battle ground.
 6) 3D UI with with real world terrain information (such as Taiwan) to show the locations of our drones and enemy drones, ships, tanks, missile launchers.
 8) LLM determine the appropriate drones to use, based on the payload, range. LLM also determine the swarm size appropriate for the enemy targets.
 10) All deployed drones should be constantly moving until their max range is reached. 
@@ -66,12 +65,46 @@ drone list. (i.e. one drone cannot be used to track multiple enemy targets). the
 26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
 28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
 if a target is being tracked by one drone, clicking on the track button again, the platform will dispay a message showing which drone is tracking this target. 
-29) Enemy target panel: display target type and short ID under each enemy target in the panel.
+
+Enemy target panel: 
+29) display target type and short ID under each enemy target in the panel.
 
 Swarm & drone status panel
 30) for reconnaissance drones, do not display DETECTED CONTACTS.
 31) the tracking drone on the "Swarm and drone status" panel should show target type and short id.
 34) idle combat drones and reconnaissance drone are not shown on the panel.
+35) A swarm is displayed like a single drone. Do not display swarm member sub panel.
+
+Configuration file:
+36) A swarm of drones is represented the way as a single drone. A swarm's type is 'combat_swarm'.
+There is no swarm group and individual swarm_members.
+For example:
+      {
+        "id": "a86c296b-a7aa-40a5-a059-dbf2bb082f12",
+        "name": "ALT-Charlie",
+        "model": "altius_600m",
+        "type": "combat_swarm",
+        "status": "idle",
+        "heading": 152.9890098550606,
+        "speed": 25.0,
+        "altitude": 100.0,
+        "battery": 72.09400000006504,
+        "range_used_km": 267.62500000003047,
+        "max_range_km": 160.0,
+        "max_payload_kg": 12.0,
+        "max_flight_time_hours": 4.0,
+        "current_task": null,
+        "position": {
+          "lat": 24.104344069929887,
+          "lon": 119.59326341569808,
+          "alt": 199.9999999977003
+        },
+        "home_position": {
+          "lat": 23.0,
+          "lon": 120.21,
+          "alt": 0.0
+        }
+      },
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.

@@ -1,5 +1,6 @@
 """Assets management API — create/delete scenario assets and persist to config (Feature 17)."""
 from __future__ import annotations
+import uuid as _uuid
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -13,8 +14,8 @@ router = APIRouter()
 _MODEL_TO_TYPE = {
     DroneModel.MQ9_RECON:   DroneType.RECON,
     DroneModel.SCOUT_RECON: DroneType.RECON,
-    DroneModel.FPV_COMBAT:  DroneType.COMBAT,
-    DroneModel.ALTIUS_600M: DroneType.COMBAT,
+    DroneModel.FPV_COMBAT:  DroneType.COMBAT_SWARM,
+    DroneModel.ALTIUS_600M: DroneType.COMBAT_SWARM,
 }
 
 _DEFAULT_THREAT = {
@@ -72,32 +73,50 @@ async def save_config():
 @router.post("/drone", summary="Create a new drone from the Asset Palette")
 async def create_drone(req: CreateDroneRequest):
     model = req.model
-    dtype = _MODEL_TO_TYPE.get(model, DroneType.COMBAT)
-    prefix = model.value.upper().replace("_", "-")
-    name = req.name or _next_name(prefix)
-    drone = Drone(
-        name=name,
-        type=dtype,
-        model=model,
-        position=req.position,
-        home_position=Position(lat=req.position.lat, lon=req.position.lon, alt=0.0),
-        status=DroneStatus.IDLE,
-        max_range_km=_MODEL_RANGES.get(model, 100.0),
-        max_payload_kg=_MODEL_PAYLOADS.get(model),
-        max_flight_time_hours=assets_config["mq9"]["max_flight_time_hours"] if model == DroneModel.MQ9_RECON else None,
-    )
+    dtype = _MODEL_TO_TYPE.get(model, DroneType.RECON)
     swarm = None
-    if dtype == DroneType.COMBAT:
+
+    if dtype == DroneType.COMBAT_SWARM:
+        # Feature 36: swarm and representative drone share the same id
+        shared_id = str(_uuid.uuid4())
         swarm_prefix = "FPV-SWM" if model == DroneModel.FPV_COMBAT else "ALT-SWM"
+        name = req.name or _next_name(swarm_prefix)
+        drone = Drone(
+            id=shared_id,
+            name=name,
+            type=DroneType.COMBAT_SWARM,
+            model=model,
+            position=req.position,
+            home_position=Position(lat=req.position.lat, lon=req.position.lon, alt=0.0),
+            status=DroneStatus.IDLE,
+            max_range_km=_MODEL_RANGES.get(model, 100.0),
+            max_payload_kg=_MODEL_PAYLOADS.get(model),
+            swarm_id=shared_id,
+        )
         swarm = Swarm(
-            name=_next_name(swarm_prefix),
-            drone_ids=[drone.id],
+            id=shared_id,
+            name=name,
+            drone_ids=[shared_id],
             drone_model=model,
             total_drone_count=1,
             status=SwarmStatus.IDLE,
         )
-        drone.swarm_id = swarm.id
         state_service.create_swarm(swarm)
+    else:
+        prefix = model.value.upper().replace("_", "-")
+        name = req.name or _next_name(prefix)
+        drone = Drone(
+            name=name,
+            type=dtype,
+            model=model,
+            position=req.position,
+            home_position=Position(lat=req.position.lat, lon=req.position.lon, alt=0.0),
+            status=DroneStatus.IDLE,
+            max_range_km=_MODEL_RANGES.get(model, 100.0),
+            max_payload_kg=_MODEL_PAYLOADS.get(model),
+            max_flight_time_hours=assets_config["mq9"]["max_flight_time_hours"] if model == DroneModel.MQ9_RECON else None,
+        )
+
     state_service.register_drone(drone)
     state_service.save_config_to_file()
     return {"drone": drone, "swarm": swarm}

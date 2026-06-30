@@ -32,9 +32,9 @@ const _TARGET_MAX_SPEED_KMH = { drone: 150, ship: 55, tank: 30, soldier_unit: 5,
 const _DRONE_MAX_SPEED_KMH  = { mq9_recon: 324, scout_recon: 150, fpv_combat: 150, altius_600m: 180 }
 
 // Friendly drone base colors by model/type; status overrides take precedence (null = use model color)
-const MODEL_BG   = { mq9_recon: '#00a8d8', scout_recon: '#2860e0', fpv_combat: '#20c020', altius_600m: '#20a840', recon: '#00a8d8', combat: '#20c020', swarm_member: '#20c020' }
+const MODEL_BG   = { mq9_recon: '#00a8d8', scout_recon: '#2860e0', fpv_combat: '#20c020', altius_600m: '#20a840', recon: '#00a8d8', combat: '#20c020', combat_swarm: '#20c020' }
 const STATUS_BG  = { idle: '#4b5563', patrolling: null, searching: '#b45309', tracking: '#c2410c', engaging: '#b91c1c', returning: '#047857', offline: '#1f2937' }
-const DRONE_SIZE = { mq9_recon: 28, scout_recon: 22, fpv_combat: 18, altius_600m: 20, recon: 22, combat: 18, swarm_member: 16 }
+const DRONE_SIZE = { mq9_recon: 28, scout_recon: 22, fpv_combat: 18, altius_600m: 20, recon: 22, combat: 18, combat_swarm: 20 }
 
 // Taiwan island-wide view
 const TAIWAN_HOME = { lon: 121.0, lat: 23.8, altM: 450_000 }
