@@ -738,7 +738,7 @@ Scout drones continuously fly patrol routes and automatically submit reconnaissa
 | Naming | FPV-{N} |
 | Max payload | 4 kg |
 | Max range | 15 km |
-| Max speed | 150 km/h |
+| Max speed | 60 km/h |
 | Best against | FPV drones, soldiers, light vehicles at close range |
 | Swarm grouping | Multiple swarms (count configurable in `assets_config.json`) |
 
@@ -834,7 +834,7 @@ All deployed (non-`idle`) drones **continuously move** during the simulation. Th
 |---|---|---|
 | MQ-9 Recon | 60 m/s (216 km/h) | 90 m/s |
 | Scout Recon | 42 m/s (150 km/h) | 42 m/s |
-| FPV Combat | 42 m/s (150 km/h) | 42 m/s |
+| FPV Combat | 16.7 m/s (60 km/h) | 16.7 m/s |
 | Altius-600M | 50 m/s (180 km/h) | 50 m/s |
 
 #### Range Budget

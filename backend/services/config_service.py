@@ -24,7 +24,7 @@ _DEFAULTS: dict = {
         "count": 0,
         "max_payload_kg": 4.0,
         "max_range_km": 15.0,
-        "max_speed_kmh": 150.0,
+        "max_speed_kmh": 60.0,
         "swarm_count": 10,
         "swarm_size": 1000,
     },

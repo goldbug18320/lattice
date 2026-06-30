@@ -162,13 +162,13 @@ class TestMovementTick:
         drone = _make_drone(status=DroneStatus.ENGAGING, heading=0.0)
         state = _make_state([drone])
         self.svc.tick(state)
-        assert drone.speed == 42.0  # full speed for FPV
+        assert drone.speed == pytest.approx(60.0 / 3.6)  # full speed for FPV
 
     def test_searching_drone_at_half_speed(self):
         drone = _make_drone(status=DroneStatus.SEARCHING, heading=0.0)
         state = _make_state([drone])
         self.svc.tick(state)
-        assert abs(drone.speed - 21.0) < 1e-6  # 50% of 42
+        assert drone.speed == pytest.approx(60.0 / 3.6 * 0.5)  # 50% of FPV max speed
 
     def test_range_accumulates_each_tick(self):
         drone = _make_drone(status=DroneStatus.SEARCHING, heading=0.0, range_used_km=0.0)

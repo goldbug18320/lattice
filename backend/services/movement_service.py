@@ -44,7 +44,7 @@ DT = 1.0  # seconds per tick
 _MODEL_SPEED: dict[DroneModel, float] = {
     DroneModel.MQ9_RECON:   60.0,   # 216 km/h
     DroneModel.SCOUT_RECON: 42.0,   # 150 km/h
-    DroneModel.FPV_COMBAT:  42.0,   # 150 km/h
+    DroneModel.FPV_COMBAT:  60.0 / 3.6,   # 60 km/h
     DroneModel.ALTIUS_600M: 25.0,   # 90 km/h
 }
 

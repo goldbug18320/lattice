@@ -122,18 +122,18 @@ reconnaissance drones with real time reconnaissance feeds (enemy positions, type
 reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, 
 remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
-combat FPV drones, max payload 4kg, max range 15km, max speed 150km/hr.
-altius-600m drones, max payload 12kg, max range 160km, max speed 90km/hr.
-reconnaissance and combat drones should be marked as blue or green.
+10000 combat FPV drones, swarm_count=5, swarm size 2000, max payload 4kg, max range 15km, max speed 60km/hr.
+1000 altius-600m combat drones, swarm_count=2, swarm size 500, max payload 12kg, max range 160km, max speed 90km/hr.
+100 reconnaissance drones, max range 150km, max speed 150km/hr.
 
 
 Enermy assets:
-long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
-FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
-tanks, max speed 30km/hr, max range 400km.
-ships, max speed 55km/hr, max range 8000km.
-missle launchers, max speed 40km/hr, max range 400km.
-PLA solders, max speed 5km/hr.
+10000 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
+10000 FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
+100 tanks, max speed 30km/hr, max range 400km.
+1000 ships, max speed 55km/hr, max range 8000km.
+400 missle launchers, max speed 40km/hr, max range 400km.
+100000 PLA solders, max speed 5km/hr.
 Enemy assets should be marked as red.
 
 Friendly assets and enermy assets should be configurable (i.e. not hard coded).
