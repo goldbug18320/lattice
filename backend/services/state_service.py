@@ -104,6 +104,7 @@ class StateService:
             pos = t_data.get("position")
             if pos:
                 _check_terrain_constraint(t_data.get("type", ""), pos["lat"], pos["lon"])
+            parsed_pos = Position(**pos) if pos else Position(lat=0.0, lon=0.0)
             target = Target(
                 id=t_data["id"],
                 type=TargetType(t_data["type"]),
@@ -114,7 +115,8 @@ class StateService:
                 confidence=t_data.get("confidence", 1.0),
                 reported_by=t_data.get("reported_by", ""),
                 notes=t_data.get("notes"),
-                position=Position(**pos) if pos else Position(lat=0.0, lon=0.0),
+                position=parsed_pos,
+                home_position=parsed_pos,  # Feature 33: spawn position used for drone 'returning' mode
             )
             self._targets[target.id] = target
 

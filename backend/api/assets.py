@@ -125,6 +125,7 @@ async def create_target(req: CreateTargetRequest):
         status=TargetStatus.ACTIVE,
         threat_value=threat,
         reported_by="manual",
+        home_position=req.position,  # Feature 33: spawn position for drone 'returning' mode
     )
     state_service.upsert_target(target)
     state_service.save_config_to_file()

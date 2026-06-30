@@ -239,7 +239,31 @@ class MovementService:
         for target in state_service.get_all_targets():
             if target.status in (TargetStatus.DESTROYED, TargetStatus.LOST):
                 continue
-            if target.position is None or target.speed <= 0:
+            if target.position is None:
+                continue
+
+            # Feature 33: drone-specific movement modes set via right-click context menu
+            if target.type == TargetType.DRONE and target.movement_mode:
+                if target.movement_mode == 'returning' and target.home_position is not None and target.speed > 0:
+                    dist = _distance_km(target.position, target.home_position)
+                    if dist <= _ARRIVE_THRESHOLD_KM:
+                        target.position = target.home_position
+                        target.movement_mode = None
+                        target.speed = 0.0
+                    else:
+                        hdg = _bearing(target.position, target.home_position)
+                        target.heading = hdg
+                        new_pos = _advance(target.position, hdg, target.speed, DT)
+                        if not _terrain_blocks(target.type, new_pos):
+                            target.position = new_pos
+                elif target.movement_mode == 'patrolling' and target.speed > 0:
+                    new_pos = _advance(target.position, target.heading, target.speed, DT)
+                    if not _terrain_blocks(target.type, new_pos):
+                        target.position = new_pos
+                    target.heading = (target.heading + 1.0) % 360
+                continue  # skip default movement logic for drones with an explicit mode
+
+            if target.speed <= 0:
                 continue
             new_pos = _advance(target.position, target.heading, target.speed, DT)
             if _terrain_blocks(target.type, new_pos):

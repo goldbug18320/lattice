@@ -57,6 +57,8 @@ export const assetsApi = {
     request('PATCH', `/recon/targets/${id}`, { position }),
   updateTargetMovement: (id, updates) =>
     request('PATCH', `/recon/targets/${id}`, updates),
+  updateDroneMovement: (id, updates) =>
+    request('PATCH', `/swarm/drones/${id}`, updates),
 }
 
 // ─── Full State ───────────────────────────────────────────────────────────────

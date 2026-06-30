@@ -33,9 +33,13 @@ Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets
 to the configuration file. if a combat drone swarm is deployed, it should be displayed in "swarm & drone status" panel. If an enemy asset is deployed, 
 it should be displayed in enemy target panel.
-33) Deployed assets are by default stationary. For enemy assets on the map, right click on the asset bring up a context menu displaying the following options:
+33) Deployed assets are by default stationary. For enemy assets and friendly assets excluding drones on the map, right click on the asset bring up a context menu displaying the following options:
 a) current speed, b) current direction, c) set speed, d) set heading, e) remove the object. The speed and heading of the enemy target should be persisted to the configuration file. The speed should
 not be over the max. capability of the object. 
+For friendly or enemy drones, right click on the asset bring up a context menu displaying the following options:
+a) current speed, b) current status, c) set speed, d) set status, e) remove the object. Status has the following options: a) patrolling, b) returning.
+if a drone's status is set to patroling, the drone is flying in circle (i.e. heading +1 every sec). 
+if a drone's status is set to returning, the drone is returning to its home position.
 
 Map:
 18) use appropriate icons on the map for the combat objects. For example, use drone icon for drones. use ship icon for ships. use tank icon for tanks.

@@ -27,8 +27,9 @@ function _makeBillboardSVG(iconKey, bgColor, highlighted = false) {
 // Enemy target background colors and billboard pixel sizes per type
 const TARGET_BG   = { drone: '#c81e1e', ship: '#f04020', tank: '#e01010', missile_launcher: '#d0105a', soldier_unit: '#b01428' }
 const TARGET_SIZE = { drone: 24, ship: 36, tank: 28, missile_launcher: 32, soldier_unit: 20 }
-// Feature 33: max speeds (km/h) per enemy target type — mirrors backend _MAX_SPEED_MPS table
+// Feature 33: max speeds (km/h) per asset type — mirrors backend capability tables
 const _TARGET_MAX_SPEED_KMH = { drone: 150, ship: 55, tank: 30, soldier_unit: 5, missile_launcher: 40 }
+const _DRONE_MAX_SPEED_KMH  = { mq9_recon: 324, scout_recon: 150, fpv_combat: 150, altius_600m: 180 }
 
 // Friendly drone base colors by model/type; status overrides take precedence (null = use model color)
 const MODEL_BG   = { mq9_recon: '#00a8d8', scout_recon: '#2860e0', fpv_combat: '#20c020', altius_600m: '#20a840', recon: '#00a8d8', combat: '#20c020', swarm_member: '#20c020' }
@@ -546,6 +547,46 @@ export default function Map3D() {
     assetsApi.updateTargetMovement(id, { heading: ((deg % 360) + 360) % 360 }).then(() => assetsApi.saveConfig()).catch(console.error)
   }
 
+  function handleCtxSetDroneSpeed() {
+    const { id } = ctxMenu
+    setCtxMenu(null)
+    const drone = drones.find(d => d.id === id)
+    const maxKmh = _DRONE_MAX_SPEED_KMH[drone?.model] ?? 150
+    const raw = window.prompt(`Set speed (km/h, max ${maxKmh}):`, '0')
+    if (raw === null) return
+    const kmh = parseFloat(raw)
+    if (isNaN(kmh) || kmh < 0) { window.alert('Invalid speed. Enter a number ≥ 0.'); return }
+    const clamped = Math.min(kmh, maxKmh)
+    if (kmh > maxKmh) window.alert(`Speed clamped to max capability (${maxKmh} km/h).`)
+    assetsApi.updateDroneMovement(id, { speed: clamped / 3.6 }).catch(console.error)
+  }
+
+  function handleCtxSetDroneStatus() {
+    const { id } = ctxMenu
+    setCtxMenu(null)
+    const raw = window.prompt('Set status (patrolling / returning):', 'patrolling')
+    if (raw === null) return
+    const status = raw.trim().toLowerCase()
+    if (status !== 'patrolling' && status !== 'returning') {
+      window.alert('Invalid status. Enter "patrolling" or "returning".')
+      return
+    }
+    assetsApi.updateDroneMovement(id, { status }).catch(console.error)
+  }
+
+  function handleCtxSetEnemyDroneStatus() {
+    const { id } = ctxMenu
+    setCtxMenu(null)
+    const raw = window.prompt('Set status (patrolling / returning):', 'patrolling')
+    if (raw === null) return
+    const mode = raw.trim().toLowerCase()
+    if (mode !== 'patrolling' && mode !== 'returning') {
+      window.alert('Invalid status. Enter "patrolling" or "returning".')
+      return
+    }
+    assetsApi.updateTargetMovement(id, { movement_mode: mode }).catch(console.error)
+  }
+
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%' }}
@@ -577,14 +618,37 @@ export default function Map3D() {
           {ctxMenu.type === 'target' && (() => {
             const t = targets.find(x => x.id === ctxMenu.id)
             const speedKmh = t ? (t.speed * 3.6).toFixed(1) : '—'
-            const heading  = t ? `${Math.round(((t.heading % 360) + 360) % 360)}°` : '—'
+            const isDrone  = t?.type === 'drone'
+            const info2    = isDrone
+              ? t?.movement_mode ?? 'stationary'
+              : t ? `${Math.round(((t.heading % 360) + 360) % 360)}°` : '—'
             return (
               <>
                 <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Speed</span>{speedKmh} km/h</div>
-                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Direction</span>{heading}</div>
+                <div style={CTX_INFO_STYLE}>
+                  <span style={CTX_LABEL_STYLE}>{isDrone ? 'Status' : 'Direction'}</span>{info2}
+                </div>
                 <div style={{ borderTop: '1px solid #334155' }} />
-                <button onClick={handleCtxSetSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
-                <button onClick={handleCtxSetHeading} style={CTX_BTN_STYLE}>Set Heading</button>
+                <button onClick={handleCtxSetSpeed} style={CTX_BTN_STYLE}>Set Speed</button>
+                {isDrone
+                  ? <button onClick={handleCtxSetEnemyDroneStatus} style={CTX_BTN_STYLE}>Set Status</button>
+                  : <button onClick={handleCtxSetHeading}          style={CTX_BTN_STYLE}>Set Heading</button>
+                }
+                <div style={{ borderTop: '1px solid #334155' }} />
+              </>
+            )
+          })()}
+          {ctxMenu.type === 'drone' && (() => {
+            const d = drones.find(x => x.id === ctxMenu.id)
+            const speedKmh = d ? (d.speed * 3.6).toFixed(1) : '—'
+            const status   = d?.status ?? '—'
+            return (
+              <>
+                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Speed</span>{speedKmh} km/h</div>
+                <div style={CTX_INFO_STYLE}><span style={CTX_LABEL_STYLE}>Status</span>{status}</div>
+                <div style={{ borderTop: '1px solid #334155' }} />
+                <button onClick={handleCtxSetDroneSpeed}  style={CTX_BTN_STYLE}>Set Speed</button>
+                <button onClick={handleCtxSetDroneStatus} style={CTX_BTN_STYLE}>Set Status</button>
                 <div style={{ borderTop: '1px solid #334155' }} />
               </>
             )

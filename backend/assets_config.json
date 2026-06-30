@@ -76,19 +76,19 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 64.66167857614502,
+        "heading": 342.1939408383911,
         "speed": 60.0,
         "altitude": 100.0,
         "battery": 0.0,
-        "range_used_km": 90.3600000000019,
+        "range_used_km": 196.0200000000059,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 25.115932945801482,
-          "lon": 121.52094865896503,
+          "lat": 25.013965580898457,
+          "lon": 121.46860730697712,
           "alt": 0.0
         },
         "home_position": {
@@ -103,20 +103,20 @@
         "model": "mq9_recon",
         "type": "recon",
         "status": "idle",
-        "heading": 159.6941949583421,
+        "heading": 323.3835665455505,
         "speed": 60.0,
         "altitude": 100.0,
         "battery": 0.0,
-        "range_used_km": 90.2400000000019,
+        "range_used_km": 195.8400000000059,
         "max_range_km": 1900.0,
         "max_payload_kg": 1.7,
         "max_flight_time_hours": 30.0,
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 23.772615278186347,
-          "lon": 120.28909832729897,
-          "alt": 149.99999999270022
+          "lat": 23.130021757070672,
+          "lon": 119.96991109762735,
+          "alt": 149.99999999151322
         },
         "home_position": {
           "lat": 23.55,
@@ -1167,9 +1167,9 @@
         "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
         "current_task": null,
         "position": {
-          "lat": 23.002,
-          "lon": 120.21,
-          "alt": 150.0
+          "lat": 23.00549966324795,
+          "lon": 120.20985200184124,
+          "alt": 150.00000000072356
         },
         "home_position": {
           "lat": 23.002,
@@ -1194,9 +1194,9 @@
         "swarm_id": "7c0b36ed-0463-4c03-a68a-8b39bc33eb65",
         "current_task": null,
         "position": {
-          "lat": 23.004,
-          "lon": 120.21,
-          "alt": 150.0
+          "lat": 23.003535305407564,
+          "lon": 120.20739654245016,
+          "alt": 149.99999999947883
         },
         "home_position": {
           "lat": 23.004,
@@ -4316,7 +4316,7 @@
         "type": "recon",
         "status": "idle",
         "heading": 306.48099130541436,
-        "speed": 33.6,
+        "speed": 27.77777777777778,
         "altitude": 100.0,
         "battery": 92.2360000000181,
         "range_used_km": 0.0,
@@ -4326,9 +4326,9 @@
         "swarm_id": null,
         "current_task": null,
         "position": {
-          "lat": 23.04790936670332,
-          "lon": 120.13958898836586,
-          "alt": 0.0
+          "lat": 23.052631019199328,
+          "lon": 120.13656360333985,
+          "alt": 149.99999999617535
         },
         "home_position": {
           "lat": 23.0,
@@ -5078,7 +5078,7 @@
         "threat_value": "high",
         "position": {
           "lat": 25.901097826086943,
-          "lon": 119.44733770933571,
+          "lon": 119.64249360596337,
           "alt": 0.0
         }
       },
@@ -5141,7 +5141,7 @@
         "notes": null,
         "threat_value": "high",
         "position": {
-          "lat": 23.59040956172468,
+          "lat": 23.59749623877151,
           "lon": 119.61623227913148,
           "alt": 0.0
         }
@@ -5173,9 +5173,9 @@
         "notes": null,
         "threat_value": "low",
         "position": {
-          "lat": 23.63561557710127,
-          "lon": 119.56652289306219,
-          "alt": 50.0
+          "lat": 23.636122744664853,
+          "lon": 119.56547845235438,
+          "alt": 49.99999999850467
         }
       },
       {
@@ -5189,7 +5189,7 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.61734461420234,
+          "lat": 24.27685473517617,
           "lon": 119.54505696365386,
           "alt": 3000.0000000014484
         }
@@ -5429,7 +5429,7 @@
         "notes": null,
         "threat_value": "medium",
         "position": {
-          "lat": 23.5603015089798,
+          "lat": 23.60247222802907,
           "lon": 119.65088505036854,
           "alt": 9.99999999963947
         }
