@@ -78,35 +78,33 @@ class TestSeedData:
     def test_seeded_swarms(self):
         svc = _svc()
         swarms = svc.get_all_swarms()
-        assert len(swarms) == 15
+        # 5 FPV swarms + 500 ALT swarms
+        assert len(swarms) == 505
         names = {s.name for s in swarms}
-        # 10 FPV swarms
-        for fpv_name in ("FPV-Alpha", "FPV-Bravo", "FPV-Charlie", "FPV-Delta", "FPV-Echo",
-                         "FPV-Foxtrot", "FPV-Golf", "FPV-Hotel", "FPV-India", "FPV-Juliet"):
+        for fpv_name in ("FPV-Alpha", "FPV-Bravo", "FPV-Charlie", "FPV-Delta", "FPV-Echo"):
             assert fpv_name in names
-        # 5 ALT swarms
-        for alt_name in ("ALT-Alpha", "ALT-Bravo", "ALT-Charlie", "ALT-Delta", "ALT-Echo"):
-            assert alt_name in names
+        assert "ALT-001" in names
+        assert "ALT-500" in names
 
     def test_fpv_swarm_total_drone_count(self):
         svc = _svc()
         fpv_alpha = next(s for s in svc.get_all_swarms() if s.name == "FPV-Alpha")
-        assert fpv_alpha.total_drone_count == 1000
+        assert fpv_alpha.total_drone_count == 2000
 
     def test_alt_swarm_total_drone_count(self):
         svc = _svc()
-        alt_alpha = next(s for s in svc.get_all_swarms() if s.name == "ALT-Alpha")
-        assert alt_alpha.total_drone_count == 200
+        alt_001 = next(s for s in svc.get_all_swarms() if s.name == "ALT-001")
+        assert alt_001.total_drone_count == 2
 
-    def test_each_swarm_has_five_representative_drones(self):
+    def test_each_swarm_has_one_representative_drone(self):
         svc = _svc()
         for swarm in svc.get_all_swarms():
-            assert len(swarm.drone_ids) == 5
+            assert len(swarm.drone_ids) == 1
 
     def test_total_seeded_drones(self):
         svc = _svc()
-        # 4 MQ-9 recon + 100 scout recon + 15 swarms × 5 representative = 179
-        assert len(svc.get_all_drones()) == 179
+        # 4 MQ-9 recon + 100 scout recon + 5 FPV + 500 ALT representative drones
+        assert len(svc.get_all_drones()) == 609
 
     def test_no_targets_initially(self):
         svc = _svc()
@@ -153,11 +151,11 @@ class TestSeedData:
 
     def test_alt_drone_model_fields(self):
         svc = _svc()
-        alt_alpha = next(s for s in svc.get_all_swarms() if s.name == "ALT-Alpha")
-        d = svc.get_drone(alt_alpha.drone_ids[0])
+        alt_001 = next(s for s in svc.get_all_swarms() if s.name == "ALT-001")
+        d = svc.get_drone(alt_001.drone_ids[0])
         assert d.model.value == "altius_600m"
         assert d.max_payload_kg == 12.0
-        assert d.max_range_km == 440.0
+        assert d.max_range_km == 160.0
 
     def test_recon_drone_model_fields(self):
         svc = _svc()
@@ -421,13 +419,14 @@ class TestFullState:
     def test_snapshot_drones_count(self):
         svc = _svc()
         state = svc.get_full_state()
-        # 4 MQ-9 + 100 scout recon + 15 swarms × 5 representative drones = 179
-        assert len(state["drones"]) == 179
+        # 4 MQ-9 + 100 scout recon + 5 FPV + 500 ALT representative drones = 609
+        assert len(state["drones"]) == 609
 
     def test_snapshot_swarms_count(self):
         svc = _svc()
         state = svc.get_full_state()
-        assert len(state["swarms"]) == 15
+        # 5 FPV swarms + 500 ALT swarms
+        assert len(state["swarms"]) == 505
 
     def test_snapshot_no_targets_initially(self):
         svc = _svc()

@@ -321,7 +321,6 @@ class StateService:
             self._swarms[swarm.id] = swarm
 
         # ── Altius-600M Combat Swarms ──────────────────────────────────────────
-        alt_swarm_names = ["ALT-Alpha", "ALT-Bravo", "ALT-Charlie", "ALT-Delta", "ALT-Echo"]
         total_alt_swarms = cfg_alt["swarm_count"]
         alt_base_cities = [
             (25.04, 121.56),  # Taipei
@@ -333,16 +332,17 @@ class StateService:
         for s_idx in range(total_alt_swarms):
             base_lat, base_lon = alt_base_cities[s_idx % len(alt_base_cities)]
             sid = str(uuid.uuid4())
+            name = f"ALT-{s_idx + 1:03d}"
             swarm = Swarm(
                 id=sid,
-                name=alt_swarm_names[s_idx],
+                name=name,
                 drone_model=DroneModel.ALTIUS_600M,
                 total_drone_count=cfg_alt["swarm_size"],
                 drone_ids=[sid],
             )
             d = Drone(
                 id=sid,
-                name=alt_swarm_names[s_idx],
+                name=name,
                 type=DroneType.COMBAT_SWARM,
                 model=DroneModel.ALTIUS_600M,
                 position=Position(lat=base_lat, lon=base_lon, alt=200.0),
