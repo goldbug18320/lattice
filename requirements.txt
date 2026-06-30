@@ -78,33 +78,6 @@ Swarm & drone status panel
 Configuration file:
 36) A swarm of drones is represented the way as a single drone. A swarm's type is 'combat_swarm'.
 There is no swarm group and individual swarm_members.
-For example:
-      {
-        "id": "a86c296b-a7aa-40a5-a059-dbf2bb082f12",
-        "name": "ALT-Charlie",
-        "model": "altius_600m",
-        "type": "combat_swarm",
-        "status": "idle",
-        "heading": 152.9890098550606,
-        "speed": 25.0,
-        "altitude": 100.0,
-        "battery": 72.09400000006504,
-        "range_used_km": 267.62500000003047,
-        "max_range_km": 160.0,
-        "max_payload_kg": 12.0,
-        "max_flight_time_hours": 4.0,
-        "current_task": null,
-        "position": {
-          "lat": 24.104344069929887,
-          "lon": 119.59326341569808,
-          "alt": 199.9999999977003
-        },
-        "home_position": {
-          "lat": 23.0,
-          "lon": 120.21,
-          "alt": 0.0
-        }
-      },
 
 Initialization:
 1) system loads friendly and enemy assets locations from a configuration file.
@@ -122,10 +95,11 @@ reconnaissance drones with real time reconnaissance feeds (enemy positions, type
 reconnaissance drones are capable of detecting enemy assets within 10km in radius. User should be able to find out the current status (location, speed, battery, 
 remaining range) of each reconnaissance drone. User should be able to find out what enemy assets are detected by reconnaissance drones on the UI.
 
+Friendly assets:
 10000 combat FPV drones, swarm_count=5, swarm size 2000, max payload 4kg, max range 15km, max speed 60km/hr.
 1000 altius-600m combat drones, swarm_count=2, swarm size 500, max payload 12kg, max range 160km, max speed 90km/hr.
 100 reconnaissance drones, max range 150km, max speed 150km/hr.
-
+All friendly assets should be blue.
 
 Enermy assets:
 10000 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
@@ -134,7 +108,7 @@ Enermy assets:
 1000 ships, max speed 55km/hr, max range 8000km.
 400 missle launchers, max speed 40km/hr, max range 400km.
 100000 PLA solders, max speed 5km/hr.
-Enemy assets should be marked as red.
+All enemy assets should be red.
 
 Friendly assets and enermy assets should be configurable (i.e. not hard coded).
 

@@ -4,8 +4,8 @@ const STATUS_COLORS = {
   idle: '#6b7280',
   searching: '#f59e0b',
   tracking: '#f97316',
-  engaging: '#ef4444',
-  returning: '#10b981',
+  engaging: '#60a5fa',
+  returning: '#3b82f6',
   patrolling: '#3b82f6',
   offline: '#374151',
 }

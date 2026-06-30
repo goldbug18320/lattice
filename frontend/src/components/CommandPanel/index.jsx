@@ -5,7 +5,7 @@ export default function CommandPanel() {
   const swarms = useStore(s => s.swarms)
 
   const swarmGroups = [
-    { label: 'FPV Swarms',  prefix: 'FPV', icon: '⚡', color: '#10b981' },
+    { label: 'FPV Swarms',  prefix: 'FPV', icon: '⚡', color: '#3b82f6' },
     { label: 'ALT Swarms',  prefix: 'ALT', icon: '🚀', color: '#06b6d4' },
   ].map(g => ({
     ...g,

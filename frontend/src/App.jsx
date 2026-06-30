@@ -88,8 +88,8 @@ export default function App() {
           <div className="map-legend">
             <div className="legend-title">LEGEND</div>
             <div className="legend-item"><span style={{color:'#3b82f6'}}>●</span> Friendly Drone</div>
-            <div className="legend-item"><span style={{color:'#10b981'}}>●</span> Returning</div>
-            <div className="legend-item"><span style={{color:'#ef4444'}}>●</span> Engaging</div>
+            <div className="legend-item"><span style={{color:'#3b82f6'}}>●</span> Returning</div>
+            <div className="legend-item"><span style={{color:'#60a5fa'}}>●</span> Engaging</div>
             <div className="legend-item"><span style={{color:'#f59e0b'}}>●</span> Searching</div>
             <div className="legend-item"><span style={{color:'#f87171'}}>◆</span> Enemy Target</div>
           </div>

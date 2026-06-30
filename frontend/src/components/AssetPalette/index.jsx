@@ -4,8 +4,8 @@ import { useStore } from '../../store/index.js'
 const FRIENDLY = [
   { label: 'MQ-9 Recon',   kind: 'drone', model: 'mq9_recon',   color: '#0abfff' },
   { label: 'Scout Recon',  kind: 'drone', model: 'scout_recon', color: '#3c78ff' },
-  { label: 'FPV Combat',   kind: 'drone', model: 'fpv_combat',  color: '#32dc32' },
-  { label: 'Altius-600M',  kind: 'drone', model: 'altius_600m', color: '#28c850' },
+  { label: 'FPV Combat',   kind: 'drone', model: 'fpv_combat',  color: '#2563eb' },
+  { label: 'Altius-600M',  kind: 'drone', model: 'altius_600m', color: '#1d4ed8' },
 ]
 
 const ENEMY = [
