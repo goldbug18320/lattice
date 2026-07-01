@@ -437,9 +437,9 @@ class StateService:
                 name=f"SCOUT-{i+1:03d}",
                 type=DroneType.RECON,
                 model=DroneModel.SCOUT_RECON,
-                position=Position(lat=home_lat, lon=home_lon, alt=3000.0),
+                position=Position(lat=home_lat, lon=home_lon, alt=0.0),
                 home_position=Position(lat=home_lat, lon=home_lon, alt=0.0),
-                status=DroneStatus.PATROLLING,
+                status=DroneStatus.IDLE,
                 heading=float(((i + 1) * 37) % 360),
                 max_range_km=assets_config["scout_recon"]["max_range_km"],
             )

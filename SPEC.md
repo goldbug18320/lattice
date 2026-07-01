@@ -770,7 +770,7 @@ Friendly soldier units are a ground formation, not a drone — they are deployed
 
 #### Friendly Asset Deployment
 
-**Scout recon drones** are home-based and launch to patrol the surrounding area. When a scout exhausts its range it returns to home base.
+**Scout recon drones** are home-based and, once launched, patrol the surrounding area. They are seeded `idle` at startup (Feature 33) — the operator initiates patrol via the right-click context menu. When a scout exhausts its range it returns to home base.
 
 **Combat drones** are distributed across major cities in Taiwan at startup; FPV combat swarms are collocated with the friendly Soldier Units in the default seeded scenario (§8.9). Exact counts and city distributions are configured in `assets_config.json`.
 
