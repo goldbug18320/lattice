@@ -27,14 +27,6 @@ export const useStore = create((set, get) => ({
   // Asset Palette placement mode: null | { kind: 'drone'|'target', model?, type?, label, alt? }
   placementMode: null,
 
-  // Feature 32: one-time confirmation message shown under a target's action
-  // button once its disengage request has been approved/denied: { [targetId]: string }
-  disengageMessages: {},
-
-  // Feature 37: one-time confirmation message shown under a target's action
-  // button once its stop-tracking request has been approved/denied: { [targetId]: string }
-  stopTrackingMessages: {},
-
   // Actions
   setWsConnected: (connected) => set({ wsConnected: connected, wsStatus: connected ? 'connected' : 'disconnected' }),
   setWsStatus: (status) => set({ wsStatus: status }),
@@ -61,14 +53,6 @@ export const useStore = create((set, get) => ({
 
   setCameraCommand: (cmd) => set({ cameraCommand: cmd }),
   setPlacementMode: (mode) => set({ placementMode: mode }),
-
-  setDisengageMessage: (targetId, message) => set((s) => ({
-    disengageMessages: { ...s.disengageMessages, [targetId]: message },
-  })),
-
-  setStopTrackingMessage: (targetId, message) => set((s) => ({
-    stopTrackingMessages: { ...s.stopTrackingMessages, [targetId]: message },
-  })),
 
   togglePanel: (panel) => set((s) => ({ [panel]: !s[panel] })),
 }))

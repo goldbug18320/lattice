@@ -30,7 +30,7 @@ The engage button on the target will be changed to Disengage and the selected dr
 Disengage:
 32) if a target is being Engaged by one drone swarm, Clicking on disengage button, the platform display a prompt in the bottom (same area where prompt for user approval to
 engage the target), asking the user to confirm disenage the target. Once user confirm the request, the platform disengage the target. The combat drone swarm should return to it's starting position.
-A message will be displayed under the disengage button to confirm the disengagement. The button will be changed back to engage.
+The button will be changed back to engage.
 
 Track:
 24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
@@ -47,7 +47,7 @@ if a target is being tracked by one drone, clicking on the track button again, t
 Stop Tracking:
 37) if a target is being tracked by one drone swarm, Clicking on "Stop Tracking" button, the platform display a prompt in the bottom (same area where prompt for user approval to
 track the target), asking the user to confirm the stop tracking request. Once user confirm the request, the platform stop tracking the target. The recon drone swarm should return to it's starting position.
-A message will be displayed under the disengage button to confirm the stop tracking requests. The button will be changed back to "Track".
+The button will be changed back to "Track".
 
 Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets

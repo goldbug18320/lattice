@@ -52,35 +52,13 @@ async function sendDecision(approvalId, decision) {
 
 export default function ApprovalBar() {
   const approvals = useStore(s => s.pendingApprovals)
-  const setDisengageMessage = useStore(s => s.setDisengageMessage)
-  const setStopTrackingMessage = useStore(s => s.setStopTrackingMessage)
   const [deciding, setDeciding] = useState(null)
 
   if (!approvals || approvals.length === 0) return null
 
-  // Feature 32: DISENGAGE confirmations reuse this same approve/deny bar. Once
-  // confirmed, surface a one-time message under the target's (now reverted)
-  // ENGAGE button in the Target List via the store. A denied confirmation
-  // leaves the target 'engaged', where the Target List already shows its
-  // persistent "Engaged by <swarm>" message, so no separate message is needed.
-  // Feature 37: STOP TRACKING confirmations mirror the same flow for recon drones.
   const handle = async (id, decision) => {
     setDeciding(id + decision)
-    const approval = approvals.find(a => a.id === id)
-    const result = await sendDecision(id, decision)
-    if (decision === 'approve' && approval?.proposed_action?.type === 'disengage') {
-      const targetId = approval.proposed_action.target_id
-      const swarmName = approval.proposed_action.swarm_name || 'The swarm'
-      const message = result?.execution_result?.explanation
-        || `${swarmName} is returning to base; target is no longer engaged.`
-      setDisengageMessage(targetId, message)
-    } else if (decision === 'approve' && approval?.proposed_action?.type === 'stop_tracking') {
-      const targetId = approval.proposed_action.target_id
-      const droneName = approval.proposed_action.drone_name || 'The drone'
-      const message = result?.execution_result?.explanation
-        || `${droneName} is returning to base; target is no longer tracked.`
-      setStopTrackingMessage(targetId, message)
-    }
+    await sendDecision(id, decision)
     setDeciding(null)
   }
 

@@ -46,10 +46,6 @@ export default function TargetList() {
   const setCameraCommand = useStore(s => s.setCameraCommand)
   const selectSwarm = useStore(s => s.selectSwarm)
   const selectDrone = useStore(s => s.selectDrone)
-  const disengageMessages = useStore(s => s.disengageMessages)
-  const setDisengageMessage = useStore(s => s.setDisengageMessage)
-  const stopTrackingMessages = useStore(s => s.stopTrackingMessages)
-  const setStopTrackingMessage = useStore(s => s.setStopTrackingMessage)
 
   // Inline error/info state for ENGAGE/TRACK buttons: { [targetId]: string | null }
   const [engageErrors, setEngageErrors] = useState({})
@@ -91,7 +87,6 @@ export default function TargetList() {
   // Once approved, the target's button changes from ENGAGE to DISENGAGE (Feature 32).
   const engageTarget = async (targetId) => {
     setEngageErrors(prev => ({ ...prev, [targetId]: null }))
-    setDisengageMessage(targetId, null)
     try {
       const result = await nlpApi.command(`engage and attack target with id ${targetId}`)
       if (result.action?.type === 'no_swarm_in_range') {
@@ -125,7 +120,6 @@ export default function TargetList() {
   const trackTarget = async (targetId) => {
     setTrackErrors(prev => ({ ...prev, [targetId]: null }))
     setTrackInfos(prev => ({ ...prev, [targetId]: null }))
-    setStopTrackingMessage(targetId, null)
     try {
       const result = await nlpApi.command(`track target with id ${targetId}`)
       if (result.action?.type === 'no_recon_in_range') {
@@ -268,18 +262,8 @@ export default function TargetList() {
                     {engageErrors[target.id] && (
                       <div className="engage-error">{engageErrors[target.id]}</div>
                     )}
-                    {disengageMessages[target.id] && (
-                      // Feature 32: one-time confirmation message shown after the
-                      // operator approves/denies the disengage prompt in the Approval Bar.
-                      <div className="engage-info">{disengageMessages[target.id]}</div>
-                    )}
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>
-                    )}
-                    {stopTrackingMessages[target.id] && (
-                      // Feature 37: one-time confirmation message shown after the
-                      // operator approves/denies the stop-tracking prompt in the Approval Bar.
-                      <div className="track-info">{stopTrackingMessages[target.id]}</div>
                     )}
                     {trackInfos[target.id] && (
                       <div className="track-info">{trackInfos[target.id]}</div>
