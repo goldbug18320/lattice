@@ -221,6 +221,18 @@ export default function TargetList() {
                     <span className="target-speed">{Math.round(target.speed)}m/s {target.heading.toFixed(0)}°</span>
                   )}
                 </div>
+                {target.status === 'engaged' && (
+                  // Feature 22: always-visible message naming the engaging swarm, shown
+                  // beneath the confidence-level indicator regardless of selection state —
+                  // derived from live state, not a one-time toast.
+                  <div className="engage-info">Engaged by {engagingSwarmName(target.id)}</div>
+                )}
+                {target.status === 'tracked' && (
+                  // Feature 24: always-visible message naming the tracking drone, shown
+                  // beneath the confidence-level indicator regardless of selection state —
+                  // derived from live state, not a one-time toast.
+                  <div className="track-info">Tracked by {trackingDroneName(target.id)}</div>
+                )}
                 {isSelected && (
                   <div className="target-actions">
                     {target.status === 'engaged' ? (
@@ -256,11 +268,7 @@ export default function TargetList() {
                     {engageErrors[target.id] && (
                       <div className="engage-error">{engageErrors[target.id]}</div>
                     )}
-                    {target.status === 'engaged' ? (
-                      // Feature 22: always-visible message naming the engaging swarm,
-                      // derived from live state — not a one-time toast.
-                      <div className="engage-info">Engaged by {engagingSwarmName(target.id)}</div>
-                    ) : disengageMessages[target.id] && (
+                    {disengageMessages[target.id] && (
                       // Feature 32: one-time confirmation message shown after the
                       // operator approves/denies the disengage prompt in the Approval Bar.
                       <div className="engage-info">{disengageMessages[target.id]}</div>
@@ -268,11 +276,7 @@ export default function TargetList() {
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>
                     )}
-                    {target.status === 'tracked' ? (
-                      // Feature 24: always-visible message naming the tracking drone,
-                      // derived from live state — not a one-time toast.
-                      <div className="track-info">Tracked by {trackingDroneName(target.id)}</div>
-                    ) : stopTrackingMessages[target.id] && (
+                    {stopTrackingMessages[target.id] && (
                       // Feature 37: one-time confirmation message shown after the
                       // operator approves/denies the stop-tracking prompt in the Approval Bar.
                       <div className="track-info">{stopTrackingMessages[target.id]}</div>

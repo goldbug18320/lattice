@@ -21,8 +21,8 @@ Engage:
 the engaging drone on "the Swarm and drone status" panel should display target type and short id.
 22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. 
 Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
-Only the select enemy target will be engaged. Once the user approve the request, the platform will dispay a message under the engage button showing which drone swarm is engaging this target. 
-This message will be always visible to the user.
+Only the select enemy target will be engaged. Once the user approve the request, the platform will dispay a message under confidence level on top level panel, 
+showing which drone swarm is engaging this target.  This message will be always visible to the user.
 The engage button on the target will be changed to Disengage and the selected drone swarm is moving off the available drone swarm list. 
 (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
 25) the number of enemy targets being engaged should be displayed at the header bar.
@@ -36,8 +36,8 @@ Track:
 24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
 Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
 Only the select enemy target will be tracked. 
-Once the user approve the request, the platform will dispay a message under the track button showing which drone swarm is tracking this target. 
-This message will be always visible to the user. 
+Once the user approve the request, the platform will dispay a message under confidence level on top level panel, 
+showing which recon drone is tracking this target.  This message will be always visible to the user.
 The Track button on the target will be changed to "Stop Tracking" and the selected reconnaissance drone is moving off the available reconnaissance 
 drone list. (i.e. one drone cannot be used to track multiple enemy targets). The number of enemy targets being tracked should be displayed at the header bar.
 26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
