@@ -757,6 +757,32 @@ class StateService:
 
             return {"swarm_id": swarm.id, "swarm_name": swarm.name}
 
+    def stop_tracking_target(self, target_id: str) -> Optional[dict]:
+        """Feature 37: release a tracked target and recall its recon drone to base.
+
+        Returns {"drone_id", "drone_name"} for the recalled drone, or None if the
+        target was not in `tracked` status (no-op) or no tracking drone was found."""
+        with self._lock:
+            target = self._targets.get(target_id)
+            if not target or target.status != TargetStatus.TRACKED:
+                return None
+
+            target.status = TargetStatus.ACTIVE
+
+            drone = next(
+                (d for d in self._drones.values()
+                 if d.tracking_target_id == target_id and d.status == DroneStatus.TRACKING),
+                None,
+            )
+            if drone is None:
+                return None
+
+            drone.tracking_target_id = None
+            drone.status = DroneStatus.RETURNING
+            drone.current_task = None
+
+            return {"drone_id": drone.id, "drone_name": drone.name}
+
     def replace_tracker_for_target(self, target_id: str) -> Optional[str]:
         """Feature 28: find any drone currently tracking target_id and send it home.
         Returns the released drone's ID, or None if no drone was tracking."""

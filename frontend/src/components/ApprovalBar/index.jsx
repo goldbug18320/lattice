@@ -53,6 +53,7 @@ async function sendDecision(approvalId, decision) {
 export default function ApprovalBar() {
   const approvals = useStore(s => s.pendingApprovals)
   const setDisengageMessage = useStore(s => s.setDisengageMessage)
+  const setStopTrackingMessage = useStore(s => s.setStopTrackingMessage)
   const [deciding, setDeciding] = useState(null)
 
   if (!approvals || approvals.length === 0) return null
@@ -62,6 +63,7 @@ export default function ApprovalBar() {
   // ENGAGE button in the Target List via the store. A denied confirmation
   // leaves the target 'engaged', where the Target List already shows its
   // persistent "Engaged by <swarm>" message, so no separate message is needed.
+  // Feature 37: STOP TRACKING confirmations mirror the same flow for recon drones.
   const handle = async (id, decision) => {
     setDeciding(id + decision)
     const approval = approvals.find(a => a.id === id)
@@ -72,6 +74,12 @@ export default function ApprovalBar() {
       const message = result?.execution_result?.explanation
         || `${swarmName} is returning to base; target is no longer engaged.`
       setDisengageMessage(targetId, message)
+    } else if (decision === 'approve' && approval?.proposed_action?.type === 'stop_tracking') {
+      const targetId = approval.proposed_action.target_id
+      const droneName = approval.proposed_action.drone_name || 'The drone'
+      const message = result?.execution_result?.explanation
+        || `${droneName} is returning to base; target is no longer tracked.`
+      setStopTrackingMessage(targetId, message)
     }
     setDeciding(null)
   }
@@ -79,7 +87,9 @@ export default function ApprovalBar() {
   const hasAttack = approvals.some(a => a.proposed_action?.command_type === 'attack')
   const allTrack  = approvals.every(a => a.proposed_action?.command_type === 'track')
   const allDisengage = approvals.every(a => a.proposed_action?.type === 'disengage')
+  const allStopTracking = approvals.every(a => a.proposed_action?.type === 'stop_tracking')
   const headerLabel = allDisengage ? 'DISENGAGE CONFIRMATION REQUIRED'
+    : allStopTracking ? 'STOP TRACKING CONFIRMATION REQUIRED'
     : allTrack ? 'TRACK APPROVAL REQUIRED'
     : hasAttack ? 'ATTACK APPROVAL REQUIRED'
     : 'COMMAND APPROVAL REQUIRED'

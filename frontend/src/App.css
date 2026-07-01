@@ -252,6 +252,7 @@ html, body, #root {
 .target-btn.attack { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #ef4444; }
 .target-btn.disengage { background: rgba(107,114,128,0.2); border-color: #6b7280; color: #9ca3af; }
 .target-btn.track { background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #f59e0b; }
+.target-btn.stop-tracking { background: rgba(107,114,128,0.2); border-color: #6b7280; color: #9ca3af; }
 .target-btn:hover:not(:disabled) { filter: brightness(1.3); transform: scale(1.03); }
 .target-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .target-notes { font-size: 10px; color: var(--text-dim); width: 100%; }

@@ -36,6 +36,7 @@ const THREAT_COLORS = {
 export default function TargetList() {
   const targets = useStore(s => s.targets)
   const swarms = useStore(s => s.swarms)
+  const drones = useStore(s => s.drones)
   const selectedTargetId = useStore(s => s.selectedTargetId)
   const selectTarget = useStore(s => s.selectTarget)
   const setCameraCommand = useStore(s => s.setCameraCommand)
@@ -43,6 +44,8 @@ export default function TargetList() {
   const selectDrone = useStore(s => s.selectDrone)
   const disengageMessages = useStore(s => s.disengageMessages)
   const setDisengageMessage = useStore(s => s.setDisengageMessage)
+  const stopTrackingMessages = useStore(s => s.stopTrackingMessages)
+  const setStopTrackingMessage = useStore(s => s.setStopTrackingMessage)
 
   // Inline error/info state for ENGAGE/TRACK buttons: { [targetId]: string | null }
   const [engageErrors, setEngageErrors] = useState({})
@@ -63,6 +66,14 @@ export default function TargetList() {
   const engagingSwarmName = (targetId) => {
     const swarm = swarms.find(s => s.status === 'engaging' && s.target_ids?.includes(targetId))
     return swarm ? swarm.name : 'a combat swarm'
+  }
+
+  // Feature 24/37: the name of the recon drone currently tracking a target, derived
+  // live from battlefield state — always visible under the button for as long as
+  // the target stays tracked, not just right after the approval click.
+  const trackingDroneName = (targetId) => {
+    const drone = drones.find(d => d.status === 'tracking' && d.tracking_target_id === targetId)
+    return drone ? drone.name : 'a reconnaissance drone'
   }
 
   // ENGAGE routes through HITL — the LLM classifies the target and creates a
@@ -100,10 +111,12 @@ export default function TargetList() {
 
   // TRACK routes through HITL with a recon drone (Feature 24). On no_recon_in_range show
   // an inline error. On already_tracked (Feature 28) show an info message naming the current
-  // tracking drone — no new assignment. On approval pre-select the chosen drone.
+  // tracking drone — no new assignment. On approval pre-select the chosen drone. Once approved,
+  // the target's button changes from TRACK to STOP TRACKING (Feature 37).
   const trackTarget = async (targetId) => {
     setTrackErrors(prev => ({ ...prev, [targetId]: null }))
     setTrackInfos(prev => ({ ...prev, [targetId]: null }))
+    setStopTrackingMessage(targetId, null)
     try {
       const result = await nlpApi.command(`track target with id ${targetId}`)
       if (result.action?.type === 'no_recon_in_range') {
@@ -116,6 +129,20 @@ export default function TargetList() {
       }
     } catch (e) {
       console.error('Track failed:', e)
+    }
+  }
+
+  // STOP TRACKING (Feature 37): clicking this only queues a confirmation prompt in
+  // the bottom Approval Bar (§9.3.1) — the same area used for HITL attack approvals
+  // and disengage confirmations. No LLM call, but nothing is recalled until the
+  // operator confirms there; the ApprovalBar writes the outcome message into the
+  // store once decided.
+  const stopTrackingTarget = async (targetId) => {
+    setTrackErrors(prev => ({ ...prev, [targetId]: null }))
+    try {
+      await nlpApi.command(`stop tracking target with id ${targetId}`)
+    } catch (e) {
+      console.error('Stop tracking failed:', e)
     }
   }
 
@@ -202,12 +229,21 @@ export default function TargetList() {
                         ⚡ ENGAGE
                       </button>
                     )}
-                    <button
-                      className="target-btn track"
-                      onClick={e => { e.stopPropagation(); trackTarget(target.id) }}
-                    >
-                      👁 TRACK
-                    </button>
+                    {target.status === 'tracked' ? (
+                      <button
+                        className="target-btn stop-tracking"
+                        onClick={e => { e.stopPropagation(); stopTrackingTarget(target.id) }}
+                      >
+                        ⨯ STOP TRACKING
+                      </button>
+                    ) : (
+                      <button
+                        className="target-btn track"
+                        onClick={e => { e.stopPropagation(); trackTarget(target.id) }}
+                      >
+                        👁 TRACK
+                      </button>
+                    )}
                     {engageErrors[target.id] && (
                       <div className="engage-error">{engageErrors[target.id]}</div>
                     )}
@@ -222,6 +258,15 @@ export default function TargetList() {
                     )}
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>
+                    )}
+                    {target.status === 'tracked' ? (
+                      // Feature 24: always-visible message naming the tracking drone,
+                      // derived from live state — not a one-time toast.
+                      <div className="track-info">Tracked by {trackingDroneName(target.id)}</div>
+                    ) : stopTrackingMessages[target.id] && (
+                      // Feature 37: one-time confirmation message shown after the
+                      // operator approves/denies the stop-tracking prompt in the Approval Bar.
+                      <div className="track-info">{stopTrackingMessages[target.id]}</div>
                     )}
                     {trackInfos[target.id] && (
                       <div className="track-info">{trackInfos[target.id]}</div>

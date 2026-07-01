@@ -506,3 +506,122 @@ class TestDisengage:
             engaging_swarm = next(s for s in swarms if tid1 in s["target_ids"])
             assert assigned_swarm_id != engaging_swarm["id"]
 
+
+# ─── Feature 37: confirmation-gated stop tracking ─────────────────────────────
+
+class TestStopTracking:
+    """Feature 37: clicking STOP TRACKING on a 'tracked' target queues a confirmation
+    (mirrors Feature 32's disengage flow) rather than executing immediately. The
+    recon drone is only recalled once the operator confirms via approve/deny —
+    no LLM call either way."""
+
+    def _track_target(self, client, target_id: str):
+        """Push a target through HITL approval so it reaches 'tracked' status."""
+        client.post("/api/nlp/command", json={
+            "command": f"track target with id {target_id}",
+        })
+        pending = client.get("/api/nlp/pending").json()
+        if pending:
+            client.post(f"/api/nlp/approve/{pending[0]['id']}")
+
+    def _seed_target(self, client, target_type: str = "ship") -> str:
+        """Seed one active target and return its ID (Taiwan Strait, in range of
+        a seeded recon drone — mirrors TestDisengage._seed_target)."""
+        client.post("/api/recon/feed", json=make_recon_feed(targets=[
+            make_target_report(type=target_type, lat=24.50, lon=119.50),
+        ]))
+        targets = client.get("/api/recon/targets?reported_by=MQ9-01").json()
+        return targets[0]["id"]
+
+    def _stop_tracking_confirmation(self, client, target_id: str) -> dict:
+        """Click STOP TRACKING and return the created pending-approval entry."""
+        client.post("/api/nlp/command", json={
+            "command": f"stop tracking target with id {target_id}",
+        })
+        pending = client.get("/api/nlp/pending").json()
+        return next(a for a in pending if a["proposed_action"]["target_id"] == target_id)
+
+    def test_stop_tracking_click_returns_confirmation_action(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"stop tracking target with id {tid}",
+        })
+        assert resp.json()["action"]["type"] == "request_stop_tracking_confirmation"
+
+    def test_stop_tracking_click_does_not_change_target_status(self, client):
+        """Clicking STOP TRACKING must not recall the drone until confirmed."""
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        client.post("/api/nlp/command", json={
+            "command": f"stop tracking target with id {tid}",
+        })
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "tracked"
+
+    def test_stop_tracking_click_creates_pending_approval(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        client.post("/api/nlp/command", json={
+            "command": f"stop tracking target with id {tid}",
+        })
+        pending = client.get("/api/nlp/pending").json()
+        assert any(a["proposed_action"].get("type") == "stop_tracking" for a in pending)
+
+    def test_stop_tracking_pending_approval_includes_drone_name(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        assert approval["proposed_action"]["drone_name"]  # non-empty
+
+    def test_confirming_stop_tracking_reverts_target_to_active(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        client.post(f"/api/nlp/approve/{approval['id']}")
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "active"
+
+    def test_confirming_stop_tracking_sets_drone_status_returning(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        drone_id = approval["proposed_action"]["drone_id"]
+        client.post(f"/api/nlp/approve/{approval['id']}")
+        drone = client.get(f"/api/swarm/drones/{drone_id}").json()
+        assert drone["status"] == "returning"
+
+    def test_confirming_stop_tracking_execution_result_has_explanation(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        resp = client.post(f"/api/nlp/approve/{approval['id']}")
+        assert "explanation" in resp.json()["execution_result"]
+
+    def test_denying_stop_tracking_leaves_target_tracked(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        client.post(f"/api/nlp/deny/{approval['id']}")
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "tracked"
+
+    def test_denying_stop_tracking_leaves_drone_tracking(self, client):
+        tid = self._seed_target(client)
+        self._track_target(client, tid)
+        approval = self._stop_tracking_confirmation(client, tid)
+        drone_id = approval["proposed_action"]["drone_id"]
+        client.post(f"/api/nlp/deny/{approval['id']}")
+        drone = client.get(f"/api/swarm/drones/{drone_id}").json()
+        assert drone["status"] == "tracking"
+
+    def test_stop_tracking_on_active_target_is_a_no_op(self, client):
+        """Stop-tracking a target that isn't 'tracked' must not error, create an
+        approval, or change state."""
+        tid = self._seed_target(client)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"stop tracking target with id {tid}",
+        })
+        assert resp.json()["action"]["type"] == "none"
+        assert resp.json()["execution_result"] is None
+

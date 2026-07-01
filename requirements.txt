@@ -32,6 +32,22 @@ Disengage:
 engage the target), asking the user to confirm disenage the target. Once user confirm the request, the platform disengage the target. The combat drone swarm should return to it's starting position.
 A message will be displayed under the disengage button to confirm the disengagement. The button will be changed back to engage.
 
+Track:
+24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
+Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
+Only the select enemy target will be tracked. 
+Once the user approve the request, the platform will dispay a message under the track button showing which drone swarm is tracking this target. 
+This message will be always visible to the user. 
+The Track button on the target will be changed to "Stop Tracking" and the selected reconnaissance drone is moving off the available reconnaissance 
+drone list. (i.e. one drone cannot be used to track multiple enemy targets). The number of enemy targets being tracked should be displayed at the header bar.
+26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
+28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
+if a target is being tracked by one drone, clicking on the track button again, the platform will dispay a message showing which drone is tracking this target.
+
+Stop Tracking:
+37) if a target is being tracked by one drone swarm, Clicking on "Stop Tracking" button, the platform display a prompt in the bottom (same area where prompt for user approval to
+track the target), asking the user to confirm the stop tracking request. Once user confirm the request, the platform stop tracking the target. The recon drone swarm should return to it's starting position.
+A message will be displayed under the disengage button to confirm the stop tracking requests. The button will be changed back to "Track".
 
 Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets
@@ -61,15 +77,6 @@ ships must stop when reaching shores. drones can be on land, at sea or in the ai
   f) Japan's actual irregular coastline, and offshore islands, 
   g) Philipines' actual irregular coastline, and offshore islands.
 
-Tracking:
-24) when the user click on track button on one enemy asset, LLM will select a reconnaissance drone that can reach that enemy target. 
-Inform the user if no reconnaissance drone can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
-Only the select enemy target will be tracked. 
-Once the user approve the request, the trace button on the target remains enabled and the selected reconnaissance drone is moving off the available reconnaissance 
-drone list. (i.e. one drone cannot be used to track multiple enemy targets). the number of enemy targets being tracked should be displayed at the header bar.
-26) the combat drone swarm and reconnaissance drone must constantly track and the enemy target location. 
-28) when the reconnaissance drone reach within 10km of the target, the reconnaissance drone keeps a distance of 10km from the target.
-if a target is being tracked by one drone, clicking on the track button again, the platform will dispay a message showing which drone is tracking this target. 
 
 Enemy target panel: 
 29) display target type and short ID under each enemy target in the panel.

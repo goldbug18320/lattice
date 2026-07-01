@@ -503,6 +503,63 @@ class TestDisengageTarget:
         assert svc.get_target(target.id).status == TargetStatus.ACTIVE
 
 
+# ─── Feature 37: Stop Tracking ────────────────────────────────────────────────
+
+class TestStopTrackingTarget:
+    def _tracked_target_and_drone(self, svc: StateService):
+        """Seed a target in 'tracked' status with a drone actively tracking it."""
+        target = _target(status=TargetStatus.TRACKED)
+        svc.upsert_target(target)
+        drone = _drone(type=DroneType.RECON, status=DroneStatus.TRACKING, tracking_target_id=target.id)
+        svc._drones[drone.id] = drone
+        return target, drone
+
+    def test_stop_tracking_reverts_target_to_active(self):
+        svc = _empty_svc()
+        target, drone = self._tracked_target_and_drone(svc)
+        svc.stop_tracking_target(target.id)
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+    def test_stop_tracking_sets_drone_status_returning(self):
+        svc = _empty_svc()
+        target, drone = self._tracked_target_and_drone(svc)
+        svc.stop_tracking_target(target.id)
+        assert svc.get_drone(drone.id).status == DroneStatus.RETURNING
+
+    def test_stop_tracking_clears_drone_tracking_target_id(self):
+        svc = _empty_svc()
+        target, drone = self._tracked_target_and_drone(svc)
+        svc.stop_tracking_target(target.id)
+        assert svc.get_drone(drone.id).tracking_target_id is None
+
+    def test_stop_tracking_returns_drone_id_and_name(self):
+        svc = _empty_svc()
+        target, drone = self._tracked_target_and_drone(svc)
+        result = svc.stop_tracking_target(target.id)
+        assert result == {"drone_id": drone.id, "drone_name": drone.name}
+
+    def test_stop_tracking_on_active_target_returns_none(self):
+        svc = _empty_svc()
+        target = _target(status=TargetStatus.ACTIVE)
+        svc.upsert_target(target)
+        assert svc.stop_tracking_target(target.id) is None
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+    def test_stop_tracking_on_nonexistent_target_returns_none(self):
+        svc = _empty_svc()
+        assert svc.stop_tracking_target("ghost") is None
+
+    def test_stop_tracking_with_no_matching_drone_still_releases_target(self):
+        """If the target is 'tracked' but no drone is currently tracking it
+        (e.g. stale state), the target still reverts to active."""
+        svc = _empty_svc()
+        target = _target(status=TargetStatus.TRACKED)
+        svc.upsert_target(target)
+        result = svc.stop_tracking_target(target.id)
+        assert result is None
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+
 # ─── Command Log ─────────────────────────────────────────────────────────────
 
 class TestCommandLog:

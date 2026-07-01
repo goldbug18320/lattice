@@ -98,6 +98,58 @@ async def process_nlp_command(req: NLPCommandRequest):
             "execution_result": {"approval_id": approval.id, "status": "pending"},
         }
 
+    # Feature 37: STOP TRACKING queues a confirmation — mirrors Feature 32's disengage
+    # flow but for reconnaissance tracking. No LLM call, but a PendingApproval is
+    # created so the operator must explicitly confirm before the recon drone is recalled.
+    stid_match = re.search(r'stop\s+tracking\s+target\s+with\s+id\s+(\S+)', req.command.lower())
+    if stid_match:
+        target_id = stid_match.group(1)
+        target = state_service.get_target(target_id)
+        if not target or target.status.value != "tracked":
+            message = "Target is not currently tracked."
+            return {
+                "command": req.command,
+                "interpretation": message,
+                "explanation": message,
+                "action": {"type": "none", "explanation": message},
+                "execution_result": None,
+            }
+
+        tracking_drone = next(
+            (d for d in state_service.get_all_drones()
+             if d.tracking_target_id == target_id and d.status.value == "tracking"),
+            None,
+        )
+        drone_name = tracking_drone.name if tracking_drone else "the reconnaissance drone"
+        drone_id = tracking_drone.id if tracking_drone else None
+        prompt = f"Stop tracking this {target.type.value} from {drone_name}? {drone_name} will return to base."
+
+        approval = PendingApproval(
+            command=req.command,
+            interpretation="Confirm stop tracking — the drone will return to base.",
+            approval_prompt=prompt,
+            proposed_action={
+                "type": "stop_tracking",
+                "target_id": target_id,
+                "drone_id": drone_id,
+                "drone_name": drone_name,
+            },
+            expires_at=datetime.utcnow() + timedelta(minutes=APPROVAL_TTL_MINUTES),
+        )
+        state_service.add_approval(approval)
+
+        return {
+            "command": req.command,
+            "interpretation": approval.interpretation,
+            "explanation": prompt,
+            "action": {
+                "type": "request_stop_tracking_confirmation",
+                "approval_prompt": prompt,
+                "proposed_action": approval.proposed_action,
+            },
+            "execution_result": {"approval_id": approval.id, "status": "pending"},
+        }
+
     # Feature 28: if this is a single-target TRACK and the target is already tracked,
     # return an informational response identifying the current tracking drone — no LLM call,
     # no approval, no replacement.
@@ -270,6 +322,18 @@ async def approve_attack(approval_id: str):
             "swarm_id": result["swarm_id"] if result else proposed.get("swarm_id"),
             "swarm_status": "returning" if result else None,
             "explanation": f"{swarm_name} is returning to base; target is no longer engaged.",
+        }
+
+    elif proposed.get("type") == "stop_tracking":
+        # Feature 37: confirmed — release the target and recall the recon drone to base.
+        result = state_service.stop_tracking_target(proposed.get("target_id"))
+        drone_name = result["drone_name"] if result else proposed.get("drone_name", "the reconnaissance drone")
+        execution_result = {
+            "target_id": proposed.get("target_id"),
+            "target_status": "active",
+            "drone_id": result["drone_id"] if result else proposed.get("drone_id"),
+            "drone_status": "returning" if result else None,
+            "explanation": f"{drone_name} is returning to base; target is no longer tracked.",
         }
 
     elif proposed.get("type") == "assign_swarm" and proposed.get("swarm_id"):
