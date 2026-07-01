@@ -5,6 +5,7 @@ The LLMService mock path is used throughout (no OPENAI_API_KEY in test env).
 from __future__ import annotations
 
 import pytest
+from unittest.mock import AsyncMock, patch
 
 from tests.conftest import make_recon_feed, make_target_report
 
@@ -67,6 +68,19 @@ class TestNLPCommand:
         assert body["execution_result"] is not None
         assert body["execution_result"]["status"] == "pending"
         assert "approval_id" in body["execution_result"]
+
+    def test_context_excludes_friendly_affiliated_targets(self, client):
+        """The LLM context's 'targets' list must never include friendly soldier units."""
+        fake_result = {"interpretation": "", "action": {"type": "none"}, "explanation": ""}
+        with patch("api.nlp.llm_service.process_command", new=AsyncMock(return_value=fake_result)) as mock_call:
+            resp = client.post("/api/nlp/command", json={"command": "search the area"})
+            assert resp.status_code == 200
+            context = mock_call.call_args.args[1]
+            assert len(context["targets"]) > 0
+            # 90 enemy-affiliated targets seeded per §8.9 (10 soldiers + 10 FPV swarms +
+            # 20 long-range swarms + 10 tanks + 20 ships + 20 missile launchers);
+            # the 20 friendly soldier units must be excluded
+            assert len(context["targets"]) == 90
 
     def test_attack_command_does_not_immediately_engage_swarms(self, client):
         """Without approval, no swarm should be set to engaging status."""
@@ -347,11 +361,18 @@ class TestAlreadyEngaged:
             client.post(f"/api/nlp/approve/{pending[0]['id']}")
 
     def _seed_target(self, client, target_type: str = "ship") -> str:
-        """Seed one active target and return its ID."""
+        """Seed one active target and return its ID.
+
+        Filters by reported_by so this grabs the target just created, not one
+        of the many enemy assets already present in the seeded scenario. Uses a
+        Taiwan Strait position (in range of a seeded Altius swarm) rather than
+        make_target_report's default LA coordinates, so ENGAGE can actually find
+        a combat swarm in range.
+        """
         client.post("/api/recon/feed", json=make_recon_feed(targets=[
-            make_target_report(type=target_type),
+            make_target_report(type=target_type, lat=24.50, lon=119.50),
         ]))
-        targets = client.get("/api/recon/targets").json()
+        targets = client.get("/api/recon/targets?reported_by=MQ9-01").json()
         return targets[0]["id"]
 
     def test_already_engaged_returns_already_engaged_action(self, client):

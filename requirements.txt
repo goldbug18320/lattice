@@ -98,16 +98,37 @@ Friendly assets:
 10000 combat FPV drones, swarm_count=5, swarm size 2000, max payload 4kg, max range 15km, max speed 60km/hr.
 1000 altius-600m combat drones, swarm_count=2, swarm size 500, max payload 12kg, max range 160km, max speed 90km/hr.
 100 reconnaissance drones, max range 150km, max speed 150km/hr.
+1000 solder units, max speed 5km/hr.
 All friendly assets should be blue.
 
 Enermy assets:
 10000 long range attack drones launching from mainline China, max payload 50kg, max range 400km, max speed 150km/hr.
-10000 FPV drone launch by PLA solders in Taiwan, max payload 4kg, max range 15km, max speed 150km/hr.
+10000 combat FPV drones, swarm size=5, swarm count 2000, max payload 4kg, max range 15km, max speed 60km/hr.
 100 tanks, max speed 30km/hr, max range 400km.
 1000 ships, max speed 55km/hr, max range 8000km.
 400 missle launchers, max speed 40km/hr, max range 400km.
-100000 PLA solders, max speed 5km/hr.
+1000 solder units, max speed 5km/hr.
 All enemy assets should be red.
+
+Initial seeding:
+
+Initial seeding must adhere to the following:
+soldiers, tanks, missile launchers must be on the land. ships must be in the water. 
+drones can be on land, at sea or in the air. 
+
+Friendly assets:
+20 combat FPV drone swarms, collocated with friendly solder units in Taiwan.
+100 altius-600m in Taiwan.
+100 reconnaissance drones in Taiwan.
+20 solder units in Taiwan.
+
+Enemy assets:
+20 long range attack drone swarms deployed in China. Stationary.
+10 combat FPV drone swarms, collocated with enemy solder units in Taiwan.
+10 tanks in Taiwan.
+20 ships in the water.
+20 missle launchers in China.
+10 solder units in Taiwan.
 
 Friendly assets and enermy assets should be configurable (i.e. not hard coded).
 

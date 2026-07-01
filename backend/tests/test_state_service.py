@@ -78,13 +78,13 @@ class TestSeedData:
     def test_seeded_swarms(self):
         svc = _svc()
         swarms = svc.get_all_swarms()
-        # 5 FPV swarms + 500 ALT swarms
-        assert len(swarms) == 505
+        # 20 FPV swarms + 100 ALT swarms (initial seeding counts, §8.9)
+        assert len(swarms) == 120
         names = {s.name for s in swarms}
         for fpv_name in ("FPV-Alpha", "FPV-Bravo", "FPV-Charlie", "FPV-Delta", "FPV-Echo"):
             assert fpv_name in names
         assert "ALT-001" in names
-        assert "ALT-500" in names
+        assert "ALT-100" in names
 
     def test_fpv_swarm_total_drone_count(self):
         svc = _svc()
@@ -103,13 +103,83 @@ class TestSeedData:
 
     def test_total_seeded_drones(self):
         svc = _svc()
-        # 4 MQ-9 recon + 100 scout recon + 5 FPV + 500 ALT representative drones
-        assert len(svc.get_all_drones()) == 609
+        # 4 MQ-9 recon + 100 scout recon + 20 FPV + 100 ALT representative drones (§8.9)
+        assert len(svc.get_all_drones()) == 224
 
     def test_no_targets_initially(self):
         svc = _svc()
-        # 23 enemy assets are seeded for demo
-        assert len(svc.get_all_targets()) == 23
+        # 20 friendly soldier units + 10 enemy soldier units + 10 enemy FPV swarms
+        # + 20 enemy long-range swarms + 10 tanks + 20 ships + 20 missile launchers (§8.9)
+        assert len(svc.get_all_targets()) == 110
+
+    def test_seeded_targets_have_both_affiliations(self):
+        svc = _svc()
+        targets = svc.get_all_targets()
+        affiliations = {t.affiliation for t in targets}
+        assert affiliations == {"friendly", "enemy"}
+        friendly = [t for t in targets if t.affiliation == "friendly"]
+        assert len(friendly) == 20
+        assert all(t.type.value == "soldier_unit" for t in friendly)
+
+    def test_enemy_fpv_drones_seeded_as_swarms(self):
+        svc = _svc()
+        fpv_swarms = [
+            t for t in svc.get_all_targets()
+            if t.affiliation == "enemy" and t.type.value == "drone" and t.swarm_size == 5
+        ]
+        assert len(fpv_swarms) == 10
+        assert all(t.position.alt == 50.0 for t in fpv_swarms)
+
+    def test_enemy_long_range_drones_seeded_as_swarms(self):
+        svc = _svc()
+        lr_swarms = [
+            t for t in svc.get_all_targets()
+            if t.affiliation == "enemy" and t.type.value == "drone" and t.swarm_size == 500
+        ]
+        assert len(lr_swarms) == 20
+        assert all(t.speed == 0.0 for t in lr_swarms)  # stationary at spawn (Feature 33)
+
+    def test_fpv_swarms_collocated_with_friendly_soldiers(self):
+        svc = _svc()
+        soldier_positions = {
+            (round(t.position.lat, 4), round(t.position.lon, 4))
+            for t in svc.get_all_targets() if t.affiliation == "friendly"
+        }
+        fpv_positions = {
+            (round(d.position.lat, 4), round(d.position.lon, 4))
+            for d in svc.get_all_drones() if d.model == DroneModel.FPV_COMBAT
+        }
+        assert fpv_positions.issubset(soldier_positions)
+
+    def test_enemy_fpv_swarms_collocated_with_enemy_soldiers(self):
+        svc = _svc()
+        targets = svc.get_all_targets()
+        soldier_positions = {
+            (round(t.position.lat, 4), round(t.position.lon, 4))
+            for t in targets if t.affiliation == "enemy" and t.type.value == "soldier_unit"
+        }
+        fpv_positions = {
+            (round(t.position.lat, 4), round(t.position.lon, 4))
+            for t in targets if t.affiliation == "enemy" and t.type.value == "drone" and t.swarm_size == 5
+        }
+        assert fpv_positions.issubset(soldier_positions)
+
+    def test_seeded_ground_and_sea_assets_respect_terrain(self):
+        """Feature 21: soldiers/tanks/missile launchers on land, ships in water."""
+        from services.terrain_service import is_land
+
+        svc = _svc()
+        land_types = {"tank", "missile_launcher", "soldier_unit"}
+        for t in svc.get_all_targets():
+            if t.type.value in land_types:
+                assert is_land(t.position.lat, t.position.lon), (
+                    f"{t.type.value} ({t.affiliation}) seeded in water at "
+                    f"({t.position.lat}, {t.position.lon})"
+                )
+            elif t.type.value == "ship":
+                assert not is_land(t.position.lat, t.position.lon), (
+                    f"ship seeded on land at ({t.position.lat}, {t.position.lon})"
+                )
 
     def test_seeded_scout_drones(self):
         svc = _svc()
@@ -419,20 +489,20 @@ class TestFullState:
     def test_snapshot_drones_count(self):
         svc = _svc()
         state = svc.get_full_state()
-        # 4 MQ-9 + 100 scout recon + 5 FPV + 500 ALT representative drones = 609
-        assert len(state["drones"]) == 609
+        # 4 MQ-9 + 100 scout recon + 20 FPV + 100 ALT representative drones (§8.9) = 224
+        assert len(state["drones"]) == 224
 
     def test_snapshot_swarms_count(self):
         svc = _svc()
         state = svc.get_full_state()
-        # 5 FPV swarms + 500 ALT swarms
-        assert len(state["swarms"]) == 505
+        # 20 FPV swarms + 100 ALT swarms (§8.9)
+        assert len(state["swarms"]) == 120
 
     def test_snapshot_no_targets_initially(self):
         svc = _svc()
         state = svc.get_full_state()
-        # 23 enemy assets seeded for demo
-        assert len(state["targets"]) == 23
+        # 20 friendly + 90 enemy assets seeded per the initial seeding counts (§8.9)
+        assert len(state["targets"]) == 110
 
     def test_snapshot_includes_added_target(self):
         svc = _svc()

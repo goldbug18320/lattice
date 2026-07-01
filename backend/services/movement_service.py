@@ -350,7 +350,7 @@ class MovementService:
         if not airborne_mq9:
             return
 
-        all_targets = state_service.get_all_targets()
+        all_targets = [t for t in state_service.get_all_targets() if t.affiliation == "enemy"]
         now = datetime.utcnow()
         for drone in airborne_mq9:
             for target in all_targets:
@@ -373,7 +373,7 @@ class MovementService:
         if not scouts:
             return
 
-        all_targets = state_service.get_all_targets()
+        all_targets = [t for t in state_service.get_all_targets() if t.affiliation == "enemy"]
         now = datetime.utcnow()
         for drone in scouts:
             for target in all_targets:

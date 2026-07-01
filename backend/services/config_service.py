@@ -36,9 +36,13 @@ _DEFAULTS: dict = {
         "swarm_count": 5,
         "swarm_size": 200,
     },
+    "soldier_unit": {
+        "count": 0,
+        "max_speed_kmh": 5.0,
+    },
     "enemy": {
-        "long_range_drones": {"count": 0, "max_payload_kg": 50.0, "max_range_km": 400.0,  "max_speed_kmh": 150.0},
-        "fpv_drones":        {"count": 0, "max_payload_kg": 4.0,  "max_range_km": 15.0,   "max_speed_kmh": 150.0},
+        "long_range_drones": {"count": 0, "max_payload_kg": 50.0, "max_range_km": 400.0,  "max_speed_kmh": 150.0, "swarm_count": 0, "swarm_size": 500},
+        "fpv_drones":        {"count": 0, "max_payload_kg": 4.0,  "max_range_km": 15.0,   "max_speed_kmh": 60.0, "swarm_count": 10, "swarm_size": 1000},
         "tanks":             {"count": 0, "max_speed_kmh": 30.0,  "max_range_km": 400.0},
         "ships":             {"count": 0, "max_speed_kmh": 55.0,  "max_range_km": 8000.0},
         "missile_launchers": {"count": 0, "max_speed_kmh": 40.0,  "max_range_km": 400.0},
@@ -50,6 +54,24 @@ _DEFAULTS: dict = {
     },
     "combat": {
         "contact_radius_m": 500.0,
+    },
+    # Feature: initial seeding — how many entries of each type the default scenario
+    # actually instantiates at startup (distinct from each type's pool/capability count above).
+    "initial_seed": {
+        "friendly": {
+            "fpv_swarms": 0,
+            "altius_swarms": 0,
+            "scout_recon": 0,
+            "soldier_units": 0,
+        },
+        "enemy": {
+            "long_range_swarms": 0,
+            "fpv_swarms": 0,
+            "tanks": 0,
+            "ships": 0,
+            "missile_launchers": 0,
+            "soldier_units": 0,
+        },
     },
 }
 

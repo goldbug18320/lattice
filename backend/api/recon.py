@@ -76,7 +76,7 @@ async def get_targets(
     Use ``reported_by`` to retrieve only the targets detected by a specific
     recon drone (MQ-9 or Scout), identified by drone name or ID.
     """
-    targets = state_service.get_all_targets(reported_by=reported_by)
+    targets = [t for t in state_service.get_all_targets(reported_by=reported_by) if t.affiliation == "enemy"]
     if type:
         targets = [t for t in targets if t.type.value == type]
     if status:

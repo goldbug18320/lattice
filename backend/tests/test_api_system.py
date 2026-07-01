@@ -68,8 +68,8 @@ class TestFullStateEndpoint:
 
     def test_no_targets_initially(self, client):
         body = client.get("/api/state").json()
-        # 23 enemy assets are seeded for demo
-        assert len(body["targets"]) == 23
+        # 20 friendly + 90 enemy assets seeded per the initial seeding counts (§8.9)
+        assert len(body["targets"]) == 110
 
     def test_state_reflects_new_target(self, client):
         from tests.conftest import make_recon_feed, make_target_report
@@ -127,8 +127,8 @@ class TestWebSocket:
     def test_initial_message_targets_empty(self, client):
         with client.websocket_connect("/ws") as ws:
             state = json.loads(ws.receive_text())
-            # 23 enemy assets are seeded for demo
-            assert len(state["targets"]) == 23
+            # 20 friendly + 90 enemy assets seeded per the initial seeding counts (§8.9)
+            assert len(state["targets"]) == 110
 
     def test_multiple_clients_can_connect(self, client):
         with client.websocket_connect("/ws") as ws1:

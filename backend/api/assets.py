@@ -58,6 +58,7 @@ class CreateDroneRequest(BaseModel):
 class CreateTargetRequest(BaseModel):
     type: TargetType
     position: Position
+    affiliation: str = "enemy"
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -130,11 +131,14 @@ async def delete_drone(drone_id: str):
     return {"removed": drone_id}
 
 
-@router.post("/target", summary="Create a new enemy target from the Asset Palette")
+@router.post("/target", summary="Create a new enemy or friendly target from the Asset Palette")
 async def create_target(req: CreateTargetRequest):
-    threat = _DEFAULT_THREAT.get(req.type, ThreatValue.LOW)
-    if req.type == TargetType.DRONE and req.position.alt > 500:
-        threat = ThreatValue.MEDIUM
+    affiliation = "friendly" if req.affiliation == "friendly" else "enemy"
+    threat = None
+    if affiliation == "enemy":
+        threat = _DEFAULT_THREAT.get(req.type, ThreatValue.LOW)
+        if req.type == TargetType.DRONE and req.position.alt > 500:
+            threat = ThreatValue.MEDIUM
     target = Target(
         type=req.type,
         position=req.position,
@@ -144,6 +148,7 @@ async def create_target(req: CreateTargetRequest):
         status=TargetStatus.ACTIVE,
         threat_value=threat,
         reported_by="manual",
+        affiliation=affiliation,
         home_position=req.position,  # Feature 33: spawn position for drone 'returning' mode
     )
     state_service.upsert_target(target)

@@ -50,6 +50,38 @@ def _city_base(index: int, total: int, taipei_pct: float) -> tuple[float, float]
         return _OTHER_BASES[j % len(_OTHER_BASES)]
 
 
+def _zone_position(zones: list[tuple[float, float]], index: int, step: float = 0.02) -> tuple[float, float]:
+    """Distribute `index` across `zones`, jittering by ring so repeated passes don't stack exactly."""
+    zlat, zlon = zones[index % len(zones)]
+    ring = index // len(zones)
+    lat = zlat + ((ring % 10) - 5) * step
+    lon = zlon + ((ring // 10 % 10) - 5) * step
+    return lat, lon
+
+
+def _snap_to_terrain(lat: float, lon: float, want_land: bool, step: float = 0.01, max_rings: int = 12) -> tuple[float, float]:
+    """Nudge (lat, lon) to the nearest point matching `want_land` if it doesn't already.
+
+    Used at seed time to enforce Feature 21 (soldiers/tanks/missile launchers on
+    land, ships at sea) — jittered zone positions can otherwise land in the wrong
+    terrain near a coastline. Spirals outward in a small grid; falls back to the
+    original position (with a warning) if no valid point is found nearby.
+    """
+    if _terrain_is_land(lat, lon) == want_land:
+        return lat, lon
+    for ring in range(1, max_rings + 1):
+        for dlat in range(-ring, ring + 1):
+            for dlon in range(-ring, ring + 1):
+                if abs(dlat) != ring and abs(dlon) != ring:
+                    continue  # only test the outer edge of this ring
+                clat, clon = lat + dlat * step, lon + dlon * step
+                if _terrain_is_land(clat, clon) == want_land:
+                    return clat, clon
+    print(f"[Feature 21] WARNING: could not snap ({lat:.3f},{lon:.3f}) to "
+          f"{'land' if want_land else 'water'} within {max_rings * step:.2f}° — leaving as-is")
+    return lat, lon
+
+
 class StateService:
     def __init__(self):
         self._lock = threading.Lock()
@@ -254,15 +286,18 @@ class StateService:
             return
 
         cfg_mq9  = assets_config["mq9"]
-        cfg_scou = assets_config["scout_recon"]
         cfg_fpv  = assets_config["fpv_combat"]
         cfg_alt  = assets_config["altius_600m"]
         cfg_en   = assets_config["enemy"]
+        cfg_seed = assets_config["initial_seed"]
+        cfg_seed_f = cfg_seed["friendly"]
+        cfg_seed_e = cfg_seed["enemy"]
         taipei_pct = assets_config["deployment"]["taipei_pct"]
 
         # No default deployments — if all counts are 0, start with empty battlefield
-        total = (cfg_mq9.get("count", 0) + cfg_scou.get("count", 0) +
-                 cfg_fpv.get("count", 0) + cfg_alt.get("count", 0))
+        total = (cfg_mq9.get("count", 0) + cfg_seed_f.get("scout_recon", 0) +
+                 cfg_seed_f.get("fpv_swarms", 0) + cfg_seed_f.get("altius_swarms", 0) +
+                 cfg_seed_f.get("soldier_units", 0))
         if total == 0:
             return
 
@@ -292,26 +327,62 @@ class StateService:
             )
             self._drones[d.id] = d
 
-        # ── FPV Combat Swarms ──────────────────────────────────────────────────
+        # ── Friendly Soldier Units (seeded first so FPV swarms can collocate) ───
+        # Ground formation (blue IFF); shares the soldier_unit TargetType with
+        # enemy soldiers, distinguished by affiliation.
+        from models.target import TargetType, TargetStatus, ThreatValue
+
+        friendly_soldier_count = cfg_seed_f.get("soldier_units", 0)
+        friendly_soldier_positions: list[Position] = []
+        for i in range(friendly_soldier_count):
+            base_lat, base_lon = _city_base(i, max(friendly_soldier_count, 1), taipei_pct)
+            lat = base_lat + ((i % 7) - 3) * 0.01
+            lon = base_lon + ((i // 7 % 7) - 3) * 0.01
+            lat, lon = _snap_to_terrain(lat, lon, want_land=True)  # Feature 21: soldiers must be on land
+            pos = Position(lat=lat, lon=lon, alt=0.0)
+            friendly_soldier_positions.append(pos)
+            t = Target(
+                type=TargetType.SOLDIER_UNIT,
+                position=pos,
+                heading=0.0,
+                speed=0.0,
+                status=TargetStatus.ACTIVE,
+                reported_by="seed",
+                affiliation="friendly",
+            )
+            self._targets[t.id] = t
+
+        # ── FPV Combat Swarms (collocated with the friendly Soldier Units) ──────
         # Feature 36: one combat_swarm entry per swarm (representative drone shares swarm id)
-        fpv_swarm_names = [
-            "FPV-Alpha", "FPV-Bravo", "FPV-Charlie", "FPV-Delta", "FPV-Echo",
-            "FPV-Foxtrot", "FPV-Golf", "FPV-Hotel", "FPV-India", "FPV-Juliet",
+        fpv_swarm_names_base = [
+            "Alpha", "Bravo", "Charlie", "Delta", "Echo",
+            "Foxtrot", "Golf", "Hotel", "India", "Juliet",
         ]
-        total_fpv_swarms = cfg_fpv["swarm_count"]
+
+        def _fpv_swarm_name(idx: int) -> str:
+            if idx < len(fpv_swarm_names_base):
+                return f"FPV-{fpv_swarm_names_base[idx]}"
+            return f"FPV-{idx + 1:03d}"
+
+        total_fpv_swarms = cfg_seed_f.get("fpv_swarms", 0)
         for s_idx in range(total_fpv_swarms):
-            base_lat, base_lon = _city_base(s_idx, total_fpv_swarms, taipei_pct)
+            if friendly_soldier_positions:
+                collocated = friendly_soldier_positions[s_idx % len(friendly_soldier_positions)]
+                base_lat, base_lon = collocated.lat, collocated.lon
+            else:
+                base_lat, base_lon = _city_base(s_idx, total_fpv_swarms, taipei_pct)
             sid = str(uuid.uuid4())
+            name = _fpv_swarm_name(s_idx)
             swarm = Swarm(
                 id=sid,
-                name=fpv_swarm_names[s_idx],
+                name=name,
                 drone_model=DroneModel.FPV_COMBAT,
                 total_drone_count=cfg_fpv["swarm_size"],
                 drone_ids=[sid],
             )
             d = Drone(
                 id=sid,
-                name=fpv_swarm_names[s_idx],
+                name=name,
                 type=DroneType.COMBAT_SWARM,
                 model=DroneModel.FPV_COMBAT,
                 position=Position(lat=base_lat, lon=base_lon, alt=150.0),
@@ -324,7 +395,7 @@ class StateService:
             self._swarms[swarm.id] = swarm
 
         # ── Altius-600M Combat Swarms ──────────────────────────────────────────
-        total_alt_swarms = cfg_alt["swarm_count"]
+        total_alt_swarms = cfg_seed_f.get("altius_swarms", 0)
         alt_base_cities = [
             (25.04, 121.56),  # Taipei
             (24.15, 120.68),  # Taichung
@@ -359,7 +430,7 @@ class StateService:
             self._swarms[swarm.id] = swarm
 
         # ── Scout Recon Drones (city home bases) ──────────────────────────────
-        scout_count = cfg_scou["count"]
+        scout_count = cfg_seed_f.get("scout_recon", 0)
         for i in range(scout_count):
             home_lat, home_lon = _city_base(i, scout_count, taipei_pct)
             d = Drone(
@@ -370,66 +441,138 @@ class StateService:
                 home_position=Position(lat=home_lat, lon=home_lon, alt=0.0),
                 status=DroneStatus.PATROLLING,
                 heading=float(((i + 1) * 37) % 360),
-                max_range_km=cfg_scou["max_range_km"],
+                max_range_km=assets_config["scout_recon"]["max_range_km"],
             )
             self._drones[d.id] = d
 
         # ── Seeded Enemy Assets ────────────────────────────────────────────────
-        from models.target import TargetType, TargetStatus, ThreatValue
+        # All enemy assets are stationary by default at spawn (Feature 33); the
+        # operator sets heading/destination via the right-click context menu.
 
-        _SHIP_MS    = 0.0   # stationary by default (Feature 33); operator sets via context menu
-        _TANK_MS    = 0.0
-        _LR_MS      = cfg_en["long_range_drones"]["max_speed_kmh"] / 3.6
-        _FPV_MS     = cfg_en["fpv_drones"]["max_speed_kmh"] / 3.6
-        _SOLDIER_MS = 0.0
+        # Verified-on-land mainland China coastal points (Fujian) for ground assets
+        _CHINA_ZONES   = [(26.08, 119.30), (24.51, 117.65), (25.72, 119.38), (25.50, 119.78)]
+        # Verified-on-land Taiwan west-coast points for ground assets
+        _TANK_ZONES    = [(24.15, 120.68), (23.00, 120.21), (22.63, 120.30), (23.97, 121.60)]
+        _SOLDIER_ZONES = [(24.15, 120.68), (23.00, 120.21), (22.63, 120.30), (24.80, 120.97)]
+        # Taiwan Strait open-water points for ships
+        _SHIP_ZONES    = [(24.50, 119.50), (24.00, 119.80), (23.50, 119.60), (23.00, 119.40), (25.00, 119.90)]
 
-        _enemy_seed = [
-            # Ships in Taiwan Strait — heading east toward Taiwan
-            (TargetType.SHIP,             24.50, 119.50,    0,  90, _SHIP_MS, 0.92),
-            (TargetType.SHIP,             24.00, 119.80,    0,  85, _SHIP_MS, 0.88),
-            (TargetType.SHIP,             23.50, 119.60,    0,  95, _SHIP_MS, 0.85),
-            (TargetType.SHIP,             23.00, 119.40,    0,  80, _SHIP_MS, 0.90),
-            (TargetType.SHIP,             25.00, 119.90,    0,  88, _SHIP_MS, 0.87),
-            # Tanks on west coast Taiwan — moving inland
-            (TargetType.TANK,             25.00, 120.50,    0,  90, _TANK_MS, 0.91),
-            (TargetType.TANK,             24.50, 120.60,    0,  75, _TANK_MS, 0.89),
-            (TargetType.TANK,             23.50, 120.30,    0, 110, _TANK_MS, 0.86),
-            (TargetType.TANK,             24.00, 120.50,    0,  95, _TANK_MS, 0.83),
-            # Missile launchers — mobile ground asset, stationary by default (Feature 33)
-            (TargetType.MISSILE_LAUNCHER, 25.90, 119.30,    0,   0,  0.0, 0.94),
-            (TargetType.MISSILE_LAUNCHER, 25.00, 119.00,    0,   0,  0.0, 0.90),
-            (TargetType.MISSILE_LAUNCHER, 24.50, 118.50,    0,   0,  0.0, 0.88),
-            # Long-range attack drones — launched from mainland, heading east
-            (TargetType.DRONE,            24.50, 120.00, 3000,  90, _LR_MS, 0.78),
-            (TargetType.DRONE,            24.00, 120.50, 2500,  88, _LR_MS, 0.72),
-            (TargetType.DRONE,            25.00, 120.20, 3500,  85, _LR_MS, 0.80),
-            (TargetType.DRONE,            23.50, 119.80, 2000,  92, _LR_MS, 0.75),
-            # Enemy FPV drones — low altitude, deployed in Taiwan
-            (TargetType.DRONE,            25.00, 120.70,   50, 350, _FPV_MS, 0.65),
-            (TargetType.DRONE,            24.50, 120.40,   30, 320, _FPV_MS, 0.60),
-            (TargetType.DRONE,            23.80, 120.30,   40, 340, _FPV_MS, 0.62),
-            # Soldier formations — advancing inland
-            (TargetType.SOLDIER_UNIT,     25.00, 120.80,    0,  90, _SOLDIER_MS, 0.82),
-            (TargetType.SOLDIER_UNIT,     24.60, 120.60,    0,  85, _SOLDIER_MS, 0.79),
-            (TargetType.SOLDIER_UNIT,     24.20, 120.50,    0,  95, _SOLDIER_MS, 0.76),
-            (TargetType.SOLDIER_UNIT,     23.70, 120.30,    0,  88, _SOLDIER_MS, 0.73),
-        ]
-        for ttype, lat, lon, alt, hdg, spd, conf in _enemy_seed:
-            if ttype in (TargetType.SHIP, TargetType.MISSILE_LAUNCHER):
-                tv = ThreatValue.HIGH
-            elif ttype == TargetType.TANK or (ttype == TargetType.DRONE and float(alt) > 500):
-                tv = ThreatValue.MEDIUM
-            else:
-                tv = ThreatValue.LOW
+        # ── Enemy Soldier Units (seeded first so enemy FPV swarms can collocate) ──
+        enemy_soldier_count = cfg_seed_e.get("soldier_units", 0)
+        enemy_soldier_positions: list[Position] = []
+        for i in range(enemy_soldier_count):
+            lat, lon = _zone_position(_SOLDIER_ZONES, i)
+            lat, lon = _snap_to_terrain(lat, lon, want_land=True)  # Feature 21: soldiers must be on land
+            pos = Position(lat=lat, lon=lon, alt=0.0)
+            enemy_soldier_positions.append(pos)
             t = Target(
-                type=ttype,
-                position=Position(lat=lat, lon=lon, alt=float(alt)),
-                heading=float(hdg),
-                speed=float(spd),
-                confidence=conf,
+                type=TargetType.SOLDIER_UNIT,
+                position=pos,
+                heading=float((90 + i * 5) % 360),
+                speed=0.0,
+                confidence=0.8,
                 status=TargetStatus.ACTIVE,
-                threat_value=tv,
+                threat_value=ThreatValue.LOW,
                 reported_by="seed",
+                affiliation="enemy",
+            )
+            self._targets[t.id] = t
+
+        # ── Enemy FPV Swarms (collocated with the enemy Soldier Units) ──────────
+        # Organized into swarms (mirroring the friendly FPV combat structure) rather
+        # than tracked as individual drones — one Target entry per swarm, low altitude.
+        _FPV_MS = cfg_en["fpv_drones"]["max_speed_kmh"] / 3.6
+        fpv_swarm_count = cfg_seed_e.get("fpv_swarms", 0)
+        fpv_swarm_size  = cfg_en["fpv_drones"].get("swarm_size", 1)
+        for i in range(fpv_swarm_count):
+            if enemy_soldier_positions:
+                collocated = enemy_soldier_positions[i % len(enemy_soldier_positions)]
+                lat, lon = collocated.lat, collocated.lon
+            else:
+                lat, lon = _zone_position([(25.00, 120.70), (24.50, 120.40), (23.80, 120.30)], i)
+            t = Target(
+                type=TargetType.DRONE,
+                position=Position(lat=lat, lon=lon, alt=50.0),
+                heading=float((320 + i * 7) % 360),
+                speed=_FPV_MS,
+                confidence=0.6,
+                status=TargetStatus.ACTIVE,
+                threat_value=ThreatValue.LOW,
+                reported_by="seed",
+                affiliation="enemy",
+                swarm_size=fpv_swarm_size,
+            )
+            self._targets[t.id] = t
+
+        # ── Enemy Long-Range Attack Drone Swarms ────────────────────────────────
+        # Now organized into swarms (mirroring the enemy FPV reorg); deployed in
+        # mainland China and stationary at spawn like every other seeded asset.
+        lr_swarm_count = cfg_seed_e.get("long_range_swarms", 0)
+        lr_swarm_size  = cfg_en["long_range_drones"].get("swarm_size", 1)
+        for i in range(lr_swarm_count):
+            lat, lon = _zone_position(_CHINA_ZONES, i)
+            t = Target(
+                type=TargetType.DRONE,
+                position=Position(lat=lat, lon=lon, alt=3000.0),
+                heading=float((85 + i * 3) % 360),
+                speed=0.0,
+                confidence=0.78,
+                status=TargetStatus.ACTIVE,
+                threat_value=ThreatValue.MEDIUM,
+                reported_by="seed",
+                affiliation="enemy",
+                swarm_size=lr_swarm_size,
+            )
+            self._targets[t.id] = t
+
+        # ── Enemy Tanks ──────────────────────────────────────────────────────────
+        for i in range(cfg_seed_e.get("tanks", 0)):
+            lat, lon = _zone_position(_TANK_ZONES, i)
+            lat, lon = _snap_to_terrain(lat, lon, want_land=True)  # Feature 21: tanks must be on land
+            t = Target(
+                type=TargetType.TANK,
+                position=Position(lat=lat, lon=lon, alt=0.0),
+                heading=float((90 + i * 11) % 360),
+                speed=0.0,
+                confidence=0.88,
+                status=TargetStatus.ACTIVE,
+                threat_value=ThreatValue.MEDIUM,
+                reported_by="seed",
+                affiliation="enemy",
+            )
+            self._targets[t.id] = t
+
+        # ── Enemy Ships (Taiwan Strait) ──────────────────────────────────────────
+        for i in range(cfg_seed_e.get("ships", 0)):
+            lat, lon = _zone_position(_SHIP_ZONES, i)
+            lat, lon = _snap_to_terrain(lat, lon, want_land=False)  # Feature 21: ships must be in the water
+            t = Target(
+                type=TargetType.SHIP,
+                position=Position(lat=lat, lon=lon, alt=0.0),
+                heading=float((90 + i * 5) % 360),
+                speed=0.0,
+                confidence=0.9,
+                status=TargetStatus.ACTIVE,
+                threat_value=ThreatValue.HIGH,
+                reported_by="seed",
+                affiliation="enemy",
+            )
+            self._targets[t.id] = t
+
+        # ── Enemy Missile Launchers (mainland China) ─────────────────────────────
+        for i in range(cfg_seed_e.get("missile_launchers", 0)):
+            lat, lon = _zone_position(_CHINA_ZONES, i)
+            lat, lon = _snap_to_terrain(lat, lon, want_land=True)  # Feature 21: missile launchers must be on land
+            t = Target(
+                type=TargetType.MISSILE_LAUNCHER,
+                position=Position(lat=lat, lon=lon, alt=0.0),
+                heading=0.0,
+                speed=0.0,
+                confidence=0.9,
+                status=TargetStatus.ACTIVE,
+                threat_value=ThreatValue.HIGH,
+                reported_by="seed",
+                affiliation="enemy",
             )
             self._targets[t.id] = t
 

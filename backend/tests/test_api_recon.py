@@ -179,6 +179,14 @@ class TestGetTargets:
         assert results[0]["type"] == "tank"
         assert results[0]["confidence"] >= 0.8
 
+    def test_excludes_friendly_affiliated_targets(self, client):
+        # The seeded scenario includes 1000 friendly soldier_unit Targets; the
+        # enemy intel feed endpoint must never surface them.
+        results = client.get("/api/recon/targets").json()
+        assert len(results) > 0
+        assert all(t.get("affiliation", "enemy") == "enemy" for t in results)
+        assert not any(t["type"] == "soldier_unit" and t.get("affiliation") == "friendly" for t in results)
+
 
 # ─── GET /api/recon/targets/{id} ─────────────────────────────────────────────
 
@@ -187,7 +195,9 @@ class TestGetTargetById:
         client.post("/api/recon/feed", json=make_recon_feed(targets=[
             make_target_report(type="ship"),
         ]))
-        target_id = client.get("/api/recon/targets").json()[0]["id"]
+        # Filter by reported_by so this grabs the target just created, not one
+        # of the many enemy assets already present in the seeded scenario.
+        target_id = client.get("/api/recon/targets?reported_by=MQ9-01").json()[0]["id"]
         resp = client.get(f"/api/recon/targets/{target_id}")
         assert resp.status_code == 200
         assert resp.json()["id"] == target_id

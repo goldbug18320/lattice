@@ -278,6 +278,33 @@ class TestMQ9Patrol:
         self.svc.tick(state)
         assert drone.heading == 1.0
 
+    def test_mq9_detection_skips_friendly_affiliated_targets(self):
+        drone = _make_drone(
+            model=DroneModel.MQ9_RECON,
+            type=DroneType.RECON,
+            status=DroneStatus.PATROLLING,
+            position=Position(lat=25.0, lon=121.0, alt=6000.0),
+            max_range_km=1900.0,
+        )
+        enemy_target = Target(
+            type=TargetType.TANK,
+            position=Position(lat=25.0, lon=121.0, alt=0.0),
+            status=TargetStatus.ACTIVE,
+            affiliation="enemy",
+            reported_by="",
+        )
+        friendly_target = Target(
+            type=TargetType.SOLDIER_UNIT,
+            position=Position(lat=25.0, lon=121.0, alt=0.0),
+            status=TargetStatus.ACTIVE,
+            affiliation="friendly",
+            reported_by="",
+        )
+        state = _make_state([drone], targets=[enemy_target, friendly_target])
+        self.svc.tick(state)
+        assert enemy_target.reported_by == drone.name
+        assert friendly_target.reported_by == ""
+
 
 class TestTrackingTowardTarget:
     def setup_method(self):
@@ -471,6 +498,20 @@ class TestEnemyMovement:
             position=Position(lat=25.0, lon=121.5, alt=0.0),
             heading=270.0,  # heading west (deeper inland)
             speed=1.39,
+        )
+        orig_lon = soldier.position.lon
+        state = _make_state([], targets=[soldier])
+        self.svc.tick(state)
+        assert soldier.position.lon < orig_lon
+
+    def test_friendly_soldier_unit_advances_along_heading(self):
+        # Friendly-affiliated soldier_unit Targets move identically to enemy ones
+        soldier = _make_target(
+            type=TargetType.SOLDIER_UNIT,
+            position=Position(lat=25.0, lon=121.5, alt=0.0),
+            heading=270.0,
+            speed=1.39,
+            affiliation="friendly",
         )
         orig_lon = soldier.position.lon
         state = _make_state([], targets=[soldier])

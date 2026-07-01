@@ -47,7 +47,7 @@ export default function TargetList() {
   const [trackErrors, setTrackErrors] = useState({})
   const [trackInfos, setTrackInfos] = useState({})
 
-  const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status))
+  const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status) && t.affiliation !== 'friendly')
 
   const grouped = activeTargets.reduce((acc, t) => {
     acc[t.type] = acc[t.type] || []

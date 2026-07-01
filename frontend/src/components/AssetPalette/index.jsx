@@ -6,6 +6,7 @@ const FRIENDLY = [
   { label: 'Scout Recon',  kind: 'drone', model: 'scout_recon', color: '#3c78ff' },
   { label: 'FPV Combat',   kind: 'drone', model: 'fpv_combat',  color: '#2563eb' },
   { label: 'Altius-600M',  kind: 'drone', model: 'altius_600m', color: '#1d4ed8' },
+  { label: 'Soldier Unit', kind: 'target', type: 'soldier_unit', affiliation: 'friendly', alt: 0, color: '#3c78ff' },
 ]
 
 const ENEMY = [
@@ -17,7 +18,7 @@ const ENEMY = [
   { label: 'Soldiers',     kind: 'target', type: 'soldier_unit',     alt: 0,    color: '#af1429' },
 ]
 
-const KEY = (item) => item.model ?? `${item.type}-${item.alt}`
+const KEY = (item) => item.model ?? `${item.affiliation ?? 'enemy'}-${item.type}-${item.alt}`
 
 export default function AssetPalette() {
   const [collapsed, setCollapsed] = useState(false)
@@ -74,7 +75,7 @@ export default function AssetPalette() {
 
           <div style={s.sectionLabel('#4ade80')}>FRIENDLY</div>
           {FRIENDLY.map(item => (
-            <div key={item.model} style={s.item(item.color, isActive(item))} onClick={() => toggle(item)}>
+            <div key={KEY(item)} style={s.item(item.color, isActive(item))} onClick={() => toggle(item)}>
               + {item.label}
             </div>
           ))}

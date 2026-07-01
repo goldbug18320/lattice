@@ -117,6 +117,8 @@
 | `last_seen` | datetime | UTC timestamp (updated on each recon report) |
 | `notes` | string? | Free-text intelligence notes |
 
+> **Note:** `soldier_unit` is no longer enemy-exclusive — the friendly Soldier Units (§8.3.1) use the same `soldier_unit` type, distinguished by IFF affiliation (blue vs. red) rather than by a separate type value.
+
 ### 4.2 Drone (Friendly Asset)
 
 | Field | Type | Description |
@@ -728,7 +730,7 @@ Scout drones continuously fly patrol routes and automatically submit reconnaissa
 
 ---
 
-### 8.3 Friendly — Combat Drones
+### 8.3 Friendly — Combat Drones & Soldier Units
 
 #### FPV Combat Drones
 
@@ -754,11 +756,25 @@ Scout drones continuously fly patrol routes and automatically submit reconnaissa
 | Best against | Tanks, ships, missile launchers, long-range attack drones |
 | Swarm grouping | Multiple swarms (count configurable in `assets_config.json`) |
 
+#### 8.3.1 Friendly — Soldier Units
+
+| Property | Value |
+|---|---|
+| Type | `soldier_unit` (friendly) |
+| Count | Configurable in `assets_config.json` (default scenario: 1,000) |
+| Max speed | ~5 km/h |
+| IFF | Blue |
+| Terrain constraint | Land only (Feature 21) — stationary by default (Feature 33); halts if movement would cross onto water |
+
+Friendly soldier units are a ground formation, not a drone — they are deployed and persisted the same way as other non-drone assets (right-click context menu for speed/destination, Feature 33). They mirror the enemy `soldier_unit` asset type but with friendly (blue) IFF. In the default seeded scenario, friendly FPV combat swarms are collocated with the friendly Soldier Units (§8.9); this is a seeding-time convenience, not a hard constraint — either asset can be repositioned independently via drag-and-drop or the right-click context menu.
+
 #### Friendly Asset Deployment
 
 **Scout recon drones** are home-based and launch to patrol the surrounding area. When a scout exhausts its range it returns to home base.
 
-**Combat drones** are distributed across major cities in Taiwan at startup. Exact counts and city distributions are configured in `assets_config.json`.
+**Combat drones** are distributed across major cities in Taiwan at startup; FPV combat swarms are collocated with the friendly Soldier Units in the default seeded scenario (§8.9). Exact counts and city distributions are configured in `assets_config.json`.
+
+**Soldier units** are seeded in Taiwan (§8.9), with their own positions configured in `assets_config.json`.
 
 MQ-9 recon drones patrol from high altitude and are not city-bound.
 
@@ -768,19 +784,19 @@ MQ-9 recon drones patrol from high altitude and are not city-bound.
 
 | Asset | Location | Max Payload | Max Range | Max Speed | Notes |
 |---|---|---|---|---|---|
-| Long-range attack drones | Airborne / mainland China | 50 kg | 400 km | 150 km/h | Primary air threat; launched from mainland |
-| FPV drones | Airborne over Taiwan | 4 kg | 15 km | 150 km/h | Deployed by PLA soldiers already landed in Taiwan |
+| Long-range attack drones | Airborne / mainland China | 50 kg | 400 km | 150 km/h | Primary air threat; launched from mainland; organized into swarms for the default seeded scenario (§8.9) |
+| FPV drones | Airborne over Taiwan | 4 kg | 15 km | 60 km/h | Organized into swarms (swarm count/size configurable, default scenario: swarm count 2,000, swarm size 5) |
 | Tanks | Taiwan | — | 400 km | 30 km/h | Armoured ground threat |
 | Ships | Taiwan Strait | — | 8,000 km | 55 km/h | Naval blockade / amphibious assault from mainland |
 | Missile launchers | Mainland China | — | 400 km | 40 km/h | Mobile land-attack launchers; ground-constrained |
-| Soldiers | Landed in Taiwan | — | — | ~5 km/h | Ground invasion force; `soldier_unit` target type |
+| Soldiers | Landed in Taiwan | — | — | ~5 km/h | Ground invasion force; `soldier_unit` target type (default scenario: 1,000 units, down from a prior 100,000-unit baseline) |
 
-All enemy asset counts are configurable in `assets_config.json`. Enemy assets are registered in the platform via reconnaissance drone feeds (`POST /api/recon/feed`). The `soldier_unit` target type is used for soldier formations.
+All enemy asset counts are configurable in `assets_config.json`. Enemy assets are registered in the platform via reconnaissance drone feeds (`POST /api/recon/feed`). The `soldier_unit` type is used for soldier formations on both sides — it is no longer enemy-exclusive (§8.3.1 introduces the friendly `soldier_unit`).
 
 #### Enemy Asset Distribution
 - Missile launchers are **mobile ground assets** (max speed 40 km/h, max range 400 km) — terrain-constrained to land; operator sets heading and speed via the right-click context menu.
-- Long-range attack drones **launch from mainland China** and travel east toward Taiwan.
-- Enemy FPV drones are **deployed by PLA soldiers already landed in Taiwan** — short-range, high-density urban threat.
+- Long-range attack drones **launch from mainland China** and travel east toward Taiwan; the default scenario seeds them as swarms (§8.9), mirroring the FPV swarm structure.
+- Enemy FPV drones are organized into swarms (mirroring the friendly FPV swarm structure, Feature 36) — short-range, high-density urban threat. In the default seeded scenario they are collocated with the enemy Soldier Units (§8.9).
 - Enemy asset distribution across the west and east coasts of Taiwan is configurable in `assets_config.json`.
 
 #### Terrain Placement Constraints (Feature 21)
@@ -931,7 +947,7 @@ The values below are the typical scenario speeds for reference; the actual speed
 | Tanks | Advance at operator-set heading; **halt when reaching water** (land/sea boundary) | up to 30 km/h (8.33 m/s); range 400 km |
 | Soldiers | Move at operator-set heading; **halt when reaching water** (land/sea boundary) | ~5 km/h (1.39 m/s) |
 | Long-range attack drones | Fly at operator-set heading | 150 km/h (41.7 m/s) |
-| FPV drones (enemy) | Fly at operator-set heading | 150 km/h (41.7 m/s) |
+| FPV drones (enemy) | Fly at operator-set heading, as a swarm | 60 km/h (16.7 m/s) |
 | Missile launchers | Advance at operator-set heading; **halt when reaching water** (land boundary) | up to 40 km/h (11.1 m/s); range 400 km |
 
 #### Position Update (per tick)
@@ -946,6 +962,33 @@ The same formula as friendly drones (§8.5) applies:
 #### Recon Detection Trigger
 
 After each movement tick, the simulator checks all airborne recon drones against all active enemy targets. If an enemy target falls within the recon drone's detection radius (15 km for MQ-9, 10 km for Scout), the simulator automatically submits a `POST /api/recon/feed` report — updating that target's last-known position and confidence in the State Service.
+
+---
+
+### 8.9 Initial Seeding (Startup Deployment Counts)
+
+§§8.1–8.4 define each asset type's **capability/pool spec** — payload, range, speed, and (for combat drones) the overall fleet composition (`swarm_count` × `swarm_size`). These are the maximums the platform is configured to know about, not necessarily how many entries are actually placed on the map when the platform boots.
+
+**Initial seeding** is a separate, smaller set of counts that governs how many entries the default `assets_config.json` scenario actually instantiates at startup. This keeps the default demo scenario manageable while still allowing the full asset pool to be dialed up via configuration.
+
+| Side | Asset | Initial Seed Count | Location | Notes |
+|---|---|---|---|---|
+| Friendly | FPV combat drone swarms | 20 | Taiwan | Collocated with the friendly Soldier Units seeded below |
+| Friendly | Altius-600M combat drone swarms | 100 | Taiwan | |
+| Friendly | Reconnaissance (Scout) drones | 100 | Taiwan | |
+| Friendly | Soldier Units | 20 | Taiwan | |
+| Enemy | Long-range attack drone swarms | 20 | Mainland China | Stationary at spawn (Feature 33) |
+| Enemy | FPV combat drone swarms | 10 | Taiwan | Collocated with the enemy Soldier Units seeded below |
+| Enemy | Tanks | 10 | Taiwan | |
+| Enemy | Ships | 20 | Taiwan Strait (water) | |
+| Enemy | Missile launchers | 20 | Mainland China | |
+| Enemy | Soldier Units | 10 | Taiwan | |
+
+> **Enemy long-range attack drones are now organized into swarms for seeding purposes (mirroring Feature 36 and the enemy FPV swarm reorg in §8.4)** — the default scenario seeds 20 long-range attack drone swarm entries rather than 20 individual drones. As with enemy FPV swarms, each swarm entry is a single `Target`-shaped record carrying a `swarm_size` (member count), not one entry per individual drone. Like all seeded assets, they are stationary at spawn (Feature 33) — the operator sets heading/destination via the right-click context menu.
+
+> **FPV combat swarms are collocated with their side's own Soldier Units** — friendly FPV swarms spawn at the same positions as the friendly Soldier Units (both seeded in Taiwan); enemy FPV swarms spawn at the same positions as the enemy Soldier Units (also Taiwan). This mirrors the "infantry-supported drone launch point" framing used elsewhere in this scenario — each side's drone swarms are never collocated with the opposing side's ground troops.
+
+MQ-9 reconnaissance drones are unaffected by this section — their seed count remains the fixed 4-drone patrol group described in §8.1.
 
 ---
 
@@ -1159,14 +1202,17 @@ Modifying this file and restarting the backend changes the war game scenario wit
 | `scout_recon` | `count`, `max_range_km`, `max_speed_kmh`, `detection_radius_km` |
 | `fpv_combat` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh`, `swarm_count`, `swarm_size` |
 | `altius_600m` | `count`, `max_payload_kg`, `max_range_km`, `swarm_count`, `swarm_size` |
-| `enemy.long_range_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh` |
-| `enemy.fpv_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh` |
+| `enemy.long_range_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh`, `swarm_count`, `swarm_size` |
+| `enemy.fpv_drones` | `count`, `max_payload_kg`, `max_range_km`, `max_speed_kmh`, `swarm_count`, `swarm_size` |
 | `enemy.tanks` | `count`, `speed_kmh` |
 | `enemy.ships` | `count`, `speed_knots` |
 | `enemy.missile_launchers` | `count`, `location` |
 | `enemy.soldiers` | `count`, `speed_kmh` |
+| `soldier_unit` | `count`, `max_speed_kmh` (friendly soldier units; flat top-level key, matching `mq9`/`scout_recon`/`fpv_combat`/`altius_600m`) |
 | `enemy.distribution` | `west_coast_pct`, `east_coast_pct` (optional; controls initial spawn distribution) |
 | `deployment.city_distribution` | Per-city fraction of combat + scout drones (optional; controls initial spawn distribution) |
+| `initial_seed.friendly` | `fpv_swarms`, `altius_swarms`, `scout_recon`, `soldier_units` — how many entries of each friendly type the default scenario actually instantiates at startup (§8.9), independent of each type's pool/capability `count` above |
+| `initial_seed.enemy` | `long_range_swarms`, `fpv_swarms`, `tanks`, `ships`, `missile_launchers`, `soldier_units` — same, for the enemy side (§8.9) |
 
 Default values in `assets_config.json` match the war game scenario defined in §8.
 
@@ -1245,7 +1291,10 @@ npm run dev                   # starts at http://localhost:5173
 | **`range_used_km` range budget per drone** | Enforces configured range limits (e.g., FPV 15 km, Altius-600M 160 km); FPV automatically expend on contact; Altius return to base when range consumed |
 | **Batch telemetry endpoint (`POST /api/swarm/telemetry`)** | Hardware drones and the simulator share a single interface; decouples position reporting from command execution |
 | **Configurable assets via `assets_config.json`** | Requirements specify assets must not be hard-coded; all drone counts, speeds, ranges, and enemy force sizes are read from a config file at startup so scenarios can be adjusted without code changes |
+| **Initial seed counts decoupled from asset pool counts (§8.9)** | The `count`/`swarm_count`/`swarm_size` fields on each asset type describe its capability/pool spec (e.g. 10,000 enemy FPV drones total); `initial_seed.*` is a separate, smaller set of counts controlling how many entries the default scenario actually deploys at startup — keeps the out-of-the-box demo manageable while the full pool remains configurable |
 | **Enemy asset movement simulation** | Enemy ships, tanks, soldiers, and drones move each tick via the same 1 Hz simulator as friendly drones; recon detection is re-evaluated after each tick, keeping enemy contact positions accurate as they advance |
+| **`soldier_unit` shared by both IFF affiliations (§8.3.1, §8.4)** | Friendly Soldier Units (default 1,000) mirror the existing enemy `soldier_unit` type rather than introducing a new asset type; in the default seeded scenario (§8.9) each side's FPV combat swarms are collocated with that same side's Soldier Units, but the two asset types remain independently repositionable after spawn |
+| **Enemy FPV drones reorganized into swarms (§8.4)** | Enemy FPV drones moved from individually-tracked drones (150 km/h) to swarm-organized units (60 km/h, default swarm count 2,000 / swarm size 5) to mirror the friendly FPV swarm structure (Feature 36) and enable swarm-level engagement symmetry between both sides |
 | **Engage auto-selects swarm in status panel (Feature 15)** | After clicking ENGAGE on a target, the frontend immediately calls `selectSwarm(assignedSwarm.id)` — the Swarm Status panel expands the tasked swarm so the operator can see its drones responding without having to manually locate it among 15 swarms |
 | **Idle drones hidden inside swarm cards (Feature 16)** | Swarm cards always render so the operator can see all 15 swarms; but the expanded drone list within a selected swarm hides idle members and shows a count instead — prevents clutter from 5 idle representative drones per swarm while preserving the at-a-glance swarm overview |
 | **Type-specific asset icons (Feature 18)** | Each asset type renders with a distinct, recognisable icon (drone icon for UAVs, ship icon for ships, tank icon for tanks, rocket for missile launchers, person for soldier units); combined with the blue/green/red IFF coloring, every entity is immediately classifiable by both type and affiliation without reading labels |

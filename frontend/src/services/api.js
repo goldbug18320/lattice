@@ -48,8 +48,8 @@ export const assetsApi = {
   createDrone: (model, position, name) =>
     request('POST', '/assets/drone', { model, position, name }),
   deleteDrone: (id) => request('DELETE', `/assets/drone/${id}`),
-  createTarget: (type, position) =>
-    request('POST', '/assets/target', { type, position }),
+  createTarget: (type, position, affiliation) =>
+    request('POST', '/assets/target', { type, position, affiliation }),
   deleteTarget: (id) => request('DELETE', `/assets/target/${id}`),
   updateDronePosition: (id, position) =>
     request('PATCH', `/swarm/drones/${id}`, { position }),

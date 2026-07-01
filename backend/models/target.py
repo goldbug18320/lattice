@@ -49,6 +49,8 @@ class Target(BaseModel):
     notes: Optional[str] = None
     # Feature 33: destination-based movement (persisted for enemy assets)
     destination: Optional[Position] = Field(None, description="Target destination; asset moves toward it when speed > 0")
+    affiliation: Literal["friendly", "enemy"] = Field("enemy", description="IFF affiliation — friendly soldier_unit entries share this model with enemy targets")
+    swarm_size: Optional[int] = Field(None, description="Member drone count when this entry represents a swarm (e.g. enemy FPV swarms)")
 
 
 class PendingApproval(BaseModel):
@@ -76,6 +78,7 @@ class TargetUpdate(BaseModel):
     threat_value: Optional[ThreatValue] = None
     notes: Optional[str] = None
     destination: Optional[Position] = None  # Feature 33: asset moves toward this position when speed > 0
+    affiliation: Optional[Literal["friendly", "enemy"]] = None
 
 
 class TargetReport(BaseModel):

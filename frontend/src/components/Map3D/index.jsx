@@ -334,7 +334,7 @@ export default function Map3D() {
                   addDrone(result.drone)
                   if (result.swarm) addSwarm(result.swarm)
                 } else {
-                  const target = await assetsApi.createTarget(pm.type, position)
+                  const target = await assetsApi.createTarget(pm.type, position, pm.affiliation)
                   addTarget(target)
                 }
               } catch (err) {
@@ -507,7 +507,7 @@ export default function Map3D() {
       }
       const pos = Cesium.Cartesian3.fromDegrees(target.position.lon, target.position.lat, target.position.alt || 10)
       const isSelected = target.id === selectedTargetId
-      const bgColor = TARGET_BG[target.type] || '#c81e1e'
+      const bgColor = target.affiliation === 'friendly' ? '#3c78ff' : (TARGET_BG[target.type] || '#c81e1e')
       const size = TARGET_SIZE[target.type] || 22
       const svg = _makeBillboardSVG(target.type, bgColor, isSelected)
       const confLabel = `${Math.round(target.confidence * 100)}%`

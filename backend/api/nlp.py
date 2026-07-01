@@ -142,6 +142,7 @@ async def process_nlp_command(req: NLPCommandRequest):
                 "confidence": t.confidence,
             }
             for t in state_service.get_all_targets()
+            if t.affiliation == "enemy"
         ],
     }
 
