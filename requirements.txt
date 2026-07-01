@@ -80,6 +80,7 @@ ships must stop when reaching shores. drones can be on land, at sea or in the ai
 
 Enemy target panel: 
 29) display target type and short ID under each enemy target in the panel.
+38) High priority targets are displayed first, followed by medium priority targets, followed by low priority targets.
 
 Swarm & drone status panel
 30) for reconnaissance drones, do not display DETECTED CONTACTS.

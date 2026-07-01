@@ -33,6 +33,10 @@ const THREAT_COLORS = {
   low:    '#60a5fa',
 }
 
+// Feature 38: high priority targets first, then medium, then low.
+// Targets with no threat_value yet (not classified) sort last.
+const THREAT_PRIORITY = { high: 0, medium: 1, low: 2 }
+
 export default function TargetList() {
   const targets = useStore(s => s.targets)
   const swarms = useStore(s => s.swarms)
@@ -52,7 +56,12 @@ export default function TargetList() {
   const [trackErrors, setTrackErrors] = useState({})
   const [trackInfos, setTrackInfos] = useState({})
 
-  const activeTargets = targets.filter(t => !['destroyed', 'lost'].includes(t.status) && t.affiliation !== 'friendly')
+  // Feature 38: high priority targets first, then medium, then low — sorted before
+  // grouping so that group order (e.g. ship/missile_launcher vs. soldier_unit) also
+  // follows threat priority, not just item order within a single type's group.
+  const activeTargets = targets
+    .filter(t => !['destroyed', 'lost'].includes(t.status) && t.affiliation !== 'friendly')
+    .sort((a, b) => (THREAT_PRIORITY[a.threat_value] ?? 3) - (THREAT_PRIORITY[b.threat_value] ?? 3))
 
   const grouped = activeTargets.reduce((acc, t) => {
     acc[t.type] = acc[t.type] || []
