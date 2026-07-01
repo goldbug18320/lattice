@@ -35,15 +35,17 @@ const THREAT_COLORS = {
 
 export default function TargetList() {
   const targets = useStore(s => s.targets)
+  const swarms = useStore(s => s.swarms)
   const selectedTargetId = useStore(s => s.selectedTargetId)
   const selectTarget = useStore(s => s.selectTarget)
   const setCameraCommand = useStore(s => s.setCameraCommand)
   const selectSwarm = useStore(s => s.selectSwarm)
   const selectDrone = useStore(s => s.selectDrone)
+  const disengageMessages = useStore(s => s.disengageMessages)
+  const setDisengageMessage = useStore(s => s.setDisengageMessage)
 
   // Inline error/info state for ENGAGE/TRACK buttons: { [targetId]: string | null }
   const [engageErrors, setEngageErrors] = useState({})
-  const [engageInfos, setEngageInfos] = useState({})
   const [trackErrors, setTrackErrors] = useState({})
   const [trackInfos, setTrackInfos] = useState({})
 
@@ -55,24 +57,44 @@ export default function TargetList() {
     return acc
   }, {})
 
+  // Feature 22: the name of the swarm currently engaging a target, derived live
+  // from battlefield state — always visible under the button for as long as the
+  // target stays engaged, not just right after the approval click.
+  const engagingSwarmName = (targetId) => {
+    const swarm = swarms.find(s => s.status === 'engaging' && s.target_ids?.includes(targetId))
+    return swarm ? swarm.name : 'a combat swarm'
+  }
+
   // ENGAGE routes through HITL — the LLM classifies the target and creates a
   // pending approval; the proposed swarm is pre-selected in the status panel
   // so the operator sees which swarm will be tasked (Feature 13 + Feature 15).
+  // Once approved, the target's button changes from ENGAGE to DISENGAGE (Feature 32).
   const engageTarget = async (targetId) => {
     setEngageErrors(prev => ({ ...prev, [targetId]: null }))
-    setEngageInfos(prev => ({ ...prev, [targetId]: null }))
+    setDisengageMessage(targetId, null)
     try {
       const result = await nlpApi.command(`engage and attack target with id ${targetId}`)
       if (result.action?.type === 'no_swarm_in_range') {
         setEngageErrors(prev => ({ ...prev, [targetId]: 'No combat swarm in range' }))
-      } else if (result.action?.type === 'already_engaged') {
-        setEngageInfos(prev => ({ ...prev, [targetId]: result.action.explanation }))
       } else if (result.action?.type === 'request_approval') {
         const proposedSwarmId = result.action?.proposed_action?.swarm_id
         if (proposedSwarmId) selectSwarm(proposedSwarmId)
       }
     } catch (e) {
       console.error('Engage failed:', e)
+    }
+  }
+
+  // DISENGAGE (Feature 32): clicking this only queues a confirmation prompt in
+  // the bottom Approval Bar (§9.3.1) — the same area used for HITL attack
+  // approvals. No LLM call, but nothing is recalled until the operator confirms
+  // there; the ApprovalBar writes the outcome message into the store once decided.
+  const disengageTarget = async (targetId) => {
+    setEngageErrors(prev => ({ ...prev, [targetId]: null }))
+    try {
+      await nlpApi.command(`disengage target with id ${targetId}`)
+    } catch (e) {
+      console.error('Disengage failed:', e)
     }
   }
 
@@ -165,12 +187,21 @@ export default function TargetList() {
                 </div>
                 {isSelected && (
                   <div className="target-actions">
-                    <button
-                      className="target-btn attack"
-                      onClick={e => { e.stopPropagation(); engageTarget(target.id) }}
-                    >
-                      ⚡ ENGAGE
-                    </button>
+                    {target.status === 'engaged' ? (
+                      <button
+                        className="target-btn disengage"
+                        onClick={e => { e.stopPropagation(); disengageTarget(target.id) }}
+                      >
+                        ⨯ DISENGAGE
+                      </button>
+                    ) : (
+                      <button
+                        className="target-btn attack"
+                        onClick={e => { e.stopPropagation(); engageTarget(target.id) }}
+                      >
+                        ⚡ ENGAGE
+                      </button>
+                    )}
                     <button
                       className="target-btn track"
                       onClick={e => { e.stopPropagation(); trackTarget(target.id) }}
@@ -180,8 +211,14 @@ export default function TargetList() {
                     {engageErrors[target.id] && (
                       <div className="engage-error">{engageErrors[target.id]}</div>
                     )}
-                    {engageInfos[target.id] && (
-                      <div className="engage-info">{engageInfos[target.id]}</div>
+                    {target.status === 'engaged' ? (
+                      // Feature 22: always-visible message naming the engaging swarm,
+                      // derived from live state — not a one-time toast.
+                      <div className="engage-info">Engaged by {engagingSwarmName(target.id)}</div>
+                    ) : disengageMessages[target.id] && (
+                      // Feature 32: one-time confirmation message shown after the
+                      // operator approves/denies the disengage prompt in the Approval Bar.
+                      <div className="engage-info">{disengageMessages[target.id]}</div>
                     )}
                     {trackErrors[target.id] && (
                       <div className="track-error">{trackErrors[target.id]}</div>

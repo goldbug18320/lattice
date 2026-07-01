@@ -345,11 +345,13 @@ class TestHITLApproval:
         assert resp.status_code == 404
 
 
-# ─── Feature 32: already-engaged notification ─────────────────────────────────
+# ─── Feature 32: confirmation-gated disengage ─────────────────────────────────
 
-class TestAlreadyEngaged:
-    """Feature 32: clicking ENGAGE on a target already in 'engaged' status must return
-    already_engaged without calling the LLM or creating a new approval."""
+class TestDisengage:
+    """Feature 32: clicking DISENGAGE on an 'engaged' target queues a confirmation
+    (like Feature 13's HITL attack approval) rather than executing immediately.
+    The swarm is only recalled once the operator confirms via approve/deny —
+    no LLM call either way, and no drones are destroyed (contrast with Feature 23)."""
 
     def _engage_target(self, client, target_id: str):
         """Push a target through HITL approval so it reaches 'engaged' status."""
@@ -375,53 +377,109 @@ class TestAlreadyEngaged:
         targets = client.get("/api/recon/targets?reported_by=MQ9-01").json()
         return targets[0]["id"]
 
-    def test_already_engaged_returns_already_engaged_action(self, client):
-        tid = self._seed_target(client)
-        self._engage_target(client, tid)
-        resp = client.post("/api/nlp/command", json={
-            "command": f"engage and attack target with id {tid}",
-        })
-        assert resp.json()["action"]["type"] == "already_engaged"
-
-    def test_already_engaged_includes_swarm_name(self, client):
-        tid = self._seed_target(client)
-        self._engage_target(client, tid)
-        resp = client.post("/api/nlp/command", json={
-            "command": f"engage and attack target with id {tid}",
-        })
-        action = resp.json()["action"]
-        assert "swarm_name" in action
-        assert action["swarm_name"]  # non-empty
-
-    def test_already_engaged_includes_explanation(self, client):
-        tid = self._seed_target(client)
-        self._engage_target(client, tid)
-        resp = client.post("/api/nlp/command", json={
-            "command": f"engage and attack target with id {tid}",
-        })
-        action = resp.json()["action"]
-        assert "explanation" in action
-        assert "engaged" in action["explanation"].lower() or "engaging" in action["explanation"].lower()
-
-    def test_already_engaged_does_not_create_new_approval(self, client):
-        tid = self._seed_target(client)
-        self._engage_target(client, tid)
-        # drain any existing approvals
-        for a in client.get("/api/nlp/pending").json():
-            client.post(f"/api/nlp/deny/{a['id']}")
-
+    def _disengage_confirmation(self, client, target_id: str) -> dict:
+        """Click DISENGAGE and return the created pending-approval entry."""
         client.post("/api/nlp/command", json={
-            "command": f"engage and attack target with id {tid}",
+            "command": f"disengage target with id {target_id}",
         })
-        assert client.get("/api/nlp/pending").json() == []
+        pending = client.get("/api/nlp/pending").json()
+        return next(a for a in pending if a["proposed_action"]["target_id"] == target_id)
 
-    def test_already_engaged_execution_result_is_none(self, client):
+    def test_disengage_click_returns_confirmation_action(self, client):
         tid = self._seed_target(client)
         self._engage_target(client, tid)
         resp = client.post("/api/nlp/command", json={
-            "command": f"engage and attack target with id {tid}",
+            "command": f"disengage target with id {tid}",
         })
+        assert resp.json()["action"]["type"] == "request_disengage_confirmation"
+
+    def test_disengage_click_does_not_change_target_status(self, client):
+        """Clicking DISENGAGE must not recall the swarm until confirmed."""
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        client.post("/api/nlp/command", json={
+            "command": f"disengage target with id {tid}",
+        })
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "engaged"
+
+    def test_disengage_click_creates_pending_approval(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        client.post("/api/nlp/command", json={
+            "command": f"disengage target with id {tid}",
+        })
+        pending = client.get("/api/nlp/pending").json()
+        assert any(a["proposed_action"].get("type") == "disengage" for a in pending)
+
+    def test_disengage_pending_approval_includes_swarm_name(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        assert approval["proposed_action"]["swarm_name"]  # non-empty
+
+    def test_confirming_disengage_reverts_target_to_active(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        client.post(f"/api/nlp/approve/{approval['id']}")
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "active"
+
+    def test_confirming_disengage_sets_swarm_status_returning(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        swarm_id = approval["proposed_action"]["swarm_id"]
+        client.post(f"/api/nlp/approve/{approval['id']}")
+        swarm = client.get(f"/api/swarm/swarms/{swarm_id}").json()
+        assert swarm["status"] == "returning"
+
+    def test_confirming_disengage_clears_swarm_target_ids(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        swarm_id = approval["proposed_action"]["swarm_id"]
+        client.post(f"/api/nlp/approve/{approval['id']}")
+        swarm = client.get(f"/api/swarm/swarms/{swarm_id}").json()
+        assert tid not in swarm["target_ids"]
+
+    def test_confirming_disengage_execution_result_has_explanation(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        resp = client.post(f"/api/nlp/approve/{approval['id']}")
+        assert "explanation" in resp.json()["execution_result"]
+
+    def test_denying_disengage_leaves_target_engaged(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        client.post(f"/api/nlp/deny/{approval['id']}")
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "engaged"
+
+    def test_denying_disengage_leaves_swarm_engaging(self, client):
+        tid = self._seed_target(client)
+        self._engage_target(client, tid)
+        approval = self._disengage_confirmation(client, tid)
+        swarm_id = approval["proposed_action"]["swarm_id"]
+        client.post(f"/api/nlp/deny/{approval['id']}")
+        swarm = client.get(f"/api/swarm/swarms/{swarm_id}").json()
+        assert swarm["status"] == "engaging"
+
+    def test_disengage_on_active_target_is_a_no_op(self, client):
+        """Disengaging a target that isn't 'engaged' must not error, create an
+        approval, or change state."""
+        tid = self._seed_target(client)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"disengage target with id {tid}",
+        })
+        assert resp.json()["action"]["type"] == "none"
         assert resp.json()["execution_result"] is None
+        target = client.get(f"/api/recon/targets/{tid}").json()
+        assert target["status"] == "active"
+        assert client.get("/api/nlp/pending").json() == []
 
     def test_first_engage_on_active_target_proceeds_normally(self, client):
         """Active (not yet engaged) target must still go through the normal HITL flow."""
@@ -430,4 +488,21 @@ class TestAlreadyEngaged:
             "command": f"engage and attack target with id {tid}",
         })
         assert resp.json()["action"]["type"] == "request_approval"
+
+    def test_engaged_swarm_excluded_from_new_engage_selection(self, client):
+        """An already-engaged swarm must not be reselected for a second target
+        (mirrors the pre-existing single-swarm-per-engagement invariant)."""
+        tid1 = self._seed_target(client)
+        self._engage_target(client, tid1)
+        tid2 = self._seed_target(client)
+        resp = client.post("/api/nlp/command", json={
+            "command": f"engage and attack target with id {tid2}",
+        })
+        action = resp.json()["action"]
+        if action["type"] == "request_approval":
+            assigned_swarm_id = action["proposed_action"]["swarm_id"]
+            # The swarm engaging tid1 must differ from whatever is proposed for tid2
+            swarms = client.get("/api/swarm/swarms").json()
+            engaging_swarm = next(s for s in swarms if tid1 in s["target_ids"])
+            assert assigned_swarm_id != engaging_swarm["id"]
 

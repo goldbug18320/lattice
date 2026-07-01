@@ -25,7 +25,7 @@
 - **Click-to-highlight asset from Swarm & Drone Status panel (Feature 20)**: When the operator clicks an asset (swarm card or individual drone) in the Swarm & Drone Status panel, the corresponding entity is highlighted on the 3D map and the camera flies to show it — lets the operator instantly locate any friendly asset in the scene
 - **Terrain-constrained asset placement and movement (Feature 21)**: Ground assets (soldiers, tanks, missile launchers) must always be positioned on land and must stop when their simulated movement reaches a water boundary; ships must always be in the sea and must stop when their simulated movement reaches a shoreline; drones (friendly and enemy) are unconstrained and may be on land, at sea, or airborne — enforced both during initial config load, during drag-and-drop repositioning on the map, and at every 1 Hz movement tick
 - **Real coastline polygon land/sea determination (Feature 27)**: All terrain checks use actual GeoJSON coastline polygons loaded from `/data/theater_land.json` via a standard ray-casting point-in-polygon algorithm (with correct hole handling); coverage spans the full theater — Taiwan (including Penghu, Kinmen, Matsu, Green Island, Orchid Island), China, North Korea, South Korea, Japan, and Philippines, each with their full irregular coastlines and offshore islands — no heuristics or elevation sampling
-- **Single-target engage with range-aware swarm selection (Feature 22)**: When the operator clicks ENGAGE on a specific enemy asset in the Target List panel, the LLM selects a combat swarm that can physically reach that target (range check against swarm position and target position), displays the proposed swarm name in the approval prompt, and routes the request through HITL approval — only the single selected target is included in the attack; no other active targets are swept in automatically; if no swarm can reach the target, the operator is notified ("No combat swarm in range") instead of silently falling back; once approved, the **ENGAGE button on that target remains enabled** and the tasked swarm is removed from the available pool — it cannot be assigned to a second target simultaneously (one swarm per active engagement); re-clicking ENGAGE on an already-engaged target displays a message identifying which swarm is currently engaging it (Feature 32) — no new assignment is made
+- **Single-target engage with range-aware swarm selection (Feature 22)**: When the operator clicks ENGAGE on a specific enemy asset in the Target List panel, the LLM selects a combat swarm that can physically reach that target (range check against swarm position and target position), displays the proposed swarm name in the approval prompt, and routes the request through HITL approval — only the single selected target is included in the attack; no other active targets are swept in automatically; if no swarm can reach the target, the operator is notified ("No combat swarm in range") instead of silently falling back; once approved, the platform displays a message **directly beneath the engage/disengage button** naming which drone swarm is engaging the target — this message stays **always visible** for as long as the target remains engaged (not a one-time toast), the **ENGAGE button on that target changes to DISENGAGE**, and the tasked swarm is removed from the available pool — it cannot be assigned to a second target simultaneously (one swarm per active engagement); clicking DISENGAGE prompts the operator to confirm before releasing the target and recalling the swarm to base (Feature 32)
 - **Combat-on-contact destruction (Feature 23)**: When an engaging combat swarm reaches its assigned target (within contact proximity), the Movement Simulator automatically marks the target `destroyed` and the **entire combat drone swarm destroyed** (all member drones set to `offline`); the complete swarm is expended on contact — no drones survive or return. When a combat drone is in `engaging` status, its row in the Swarm & Drone Status panel always displays the **enemy target type and short ID** it is closing on — inline, without requiring the operator to click on the drone, mirroring the tracking drone disclosure in Feature 28
 - **Track-on-target with HITL and recon-drone exclusivity (Feature 24)**: When the operator clicks the TRACK button on a specific enemy asset in the Target List panel, the LLM selects a reconnaissance drone (MQ-9 or Scout) that can physically reach that target (range check), displays the proposed drone name in a HITL approval prompt, and routes the request through HITL approval — only the single selected target is tracked; if no reconnaissance drone is in range, the operator is notified ("No reconnaissance drone in range") instead of silently failing; once approved, the **TRACK button on that target remains enabled** and the tasked recon drone is dedicated to that target and removed from the available pool; re-clicking TRACK on an already-tracked target displays a message identifying which drone is already tracking that target (Feature 28) — no replacement flow is triggered
 - **Engaged/tracked target counts in status bar (Feature 25)**: The top status bar continuously displays two live counters derived from the WebSocket state: the number of enemy targets currently in `engaged` status and the number currently in `tracked` status — giving the operator an immediate at-a-glance summary of active engagements and active tracking assignments without opening any panel
@@ -36,7 +36,7 @@
 - **Idle combat and recon drone suppression (Feature 34)**: Both idle combat drones and idle reconnaissance drones are never shown on the Swarm & Drone Status panel — this rule applies continuously at all times (not only during active engagements); a swarm card is only rendered when at least one of its member drones is non-idle; idle recon drone rows are fully hidden from the RECONNAISSANCE section; no idle-drone count summary is displayed
 - **Swarm displayed as single unit, no member sub-panel (Feature 35)**: In the Swarm & Drone Status panel, each swarm is rendered as a single card — like a single drone row — with no expandable sub-panel listing individual member drones; swarm-level status, assigned target type, short ID, and mission details are shown directly on the swarm card; per-drone telemetry within a swarm is not exposed in the panel
 - **Combat swarm stored as single config entry with type `combat_swarm` (Feature 36)**: In `assets_config.json`, a combat swarm is persisted as one drone-shaped entry with `"type": "combat_swarm"` — carrying the swarm's collective position, battery, range, speed, heading, and capability fields; there are no separate swarm-group objects and no individual `swarm_member` drone entries in the config file; on load the backend reconstructs an in-memory `Swarm` object and a single representative drone from this entry
-- **Already-engaging notification (Feature 32)**: When the operator clicks the ENGAGE button on a target that is already in `engaged` status, the platform displays an informational message identifying which combat swarm is currently engaging that target — no new HITL approval flow is started, no additional swarm is assigned, and the existing engagement is undisturbed
+- **Confirmed disengage releases target and recalls swarm (Feature 32)**: When the operator clicks the DISENGAGE button on a target currently in `engaged` status, the platform displays a **confirmation prompt in the same bottom approval area used for HITL attack approvals (§9.3.1)**, asking the operator to confirm the disengagement — no swarm recall happens until the operator confirms; once confirmed, the target is released back to `active` status and the combat swarm that was engaging it is recalled — the swarm's status transitions to `returning` and it flies back to its `home_position` under the normal Movement Simulator rules (§8.5); on arrival the swarm resets to `idle` and rejoins the available pool for future ENGAGE assignments; a confirmation message is displayed beneath the button and **the button reverts from DISENGAGE to ENGAGE**; declining the prompt leaves the target engaged and the button unchanged; no LLM call is involved — the confirmation reuses the same PendingApproval/approve/deny mechanism as Feature 13
 - Swarm-level (not drone-level) task assignment to support autonomous AI swarm coordination
 - **Drone movement simulation (Feature 10)**: all deployed (non-idle) drones continuously update their position on the server at 1-second intervals; drones return when max range is consumed
 - **Live friendly drone telemetry (Feature 11)**: drones report position, battery, heading, and speed via a dedicated batch telemetry API endpoint; UI always reflects current positions
@@ -411,7 +411,7 @@ Retrieve the command execution log.
 ### 5.3 NLP Command API — `/api/nlp`
 
 #### `POST /api/nlp/command`
-Internal endpoint called by the ENGAGE and TRACK button handlers. Sends a structured command string to the LLM, which selects the appropriate drone/swarm and routes the result through the HITL approval flow.
+Internal endpoint called by the ENGAGE, TRACK, and DISENGAGE button handlers. Sends a structured command string to the LLM, which selects the appropriate drone/swarm and routes the result through the HITL approval flow. **Disengage (Feature 32)** is handled as an immediate pre-check — like the `already_tracked` pre-check (Feature 28) — that never reaches the LLM, but unlike a plain informational pre-check it creates a **pending confirmation** rather than executing directly (see below).
 
 **Request Body:**
 ```json
@@ -432,16 +432,34 @@ Internal endpoint called by the ENGAGE and TRACK button handlers. Sends a struct
 }
 ```
 
+**Disengage confirmation request/response (Feature 32):**
+```json
+{ "command": "disengage target with id <target-uuid>" }
+```
+```json
+{
+  "command": "disengage target with id <target-uuid>",
+  "interpretation": "Confirm disengage — the swarm will return to base.",
+  "action": {
+    "type": "request_disengage_confirmation",
+    "approval_prompt": "Disengage this ship from ALT-Alpha? ALT-Alpha will return to base.",
+    "proposed_action": { "type": "disengage", "target_id": "...", "swarm_id": "...", "swarm_name": "ALT-Alpha" }
+  },
+  "execution_result": { "approval_id": "...", "status": "pending" }
+}
+```
+No swarm recall happens yet — clicking DISENGAGE only queues this confirmation in the same pending-approval bar used for HITL attack approvals (§9.3.1). The disengage only executes once the operator confirms via `POST /api/nlp/approve/{approval_id}` (§5.4).
+
 ---
 
-### 5.4 Attack Approval API — `/api/nlp`
+### 5.4 Attack & Disengage Confirmation API — `/api/nlp`
 
-**(Feature 13 — Human-in-the-Loop)**
+**(Feature 13 — Human-in-the-Loop; Feature 32 — Disengage confirmation)**
 
-When the LLM determines that an operator command involves attacking enemy targets, it **does not execute immediately**. Instead it creates a **pending approval request** and waits for explicit operator confirmation.
+When the LLM determines that an operator command involves attacking enemy targets, it **does not execute immediately**. Instead it creates a **pending approval request** and waits for explicit operator confirmation. **Feature 32** reuses this same pending-request / approve / deny mechanism for disengage confirmations — a `PendingApproval` entry's `proposed_action.type` distinguishes an attack (`assign_swarm` / `assign_drone`) from a disengage (`disengage`).
 
 #### `GET /api/nlp/pending`
-List all pending attack approval requests awaiting operator decision.
+List all pending approval requests awaiting operator decision — both HITL attack approvals and Feature 32 disengage confirmations.
 
 **Response:** `ApprovalRequest[]`
 ```json
@@ -459,20 +477,35 @@ List all pending attack approval requests awaiting operator decision.
 }]
 ```
 
+A Feature 32 disengage confirmation entry carries the same envelope with `proposed_action: { "type": "disengage", "target_id": "...", "swarm_id": "...", "swarm_name": "ALT-Alpha" }` and an empty `threat_summary`/`targets` (threat classification does not apply to disengage).
+
 ---
 
 #### `POST /api/nlp/approve/{approval_id}`
-Approve a pending attack request. The platform executes the proposed swarm command immediately.
+Approve a pending request. If `proposed_action.type` is `assign_swarm`/`assign_drone`, the platform executes the proposed swarm/drone command immediately. If `proposed_action.type` is `disengage` (Feature 32), the platform instead releases the target back to `active` and recalls the named swarm (status → `returning`, heads to `home_position`) — no drones are destroyed. A confirmation message naming the recalled swarm is returned for the UI to display beneath the (now reverted) ENGAGE button.
 
-**Response:**
+**Response (attack):**
 ```json
 { "approved": true, "approval_id": "...", "execution_result": { "success": true, "drones_tasked": 50 } }
+```
+
+**Response (disengage confirmation, Feature 32):**
+```json
+{
+  "approved": true,
+  "approval_id": "...",
+  "execution_result": {
+    "target_id": "...", "target_status": "active",
+    "swarm_id": "...", "swarm_status": "returning",
+    "explanation": "ALT-Alpha is returning to base; target is no longer engaged."
+  }
+}
 ```
 
 ---
 
 #### `POST /api/nlp/deny/{approval_id}`
-Deny a pending attack request. The proposed action is discarded.
+Deny a pending request. The proposed action is discarded. For an attack approval, the target is never engaged. For a Feature 32 disengage confirmation, the target **remains engaged** and the DISENGAGE button stays as-is — the swarm is not recalled.
 
 **Response:**
 ```json
@@ -553,13 +586,15 @@ The LLM system prompt instructs the model to apply these rules before assigning 
 | `request_approval` | **HITL** | Attack involves classified targets — LLM returns proposed action + threat summary; platform stores as pending approval and waits for operator confirmation before executing |
 | `no_swarm_in_range` | **HITL** | Returned only for single-target ENGAGE (Feature 22) when no combat swarm can physically reach the target; carries an `explanation` string the UI shows inline; no approval is created |
 | `no_recon_in_range` | **HITL** | Returned only for single-target TRACK (Feature 24) when no reconnaissance drone can physically reach the target; carries an `explanation` string the UI shows inline; no approval is created |
-| `already_engaged` | **HITL** | Returned by the API pre-check (Feature 32) when the operator clicks ENGAGE on a target already in `engaged` status; carries `swarm_name`, `swarm_id`, and `explanation`; the LLM is not called and no approval is created |
+| `request_disengage_confirmation` | **HITL-style** | Returned by the API pre-check (Feature 32) when the operator clicks DISENGAGE on a target in `engaged` status; the LLM is NOT called, but a `PendingApproval` IS created (proposed_action.type = `disengage`) so the operator must explicitly confirm in the bottom approval bar before the swarm is recalled — see §5.4 |
 | `already_tracked` | **HITL** | Returned by the API pre-check (Feature 28) when the operator clicks TRACK on a target already in `tracked` status; carries `drone_name`, `drone_id`, and `explanation`; the LLM is not called and no approval is created |
 | `none` | — | Command could not be interpreted |
 
 > **Rule:** The LLM MUST return `request_approval` (not `assign_swarm`) whenever the command involves attacking active enemy targets. Non-attack commands (locate, patrol, return) execute immediately without approval. The `track` command routes through HITL approval (Feature 24) — see Rule below.
 
-> **Rule (Feature 22):** When the engage command originates from a single-target ENGAGE button click (i.e., the command text references a specific target ID), the LLM MUST: (1) include only that single target in `target_ids`; (2) select only a swarm whose drones can physically reach the target (haversine distance from swarm representative position to target ≤ swarm `max_range_km`); (3) display the selected swarm name in `approval_prompt`; (4) if no swarm is in range, return `action.type = "no_swarm_in_range"` with an `explanation` the UI can display to the operator ("No combat swarm can reach this target") — do NOT fall back to an out-of-range swarm. Other active targets must NOT be included. Once an approval is confirmed by the operator, the tasked swarm is considered committed and must be excluded from future `request_approval` responses until it returns to idle.
+> **Rule (Feature 22):** When the engage command originates from a single-target ENGAGE button click (i.e., the command text references a specific target ID), the LLM MUST: (1) include only that single target in `target_ids`; (2) select only a swarm whose drones can physically reach the target (haversine distance from swarm representative position to target ≤ swarm `max_range_km`); (3) display the selected swarm name in `approval_prompt`; (4) if no swarm is in range, return `action.type = "no_swarm_in_range"` with an `explanation` the UI can display to the operator ("No combat swarm can reach this target") — do NOT fall back to an out-of-range swarm. Other active targets must NOT be included. Once an approval is confirmed by the operator, the target's button changes from ENGAGE to DISENGAGE and the tasked swarm is considered committed and must be excluded from future `request_approval` responses until it returns to idle.
+>
+> **Rule (Feature 32):** When the operator clicks DISENGAGE on a target in `engaged` status (i.e., the command text references a specific target ID as a disengage command), the API handles this as a pre-check — the LLM is NOT called. Unlike the informational `already_engaged`/`already_tracked` pre-checks, this pre-check MUST create a `PendingApproval` (proposed_action.type = `disengage`, carrying `target_id`, `swarm_id`, and `swarm_name` of the swarm currently engaging the target) and return `action.type = "request_disengage_confirmation"` — no state changes happen yet. Only when the operator confirms via `POST /api/nlp/approve/{approval_id}` does the platform: (1) set the target's status back to `active`; (2) set the swarm's status to `returning` so it flies back to its `home_position` under the normal Movement Simulator rules (§8.5) — no drones are destroyed; (3) return a confirmation message naming the recalled swarm for the UI to display beneath the button. If the operator instead denies via `POST /api/nlp/deny/{approval_id}`, the target remains `engaged` and nothing changes. Once a confirmed swarm reaches `home_position` it resets to `idle` and rejoins the available pool for future ENGAGE assignments.
 
 > **Rule (Feature 24):** When the track command originates from a single-target TRACK button click (i.e., the command text references a specific target ID), the LLM MUST: (1) select only a reconnaissance drone (MQ-9 or Scout) that can physically reach the target (haversine distance from drone position to target ≤ drone `max_range_km`); (2) return `action.type = "request_approval"` with `assign_drone` as the proposed action and the selected drone name in `approval_prompt`; (3) if no recon drone is in range, return `action.type = "no_recon_in_range"` with an `explanation` — do NOT fall back to an out-of-range drone. Only the single selected target is included. Once approved, the tasked recon drone is considered committed and must be excluded from future track assignments until it returns to idle.
 
@@ -872,6 +907,17 @@ This applies to both FPV and Altius-600M swarms. The entire combat drone swarm i
 
 The 500 m contact radius is the default; it is configurable in `assets_config.json` via `combat.contact_radius_m`.
 
+#### Manual Disengage (Feature 32)
+
+Before contact is made, the operator may click **DISENGAGE** on the target being engaged. Unlike Feature 23's destroy-on-contact path, disengage is a **confirmation-gated** graceful recall:
+
+0. **Confirm**: clicking DISENGAGE does not recall the swarm immediately — it queues a confirmation prompt in the bottom approval bar (§9.3.1), the same UI area used for HITL attack approvals. Only once the operator confirms does the recall below execute; declining leaves the target `engaged` and the swarm untouched.
+1. **Target → `active`**: the target's `status` reverts to `active` (it is not destroyed) and its `target_ids` reference is cleared from the swarm
+2. **Swarm → `returning`**: the swarm's status is set to `returning`; it turns back toward its `home_position` under the standard `returning` movement rule (100% max speed) — no member drones are marked `offline`
+3. **Swarm → `idle`**: once the swarm reaches `home_position` (within 500 m), its status resets to `idle`, `range_used_km` resets to 0, and it rejoins the available pool for future ENGAGE assignments
+
+Disengage is available only while the target is `engaged`. Clicking DISENGAGE is handled as an immediate API pre-check (no LLM call) that creates a pending confirmation rather than executing directly; the actual recall only happens once the operator confirms — see §6.4 Rule (Feature 32) and §5.4.
+
 #### Position Update Formula (per tick)
 
 ```
@@ -1049,15 +1095,17 @@ MQ-9 reconnaissance drones are unaffected by this section — their seed count r
 
 - **Direct Swarm Control:** Per-swarm buttons for `🔍 locate`, `👁 track`, `⚡ attack`, `↩ return`; clicking attack routes through the HITL approval flow
 
-### 9.3.1 Approval Bar (HITL — Feature 13)
+### 9.3.1 Approval Bar (HITL — Feature 13; also hosts Feature 32 disengage confirmations)
 
-A persistent **approval notification bar** appears above the command panel whenever there are pending attack approvals. Each pending item shows:
+A persistent **approval notification bar** appears above the command panel whenever there are pending attack approvals **or pending disengage confirmations**. Each pending attack item shows:
 - Threat summary badge (e.g., `⚠ 5 HIGH  1 MEDIUM`)
 - Target types and proposed swarm
 - **[✓ APPROVE]** and **[✗ DENY]** buttons
 - Countdown timer (5-minute expiry)
 
-Approved actions execute immediately; denied actions are logged and discarded. The bar disappears when the queue is empty. Pending approvals are also broadcast via WebSocket so the bar updates in real time.
+A **Feature 32 disengage confirmation** entry appears in the same bar and uses the same **[✓ APPROVE]** / **[✗ DENY]** controls, but shows the `approval_prompt` text (e.g., "Disengage this ship from ALT-Alpha? ALT-Alpha will return to base.") in place of a threat summary badge, since threat classification does not apply to disengage.
+
+Approved attack actions execute immediately; approving a disengage confirmation recalls the swarm (§8.5 Manual Disengage). Denied actions are logged and discarded — a denied disengage confirmation leaves the target `engaged` and the swarm untouched. The bar disappears when the queue is empty. Pending approvals and confirmations are also broadcast via WebSocket so the bar updates in real time.
 
 ### 9.4 Swarm Status Panel
 
@@ -1078,8 +1126,9 @@ Approved actions execute immediately; denied actions are logged and discarded. T
 - Enemy targets grouped by type (drones, ships, tanks, missile launchers)
 - Per-target: coordinates, status badge, confidence bar, speed/heading
 - **Click to select (Feature 19)**: clicking a target entry selects it — the entity on the 3D map is immediately highlighted (enlarged point, yellow outline) and the camera flies to center on it; a second click deselects
-- While selected: shows **ENGAGE** and **TRACK** quick-action buttons
-- **ENGAGE button (Feature 22 + 32)**: clicking ENGAGE on a single target sends `"engage and attack target with id <id>"` to the NLP endpoint; **if the target is already in `engaged` status (Feature 32)**, the backend returns `already_engaged` immediately without calling the LLM — the UI displays an inline informational message naming the swarm currently engaging that target and no new assignment is made; otherwise, the LLM performs a range check and selects the best-fit combat swarm that can reach that specific target; the approval prompt names the proposed swarm and distance (e.g., "Requesting approval to engage 1 high-value ship using ALT-Alpha swarm (212 km away)."); only the one selected target is included in the attack; after receiving `request_approval`, the frontend pre-selects the proposed swarm in the Swarm & Drone Status panel (Feature 15); if the LLM returns `no_swarm_in_range`, the UI displays an inline error on the target entry ("No combat swarm in range") instead of creating an approval; once an approval is confirmed, the ENGAGE button on that target **remains enabled**; the target transitions to `engaged` status and the tasked swarm is marked as committed and removed from the available pool for subsequent targets — one swarm per active engagement
+- While selected: shows an **ENGAGE**/**DISENGAGE** toggle button and a **TRACK** quick-action button
+- **ENGAGE button (Feature 22)**: while a target is `active`, its action button reads **ENGAGE**; clicking it sends `"engage and attack target with id <id>"` to the NLP endpoint; the LLM performs a range check and selects the best-fit combat swarm that can reach that specific target; the approval prompt names the proposed swarm and distance (e.g., "Requesting approval to engage 1 high-value ship using ALT-Alpha swarm (212 km away)."); only the one selected target is included in the attack; after receiving `request_approval`, the frontend pre-selects the proposed swarm in the Swarm & Drone Status panel (Feature 15); if the LLM returns `no_swarm_in_range`, the UI displays an inline error on the target entry ("No combat swarm in range") instead of creating an approval; once an approval is confirmed, the target transitions to `engaged` status, the tasked swarm is marked as committed and removed from the available pool for subsequent targets (one swarm per active engagement), **the button changes from ENGAGE to DISENGAGE**, and a message naming the engaging swarm is displayed **directly beneath the button** — this message stays **always visible** for as long as the target remains engaged, not just immediately after the click
+- **DISENGAGE button (Feature 32)**: while a target is `engaged`, its action button reads **DISENGAGE**; clicking it sends `"disengage target with id <id>"` to the NLP endpoint, handled as an immediate pre-check with no LLM call — but instead of executing right away, this queues a **confirmation prompt in the bottom Approval Bar** (§9.3.1, the same area used for HITL attack approvals), asking the operator to confirm the disengagement; **no swarm recall happens until the operator confirms**; once confirmed via the Approval Bar, the target reverts to `active` status, the engaging swarm's status is set to `returning` and it flies back to its `home_position` (§8.5) — the swarm is not destroyed, only recalled — a confirmation message is displayed beneath the button, and **the button reverts from DISENGAGE to ENGAGE**; declining the prompt leaves the target `engaged` and the button unchanged; the swarm resets to `idle` and rejoins the available pool once it reaches `home_position`
 - **TRACK button (Feature 24 + 28)**: clicking TRACK on a single target sends `"track target with id <id>"` to the NLP endpoint; the LLM performs a range check and selects the best-fit reconnaissance drone (MQ-9 or Scout) that can reach that specific target; the approval prompt names the proposed drone (e.g., "Requesting approval to track enemy ship using MQ9-02 (45 km away)."); only the one selected target is included; after receiving `request_approval`, the frontend pre-selects the proposed drone in the Swarm & Drone Status panel; if the LLM returns `no_recon_in_range`, the UI displays an inline error on the target entry ("No reconnaissance drone in range") instead of creating an approval; once an approval is confirmed, the TRACK button on that target **remains enabled**; the target transitions to `tracked` status and the tasked recon drone is committed and removed from the available pool. **Re-clicking TRACK on an already-tracked target (Feature 28)**: the platform displays an informational message identifying which drone is currently tracking that target — no new assignment, no approval flow, and no replacement of the existing tracking drone
 - **Target type and short ID subtitle (Feature 29)**: Every enemy target card always shows the target type and short ID as a subtitle line directly beneath the target name — permanently visible without clicking or expanding, so the operator can read asset type and identity at a glance across all listed threats
 - Destroyed/lost targets are hidden
@@ -1302,8 +1351,8 @@ npm run dev                   # starts at http://localhost:5173
 | **Click-to-highlight + fly-to from Swarm Status panel (Feature 20)** | Clicking a swarm card or drone entry highlights the corresponding map entity and triggers `camera.flyTo()` — same mechanism as Feature 19 but for friendly assets; swarm card click highlights all member drones; individual drone click highlights that single drone |
 | **Terrain-constrained placement and movement (Feature 21)** | Ground assets (soldiers, tanks, missile launchers) must be on land and stop when they reach water during movement simulation; ships must be in water and stop when they reach shore during movement simulation; drones are unconstrained (valid on land, at sea, or airborne); enforced at config load, during drag-and-drop via CesiumJS terrain sampling, and at every 1 Hz Movement Simulator tick — ground assets and ships that would cross a terrain boundary are halted in place rather than crossing it |
 | **Real coastline polygons for land/sea checks (Feature 27)** | Land/sea determination uses actual GeoJSON polygon data (`/data/theater_land.json`) and a ray-casting point-in-polygon algorithm (with hole support) rather than elevation heuristics; geographic coverage spans the full theater: Taiwan (+ Penghu, Kinmen, Matsu, Green Island, Orchid Island), China, North Korea, South Korea, Japan, and Philippines — each with full coastlines and offshore islands; this is the single authoritative terrain oracle used at config load, drag-and-drop, and every Movement Simulator tick |
-| **Single-target engage with range-aware swarm selection (Feature 22)** | ENGAGE on one enemy asset targets only that asset — the LLM checks which combat swarms can physically reach it (haversine distance ≤ max_range_km), selects the closest in-range swarm, names it in the approval prompt with distance, and queues a single-target HITL approval; if no swarm is in range the operator is notified inline rather than getting a misleading approval for an unreachable target; once approved the **ENGAGE button remains enabled** and the tasked swarm is committed and unavailable for concurrent engagements — prevents one swarm being double-assigned to two targets simultaneously; re-clicking ENGAGE on an already-engaged target triggers the Feature 32 notification instead of a new approval |
-| **Already-engaging notification (Feature 32)** | When the operator clicks ENGAGE on a target already in `engaged` status, the API pre-checks the target status before calling the LLM and returns `already_engaged` with the name of the current engaging swarm — no new HITL approval is created, no additional swarm is assigned, and the existing engagement is undisturbed; mirrors the Feature 28 pattern for TRACK; the UI displays the swarm name inline as an informational message (distinct styling from the `no_swarm_in_range` error) |
+| **Single-target engage with range-aware swarm selection (Feature 22)** | ENGAGE on one enemy asset targets only that asset — the LLM checks which combat swarms can physically reach it (haversine distance ≤ max_range_km), selects the closest in-range swarm, names it in the approval prompt with distance, and queues a single-target HITL approval; if no swarm is in range the operator is notified inline rather than getting a misleading approval for an unreachable target; once approved, **the button on that target changes from ENGAGE to DISENGAGE** and a message naming the engaging swarm is shown directly beneath the button — kept **always visible** for as long as the target stays engaged, not a one-time toast — and the tasked swarm is committed and unavailable for concurrent engagements — prevents one swarm being double-assigned to two targets simultaneously; clicking DISENGAGE (Feature 32) prompts for confirmation before ending the engagement and recalling the swarm |
+| **Confirmation-gated disengage releases target and recalls swarm (Feature 32)** | When the operator clicks DISENGAGE on an `engaged` target, the API pre-check (no LLM call) creates a `PendingApproval` (proposed_action.type = `disengage`) and surfaces it in the same bottom Approval Bar used for HITL attack approvals (§9.3.1) — the swarm is NOT recalled until the operator explicitly confirms; this mirrors Feature 13's human-in-the-loop pattern so an accidental click can't send a swarm home mid-engagement. On confirm (`POST /api/nlp/approve`), the target reverts to `active` and the engaging swarm's status is set to `returning`, flying back to its `home_position` under the normal Movement Simulator rules (§8.5) — no drones are destroyed, unlike the Feature 23 contact-destruction path; on arrival the swarm resets to `idle` and rejoins the available pool. On deny, the target stays `engaged` and nothing changes. Once confirmed, a message is shown beneath the button and the button reverts from DISENGAGE to ENGAGE. |
 | **Combat-on-contact destruction (Feature 23)** | The 1 Hz Movement Simulator checks every engaging swarm's proximity to its assigned target each tick; when any member drone comes within 500 m, the target is auto-marked `destroyed` and the **entire combat drone swarm** is destroyed (all member drones → `offline`) — the complete swarm is expended on contact, no drones survive or return; the swarm is immediately reset to `idle` so the UI reflects its depletion. When a swarm is in `engaging` status, the assigned enemy target type and short ID are shown directly on the swarm card — no expansion required, matching the always-visible tracking drone disclosure pattern from Feature 28 |
 | **Track-on-target with HITL and recon exclusivity (Feature 24)** | TRACK on one enemy asset mirrors the Feature 22 engage flow but for reconnaissance — the LLM range-checks available recon drones (MQ-9 and Scout), selects the nearest in-range drone, names it in an HITL approval prompt, and queues a single-target `assign_drone` approval; if no recon drone can reach the target the operator is notified inline; once approved the **TRACK button remains enabled** and the drone is committed and unavailable for concurrent tracking assignments — prevents one recon drone from being tasked to shadow multiple targets simultaneously; re-clicking TRACK on an already-tracked target shows an informational message identifying the current tracking drone (Feature 28) rather than triggering a new assignment |
 | **Engaged/tracked counts in status bar (Feature 25)** | The header bar derives `ENGAGED` and `TRACKED` counts client-side from the WebSocket state by filtering targets with `status == "engaged"` and `status == "tracked"` respectively — no additional API endpoint is needed; counters update every WebSocket tick (1 second) giving the operator a real-time readout of active engagements and tracking assignments at all times |

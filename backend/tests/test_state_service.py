@@ -438,6 +438,71 @@ class TestSwarmCRUD:
         assert svc.get_swarm(s.id).last_command is not None
 
 
+# ─── Feature 32: Disengage ───────────────────────────────────────────────────
+
+class TestDisengageTarget:
+    def _engaged_target_and_swarm(self, svc: StateService):
+        """Seed a target in 'engaged' status with a swarm actively engaging it."""
+        target = _target(status=TargetStatus.ENGAGED)
+        svc.upsert_target(target)
+        drone = _drone(type=DroneType.COMBAT_SWARM, status=DroneStatus.ENGAGING)
+        svc._drones[drone.id] = drone
+        swarm = _swarm(status=SwarmStatus.ENGAGING, drone_ids=[drone.id], target_ids=[target.id])
+        svc.create_swarm(swarm)
+        return target, swarm, drone
+
+    def test_disengage_reverts_target_to_active(self):
+        svc = _empty_svc()
+        target, swarm, drone = self._engaged_target_and_swarm(svc)
+        svc.disengage_target(target.id)
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+    def test_disengage_sets_swarm_status_returning(self):
+        svc = _empty_svc()
+        target, swarm, drone = self._engaged_target_and_swarm(svc)
+        svc.disengage_target(target.id)
+        assert svc.get_swarm(swarm.id).status == SwarmStatus.RETURNING
+
+    def test_disengage_clears_swarm_target_ids(self):
+        svc = _empty_svc()
+        target, swarm, drone = self._engaged_target_and_swarm(svc)
+        svc.disengage_target(target.id)
+        assert svc.get_swarm(swarm.id).target_ids == []
+
+    def test_disengage_sets_member_drone_status_returning(self):
+        svc = _empty_svc()
+        target, swarm, drone = self._engaged_target_and_swarm(svc)
+        svc.disengage_target(target.id)
+        assert svc.get_drone(drone.id).status == DroneStatus.RETURNING
+
+    def test_disengage_returns_swarm_id_and_name(self):
+        svc = _empty_svc()
+        target, swarm, drone = self._engaged_target_and_swarm(svc)
+        result = svc.disengage_target(target.id)
+        assert result == {"swarm_id": swarm.id, "swarm_name": swarm.name}
+
+    def test_disengage_on_active_target_returns_none(self):
+        svc = _empty_svc()
+        target = _target(status=TargetStatus.ACTIVE)
+        svc.upsert_target(target)
+        assert svc.disengage_target(target.id) is None
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+    def test_disengage_on_nonexistent_target_returns_none(self):
+        svc = _empty_svc()
+        assert svc.disengage_target("ghost") is None
+
+    def test_disengage_with_no_matching_swarm_still_releases_target(self):
+        """If the target is 'engaged' but no swarm is currently engaging it
+        (e.g. stale state), the target still reverts to active."""
+        svc = _empty_svc()
+        target = _target(status=TargetStatus.ENGAGED)
+        svc.upsert_target(target)
+        result = svc.disengage_target(target.id)
+        assert result is None
+        assert svc.get_target(target.id).status == TargetStatus.ACTIVE
+
+
 # ─── Command Log ─────────────────────────────────────────────────────────────
 
 class TestCommandLog:

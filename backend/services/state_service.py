@@ -726,6 +726,37 @@ class StateService:
                 d.status = DroneStatus.PATROLLING
                 d.current_task = None
 
+    def disengage_target(self, target_id: str) -> Optional[dict]:
+        """Feature 32: release an engaged target and recall its combat swarm to base.
+
+        Returns {"swarm_id", "swarm_name"} for the recalled swarm, or None if the
+        target was not in `engaged` status (no-op) or no engaging swarm was found."""
+        with self._lock:
+            target = self._targets.get(target_id)
+            if not target or target.status != TargetStatus.ENGAGED:
+                return None
+
+            target.status = TargetStatus.ACTIVE
+
+            swarm = next(
+                (s for s in self._swarms.values()
+                 if target_id in s.target_ids and s.status == SwarmStatus.ENGAGING),
+                None,
+            )
+            if swarm is None:
+                return None
+
+            swarm.target_ids = []
+            swarm.objective = None
+            swarm.status = SwarmStatus.RETURNING
+            for did in swarm.drone_ids:
+                d = self._drones.get(did)
+                if d is not None:
+                    d.status = DroneStatus.RETURNING
+                    d.current_task = None
+
+            return {"swarm_id": swarm.id, "swarm_name": swarm.name}
+
     def replace_tracker_for_target(self, target_id: str) -> Optional[str]:
         """Feature 28: find any drone currently tracking target_id and send it home.
         Returns the released drone's ID, or None if no drone was tracking."""

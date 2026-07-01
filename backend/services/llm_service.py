@@ -92,7 +92,7 @@ Always respond with a JSON object:
 - Map swarm references (e.g. "ALT-Alpha") to correct swarm IDs from context.
 - Attack commands: priority 8–10. Patrol/search: priority 3–6. Track: priority 6.
 - **HITL attack rule**: When command_type is "attack", ALWAYS return request_approval (not assign_swarm). Never execute an attack directly.
-- **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the nearest idle (non-engaging) combat swarm whose representative_position is within max_range_km of the target. Engaging swarms are already committed and do NOT qualify. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no idle combat swarm can physically reach the target, return no_swarm_in_range instead of request_approval.
+- **HITL single-target engage rule (Feature 22)**: When the command references a specific target ID (e.g. "engage and attack target with id <id>"), include ONLY that one target in target_ids and classified_targets. Select the nearest idle combat swarm whose representative_position is within max_range_km of the target. Swarms currently `engaging` or `returning` are already committed and do NOT qualify — a disengaged swarm (Feature 32) only becomes available again once it is back to `idle`. Name the swarm in approval_prompt (e.g. "Requesting approval to engage 1 high-value ship using ALT-Alpha (212 km away)."). If no idle combat swarm can physically reach the target, return no_swarm_in_range instead of request_approval.
 - **HITL track rule (Feature 24)**: When command_type is "track" and a target ID is referenced, ALWAYS return request_approval with an assign_drone proposed_action. Select the nearest MQ-9 or Scout drone whose max_range_km ≥ haversine distance to the target. If none qualifies, return no_recon_in_range.
 """
 
@@ -183,7 +183,7 @@ Operator command: {command}"""
                 for s in swarms:
                     if not s.get("name", "").startswith(model_prefix):
                         continue
-                    if s.get("status") in ("engaging",):
+                    if s.get("status") in ("engaging", "returning"):
                         continue
                     s_pos = s.get("representative_position")
                     if not s_pos:

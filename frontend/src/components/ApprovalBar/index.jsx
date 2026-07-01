@@ -46,24 +46,43 @@ function ThreatBadge({ value, count }) {
 }
 
 async function sendDecision(approvalId, decision) {
-  await fetch(`/api/nlp/${decision}/${approvalId}`, { method: 'POST' })
+  const res = await fetch(`/api/nlp/${decision}/${approvalId}`, { method: 'POST' })
+  return res.json()
 }
 
 export default function ApprovalBar() {
   const approvals = useStore(s => s.pendingApprovals)
+  const setDisengageMessage = useStore(s => s.setDisengageMessage)
   const [deciding, setDeciding] = useState(null)
 
   if (!approvals || approvals.length === 0) return null
 
+  // Feature 32: DISENGAGE confirmations reuse this same approve/deny bar. Once
+  // confirmed, surface a one-time message under the target's (now reverted)
+  // ENGAGE button in the Target List via the store. A denied confirmation
+  // leaves the target 'engaged', where the Target List already shows its
+  // persistent "Engaged by <swarm>" message, so no separate message is needed.
   const handle = async (id, decision) => {
     setDeciding(id + decision)
-    await sendDecision(id, decision)
+    const approval = approvals.find(a => a.id === id)
+    const result = await sendDecision(id, decision)
+    if (decision === 'approve' && approval?.proposed_action?.type === 'disengage') {
+      const targetId = approval.proposed_action.target_id
+      const swarmName = approval.proposed_action.swarm_name || 'The swarm'
+      const message = result?.execution_result?.explanation
+        || `${swarmName} is returning to base; target is no longer engaged.`
+      setDisengageMessage(targetId, message)
+    }
     setDeciding(null)
   }
 
   const hasAttack = approvals.some(a => a.proposed_action?.command_type === 'attack')
   const allTrack  = approvals.every(a => a.proposed_action?.command_type === 'track')
-  const headerLabel = allTrack ? 'TRACK APPROVAL REQUIRED' : hasAttack ? 'ATTACK APPROVAL REQUIRED' : 'COMMAND APPROVAL REQUIRED'
+  const allDisengage = approvals.every(a => a.proposed_action?.type === 'disengage')
+  const headerLabel = allDisengage ? 'DISENGAGE CONFIRMATION REQUIRED'
+    : allTrack ? 'TRACK APPROVAL REQUIRED'
+    : hasAttack ? 'ATTACK APPROVAL REQUIRED'
+    : 'COMMAND APPROVAL REQUIRED'
 
   return (
     <div style={{

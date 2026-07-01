@@ -15,17 +15,23 @@ which can coordinate with each other to locate and attach targets by themselves.
 13) LLM should determine classify the enemy assets to a) high value target, such as ship, missile launchers. b) medium value target, such as tanks. 
 c) low value targets. And ask human for permission to attack enemy targets according to value classification.
 
-Engaginng:
+Engage:
 15) when the user click on engage button, the combat swarm should show up on the swarm and drone status panel.
 23) Engaging: when the combat swarm reach the target, the target is destroyed and the entire combat drone swarm are also destroyed.
 the engaging drone on "the Swarm and drone status" panel should display target type and short id.
 22) when the user click on engage button on one enemy asset, LLM will select a combat drone swarm that can reach that enemy target. 
 Inform the user if no combat drone swarm can reach the enemy target. the selected drone unit name is displayed and ask the user for approval. 
-Only the select enemy target will be engaged. Once the user approve the request, the engage button on the target remains enabled and the selected drone swarm 
-is moving off the available drone swarm list. (i.e. one drone swarm cannot be used to attach multiple enemy targets). 
-25) the number of enemy targets being engaged should be displayed at the header bar. 
-32) if a target is being Engaged by one drone swarm, clicking on the Engage button again, the platform will not select another combat swarm to engage the target. 
-The platform will dispay a message showing which drone swarm is engaging this target. 
+Only the select enemy target will be engaged. Once the user approve the request, the platform will dispay a message under the engage button showing which drone swarm is engaging this target. 
+This message will be always visible to the user.
+The engage button on the target will be changed to Disengage and the selected drone swarm is moving off the available drone swarm list. 
+(i.e. one drone swarm cannot be used to attach multiple enemy targets). 
+25) the number of enemy targets being engaged should be displayed at the header bar.
+
+Disengage:
+32) if a target is being Engaged by one drone swarm, Clicking on disengage button, the platform display a prompt in the bottom (same area where prompt for user approval to
+engage the target), asking the user to confirm disenage the target. Once user confirm the request, the platform disengage the target. The combat drone swarm should return to it's starting position.
+A message will be displayed under the disengage button to confirm the disengagement. The button will be changed back to engage.
+
 
 Assets Deployment:
 17) System support drag and drop deployment of both friendly assets and enemy assets. The system should persist all friendly and enemy assets

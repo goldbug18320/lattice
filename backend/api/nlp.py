@@ -45,33 +45,58 @@ async def process_nlp_command(req: NLPCommandRequest):
     if not req.command.strip():
         raise HTTPException(status_code=400, detail="Command cannot be empty")
 
-    # Feature 32: if this is a single-target ENGAGE and the target is already engaged,
-    # return an informational response identifying the current engaging swarm — no LLM call,
-    # no approval, no new assignment.
-    eid_match = re.search(r'engage\s+and\s+attack\s+target\s+with\s+id\s+(\S+)', req.command.lower())
-    if eid_match:
-        target_id = eid_match.group(1)
+    # Feature 32: DISENGAGE queues a confirmation — like Feature 13's HITL attack
+    # approval — rather than executing immediately. No LLM call, but a
+    # PendingApproval is created so the operator must explicitly confirm (via the
+    # same approval bar / approve-deny endpoints) before the swarm is recalled.
+    did_match = re.search(r'disengage\s+target\s+with\s+id\s+(\S+)', req.command.lower())
+    if did_match:
+        target_id = did_match.group(1)
         target = state_service.get_target(target_id)
-        if target and target.status.value == "engaged":
-            engaging_swarm = next(
-                (s for s in state_service.get_all_swarms()
-                 if target_id in s.target_ids and s.status.value == "engaging"),
-                None,
-            )
-            swarm_name = engaging_swarm.name if engaging_swarm else "a combat swarm"
-            message = f"Target is already being engaged by {swarm_name}."
+        if not target or target.status.value != "engaged":
+            message = "Target is not currently engaged."
             return {
                 "command": req.command,
-                "interpretation": "Target is already in engaged status.",
+                "interpretation": message,
                 "explanation": message,
-                "action": {
-                    "type": "already_engaged",
-                    "swarm_name": swarm_name,
-                    "swarm_id": engaging_swarm.id if engaging_swarm else None,
-                    "explanation": message,
-                },
+                "action": {"type": "none", "explanation": message},
                 "execution_result": None,
             }
+
+        engaging_swarm = next(
+            (s for s in state_service.get_all_swarms()
+             if target_id in s.target_ids and s.status.value == "engaging"),
+            None,
+        )
+        swarm_name = engaging_swarm.name if engaging_swarm else "the combat swarm"
+        swarm_id = engaging_swarm.id if engaging_swarm else None
+        prompt = f"Disengage this {target.type.value} from {swarm_name}? {swarm_name} will return to base."
+
+        approval = PendingApproval(
+            command=req.command,
+            interpretation="Confirm disengage — the swarm will return to base.",
+            approval_prompt=prompt,
+            proposed_action={
+                "type": "disengage",
+                "target_id": target_id,
+                "swarm_id": swarm_id,
+                "swarm_name": swarm_name,
+            },
+            expires_at=datetime.utcnow() + timedelta(minutes=APPROVAL_TTL_MINUTES),
+        )
+        state_service.add_approval(approval)
+
+        return {
+            "command": req.command,
+            "interpretation": approval.interpretation,
+            "explanation": prompt,
+            "action": {
+                "type": "request_disengage_confirmation",
+                "approval_prompt": prompt,
+                "proposed_action": approval.proposed_action,
+            },
+            "execution_result": {"approval_id": approval.id, "status": "pending"},
+        }
 
     # Feature 28: if this is a single-target TRACK and the target is already tracked,
     # return an informational response identifying the current tracking drone — no LLM call,
@@ -235,7 +260,19 @@ async def approve_attack(approval_id: str):
     # Execute the proposed action
     proposed = approval.proposed_action
     execution_result = None
-    if proposed.get("type") == "assign_swarm" and proposed.get("swarm_id"):
+    if proposed.get("type") == "disengage":
+        # Feature 32: confirmed — release the target and recall the swarm to base.
+        result = state_service.disengage_target(proposed.get("target_id"))
+        swarm_name = result["swarm_name"] if result else proposed.get("swarm_name", "the combat swarm")
+        execution_result = {
+            "target_id": proposed.get("target_id"),
+            "target_status": "active",
+            "swarm_id": result["swarm_id"] if result else proposed.get("swarm_id"),
+            "swarm_status": "returning" if result else None,
+            "explanation": f"{swarm_name} is returning to base; target is no longer engaged.",
+        }
+
+    elif proposed.get("type") == "assign_swarm" and proposed.get("swarm_id"):
         cmd = SwarmCommand(
             command_type=CommandType(proposed.get("command_type", "attack")),
             target_ids=proposed.get("target_ids", []),
